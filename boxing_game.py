@@ -1,17 +1,20 @@
 import cv2
 import mediapipe as mp
 import time
-import math
+import random
+import numpy as np
 
-mpPose = mp.solutions.pose
-pose = mpPose.Pose()
-mpDraw = mp.solutions.drawing_utils
+class Target:
+    def __init__(self, hand, x, y, width): 
+        self.hand = hand
+        self.width = width
+        self.x = x
+        self.y = y
+    
+    def drawTarget(self, img): 
 
-cap = cv2.VideoCapture(0)
-#cap = cv2.VideoCapture('a.mp4')
-pTime = 0
-
-
+        cv2.circle(img, (self.x, self.y), self.width, (0,0,255), 5)
+        cv2.putText(img, str(self.hand), (self.x, self.y), cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,255), 3)
 
 def slope(land1, land2):
     # Calculate the slopes of the lines
@@ -20,27 +23,62 @@ def slope(land1, land2):
 
     return round(slope, 2)
 
+def createTarget(w, h):
+    randHand = random.randint(1, 2)
+
+    if randHand == 1: 
+        randX = random.randint(w/2-300, w/2+300)
+        randY = random.randint(300, h/2-200)
+    else: 
+        randX = random.randint(w/2-300, w/2+300)
+        randY = random.randint(300, h/2-200)
+
+    tar = Target(randHand, randX, randY, 200)
+
+    return tar
+
+
+mpPose = mp.solutions.pose
+pose = mpPose.Pose()
+mpDraw = mp.solutions.drawing_utils
+
+cap = cv2.VideoCapture(0)
+pTime = 0
+
+lPunches = 0
+rPunches = 0
+
+lState = ""
+rState = ""
+
+lPrevState = ""
+rPrevState = ""
+
+lTargetReset = True
+rTargetReset = True
+
+h = 1080
+w = 1920
+
+score = 0
+
+curTarget = createTarget(w, h)
 
 while True:
+
     success, img = cap.read()
-    img = cv2.resize(img, (1920,1080))
+    img = cv2.resize(img, (w,h))
+    imgPlayer = np.zeros((512,512,3), np.uint8)
+    imgPlayer = cv2.resize(imgPlayer, (w,h))
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = pose.process(imgRGB)
-    #print(results.pose_landmarks)
-
-    '''
-    if results.pose_landmarks:
-        mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
-    '''
 
     lm = results.pose_landmarks.landmark[11:17] + results.pose_landmarks.landmark[19:21]
 
-    h, w,c = img.shape
-    error = int(w / 13)
+    error = int(w / 10)
 
     for id, lm in enumerate(lm):
  
-        print(id, lm)
         cx, cy = int(lm.x*w), int(lm.y*h)
         cv2.circle(img, (cx, cy), 5, (255,0,0), cv2.FILLED)
 
@@ -74,27 +112,68 @@ while True:
     rSlope1 = slope(rShould, rElb)
     rSlope2 = slope(rElb, rWrist)
 
-    cv2.putText(img, str(int(fps)), (50,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
-    cv2.putText(img, "slope 1 left: " + str(lSlope1), (50,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
-    cv2.putText(img, "slope 2 left: " + str(lSlope2), (50,150), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    cv2.putText(img, "fps: " + str(int(fps)), (50,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
+    cv2.putText(img, "slope 1 left: " + str(lSlope1), (50,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255, 255, 255), 3)
+    cv2.putText(img, "slope 2 left: " + str(lSlope2), (50,150), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
-    cv2.putText(img, "slope 1 left: " + str(rSlope1), (50,300), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
-    cv2.putText(img, "slope 2 left: " + str(rSlope2), (50,350), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    cv2.putText(img, "slope 1 right: " + str(rSlope1), (50,300), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
+    cv2.putText(img, "slope 2 right: " + str(rSlope2), (50,350), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
-    if abs(lSlope1 - lSlope2) < 1 or (abs(lShould.x*w - lElb.x*w) < error and abs(lShould.y*h - lElb.y*h) < error): 
-        cv2.putText(img, "left: punch", (200,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    if (abs(lSlope1 - lSlope2) < 1 or (abs(lShould.x*w - lElb.x*w) < error and abs(lShould.y*h - lElb.y*h) < error)) and lWrist.y*h <= h/2: 
+        lState = "punch"
+
+        if curTarget.hand == 1: 
+            if curTarget.x - curTarget.width/2 < lInd.x*w < curTarget.x + curTarget.width/2 and lTargetReset: 
+                curTarget = createTarget(w, h)
+                lTargetReset = False
+                score += 1
+
     else: 
-        cv2.putText(img, "left: bent", (200,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+        lTargetReset = True
+        lState = "none"
 
-    if abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error): 
-        cv2.putText(img, "right: punch", (400,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= h/2: 
+        rState = "punch"
+
+        if curTarget.hand == 2: 
+            if curTarget.x - curTarget.width/2 < rInd.x*w < curTarget.x + curTarget.width/2 and rTargetReset: 
+                curTarget = createTarget(w, h)
+                rTargetReset = False
+                score += 1
     else: 
-        cv2.putText(img, "right: bent", (400,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+        rTargetReset = True
+        rState = "none"
+
+    cv2.putText(img, "left: " + lState, (1400,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    cv2.putText(img, "right: " + rState, (1650,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+
+    cv2.putText(img, "punches: " + str(lPunches), (1400,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+    cv2.putText(img, "punches: " + str(rPunches), (1650,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255,0,0), 3)
+
+    cv2.putText(img, "score: " + str(score), (800,100), cv2.FONT_HERSHEY_SIMPLEX,3, (255,255,255), 3)
+
+    if lState == "punch" and lPrevState == "none": 
+        cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), 50, (255,255,255), cv2.FILLED)
+        lPunches += 1
+
+    if rState == "punch" and rPrevState == "none": 
+        rPunches += 1
+    
+    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), 50, (255, 0, 0), cv2.FILLED)
+    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), 50, (0, 0, 255), cv2.FILLED)
+
+    imgPlayer = cv2.flip(imgPlayer, 1)
+
+    curTarget.drawTarget(img)
 
     cv2.imshow("Image", img)
+    cv2.imshow("Image Player", imgPlayer)
+
+    lPrevState = lState
+    rPrevState = rState
 
     if cv2.waitKey(1)==ord('q'):
         break
 
-cv2.destroyAllWindows
+cv2.destroyAllWindows()
