@@ -5,9 +5,9 @@ import random
 import numpy as np
 
 class Target:
-    def __init__(self, hand, x, y, width): 
+    def __init__(self, hand, x, y, radius): 
         self.hand = hand
-        self.width = width
+        self.radius = radius
         self.x = x
         self.y = y
     
@@ -17,7 +17,7 @@ class Target:
         else:
             color = (0, 0, 255)
 
-        cv2.circle(img, (self.x, self.y), self.width, color, 5)
+        cv2.circle(img, (self.x, self.y), self.radius, color, 5)
         cv2.putText(img, str(self.hand), (self.x-50, self.y+40), cv2.FONT_HERSHEY_SIMPLEX,5, color, 3)
 
 def slope(land1, land2):
@@ -37,7 +37,7 @@ def createTarget(w, h):
         randX = random.randint(w/2-500, w/2+500)
         randY = random.randint(300, h/2-200)
 
-    tar = Target(randHand, randX, randY, 200)
+    tar = Target(randHand, randX, randY, 150)
 
     return tar
 
@@ -141,7 +141,7 @@ while True:
         lState = "punch"
 
         if curTarget.hand == 1: 
-            if curTarget.x - curTarget.width/2 < lInd.x*w < curTarget.x + curTarget.width/2 and lTargetReset and curTime - startTime < 30: 
+            if curTarget.x - curTarget.radius < lInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < lInd.y*h < curTarget.y + curTarget.radius and lTargetReset and curTime - startTime < 30: 
                 curTarget = createTarget(w, h)
                 lTargetReset = False
                 score += 1
@@ -156,7 +156,7 @@ while True:
         rState = "punch"
 
         if curTarget.hand == 2: 
-            if curTarget.x - curTarget.width/2 < rInd.x*w < curTarget.x + curTarget.width/2 and rTargetReset and curTime - startTime < 30: 
+            if curTarget.x - curTarget.radius < rInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < rInd.y*h < curTarget.y + curTarget.radius and rTargetReset and curTime - startTime < 30: 
                 curTarget = createTarget(w, h)
                 rTargetReset = False
                 score += 1
