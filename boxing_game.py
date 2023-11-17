@@ -107,7 +107,7 @@ rColour = (191, 191, 0)
 lAfterPunchT = 0
 rAfterPunchT = 0
 
-scene = "menu"
+scene = "camera"
 prevScene = ""
 
 opt_targets = Target(0, 800, 350, 150)
@@ -116,11 +116,22 @@ opt_camera = Target(0, 1600, 350, 150)
 opt_exit = Target(0, 1000, 100, 75)
 opt_vol = Target(0, 1400, 100, 75)
 
+inArea = True
+inAreaTime = 0 
+prevInArea = False
+
+b1x = int(w/2 - 300)
+b1y = int(h/3)
+
+b2x = int(w/2 + 300)
+b2y = h
+
 menu_options = [opt_targets, opt_reaction, opt_camera, opt_exit, opt_vol]
 menu_strings = ["targets", "reaction", "camera", "exit", "vol"]
 
 #main loop
 while True:
+    inArea = True
 
     curTime = time.time()
 
@@ -139,10 +150,15 @@ while True:
 
     error = int(w / 15)
 
-    for id, lm in enumerate(lm):
+
+    for lm in lm:
  
-        cx, cy = int(lm.x*w), int(lm.y*h)
-        cv2.circle(img, (cx, cy), 15, (255,0,0), cv2.FILLED)
+        x, y = int(lm.x*w), int(lm.y*h)
+        cv2.circle(img, (x, y), 15, (255,0,0), cv2.FILLED)
+
+        if not (b1x < x < b2x and b1y < y < b2y): 
+            inArea = False
+
 
     lm = results.pose_landmarks.landmark
 
@@ -304,7 +320,28 @@ while True:
             cv2.putText(imgPlayer, str(reactionTime) + "s", (650,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
     
     elif scene == "camera": 
+
+        if inArea: 
+
+            if not prevInArea: 
+                inAreaTime = time.time()
+
+            col = (0, 255, 0)
+
+        else: 
+
+            inAreaTime = time.time()
+            col = (0, 0, 255)
+
+        cv2.putText(img, "place arms straight by your side", (470,100), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5)
+        cv2.putText(img, "move so that all blue points lie within the box", (200,200), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5)
+        img = cv2.rectangle(img, (b1x, b1y), (b2x, b2y), col, 5)
+
+        if curTime - inAreaTime > 1: 
+            scene = "menu"
+
         imgPlayer = img
+
     
     elif scene == "exit": 
         break
@@ -316,9 +353,9 @@ while True:
     #img = cv2.resize(img, (640, 360))
 
     #imgPlayer[720:1080, 0:640, :] = img
-
-    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, lColour, cv2.FILLED)
-    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, rColour, cv2.FILLED)
+    if scene != "camera": 
+        cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, lColour, cv2.FILLED)
+        cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, rColour, cv2.FILLED)
 
     cv2.imshow("Image Player", imgPlayer)
 
@@ -326,6 +363,7 @@ while True:
     rPrevState = rState
 
     prevScene = scene
+    prevInArea = inArea
 
     if cv2.waitKey(1)==ord('q'):
         break
