@@ -110,12 +110,6 @@ rAfterPunchT = 0
 scene = "camera"
 prevScene = ""
 
-opt_targets = Target(0, 800, 350, 150)
-opt_reaction = Target(0, 1200, 350, 150)
-opt_camera = Target(0, 1600, 350, 150)
-opt_exit = Target(0, 1000, 100, 75)
-opt_vol = Target(0, 1400, 100, 75)
-
 inArea = True
 inAreaTime = 0 
 prevInArea = False
@@ -126,8 +120,19 @@ b1y = int(h/3)
 b2x = int(w/2 + 300)
 b2y = h
 
+rad1 = 150
+rad2 = 75
+
+opt_targets = Target(0, 800, 350, rad1)
+opt_reaction = Target(0, 1200, 350, rad1)
+opt_camera = Target(0, 1600, 350, rad1)
+opt_exit = Target(0, 1000, 100, rad2)
+opt_vol = Target(0, 1400, 100, rad2)
+
 menu_options = [opt_targets, opt_reaction, opt_camera, opt_exit, opt_vol]
 menu_strings = ["targets", "reaction", "camera", "exit", "vol"]
+menu_hover_l = [False, False, False, False, False]
+menu_hover_r = [False, False, False, False, False]
 
 #main loop
 while True:
@@ -234,6 +239,15 @@ while True:
         lTargetReset = True
         lState = "none"
 
+        if scene == "menu": 
+            for i, tar in enumerate(menu_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius: 
+                    menu_hover_l[i] = True
+                else:
+                    menu_hover_l[i] = False
+
+
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= 600: 
         rHandSize = 50
         rState = "punch"
@@ -267,6 +281,18 @@ while True:
         rTargetReset = True
         rState = "none"
 
+        if scene == "menu": 
+            for i, tar in enumerate(menu_options): 
+
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius: 
+                    menu_hover_r[i] = True
+                else:
+                    menu_hover_r[i] = False
+                    
+                    
+
+
+
 
     if(curTime - lAfterPunchT > 0.3): lColour = (0, 170, 255)
     if(curTime - rAfterPunchT > 0.3): rColour = (191, 191, 0)
@@ -299,6 +325,16 @@ while True:
 
     elif scene == "menu": 
         for i, tar in enumerate(menu_options):
+            if i <= 2: 
+                rad = rad1
+            else:
+                rad = rad2
+
+            if menu_hover_l[i] or menu_hover_r[i]:
+                tar.radius = rad + 10
+            else: 
+                tar.radius = rad
+
             tar.drawTarget(imgPlayer, i)
 
         imgPlayer[100:100+logo_h, 30:30+logo_w, :] = logo
@@ -348,7 +384,6 @@ while True:
 
     elif scene == "volume": 
         pass
-
 
     #img = cv2.resize(img, (640, 360))
 
