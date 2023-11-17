@@ -7,7 +7,7 @@ import numpy as np
 To-Do list
 
 - add sound effects
-- make it so that the program still runs even if it doesn't detect a landmark
+- make it so that the program still runs even if it doesn't detect a landmark, use try and except maybe? 
 - add a countdown at the start of the targets mode to let the user have time to prepare for the start
 - make the interface look nicer
 
