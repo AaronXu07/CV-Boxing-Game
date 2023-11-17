@@ -70,15 +70,22 @@ score = 0
 
 curTarget = createTarget(w, h)
 
+lHandSize = 20
+rHandSize = 20
+
+#main loop
 while True:
 
     curTime = time.time()
 
     success, img = cap.read()
+
     img = cv2.resize(img, (w,h))
     img = cv2.flip(img, 1)
+
     imgPlayer = np.zeros((512,512,3), np.uint8)
     imgPlayer = cv2.resize(imgPlayer, (w,h))
+
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     results = pose.process(imgRGB)
 
@@ -130,6 +137,7 @@ while True:
     cv2.putText(imgPlayer, "slope 2 right: " + str(rSlope2), (50,350), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
     if (abs(lSlope1 - lSlope2) < 1 or (abs(lShould.x*w - lElb.x*w) < error and abs(lShould.y*h - lElb.y*h) < error)) and lWrist.y*h <= h/2: 
+        lHandSize = 40
         lState = "punch"
 
         if curTarget.hand == 1: 
@@ -139,10 +147,12 @@ while True:
                 score += 1
 
     else: 
+        lHandSize = 20
         lTargetReset = True
         lState = "none"
 
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= h/2: 
+        rHandSize = 40
         rState = "punch"
 
         if curTarget.hand == 2: 
@@ -151,6 +161,7 @@ while True:
                 rTargetReset = False
                 score += 1
     else: 
+        rHandSize = 20
         rTargetReset = True
         rState = "none"
 
@@ -162,8 +173,7 @@ while True:
 
     cv2.putText(imgPlayer, "score: " + str(score), (800,100), cv2.FONT_HERSHEY_SIMPLEX,3, (255,255,255), 3)
 
-
-    cv2.putText(imgPlayer, "Time Remaining: " + str(max(round(30 - (curTime - startTime), 2), 0)) + "s", (1400, 300), cv2.FONT_HERSHEY_SIMPLEX,1, (255,255,255), 3)
+    cv2.putText(imgPlayer, "Time Remaining: " + str(max(round(30 - (curTime - startTime), 2), 0)) + "s", (1500, 300), cv2.FONT_HERSHEY_SIMPLEX,1, (255,255,255), 3)
 
     if lState == "punch" and lPrevState == "none": 
         lPunches += 1
@@ -171,8 +181,8 @@ while True:
     if rState == "punch" and rPrevState == "none": 
         rPunches += 1
     
-    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), 20, (255, 0, 0), cv2.FILLED)
-    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), 20, (0, 0, 255), cv2.FILLED)
+    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, (255, 0, 0), cv2.FILLED)
+    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, (0, 0, 255), cv2.FILLED)
 
     curTarget.drawTarget(imgPlayer)
 
