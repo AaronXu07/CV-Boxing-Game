@@ -3,7 +3,15 @@ import mediapipe as mp
 import time
 import random
 import numpy as np
+'''
+To-Do list
 
+- add sound effects
+- make it so that the program still runs even if it doesn't detect a landmark
+- add a countdown at the start of the targets mode to let the user have time to prepare for the start
+- make the interface look nicer
+
+'''
 class Target:
     def __init__(self, hand, x, y, radius): 
         self.hand = hand
@@ -14,9 +22,9 @@ class Target:
     def drawTarget(self, img, index, scene): 
         if scene == "targets": 
             color = [0, (0, 170, 255), (191, 191, 0)]
-            cv2.circle(img, (self.x, self.y), self.radius, color[self.hand], cv2.FILLED)
-            cv2.circle(img, (self.x, self.y), int(self.radius * 2 / 3), (255, 255, 255), cv2.FILLED)
-            cv2.circle(img, (self.x, self.y), int(self.radius / 3), color[self.hand], cv2.FILLED)
+            cv2.circle(img, (self.x, self.y), self.radius, color[self.hand], cv2.FILLED) #draws outer circle of target
+            cv2.circle(img, (self.x, self.y), int(self.radius * 2 / 3), (255, 255, 255), cv2.FILLED) # draws inner circle of target
+            cv2.circle(img, (self.x, self.y), int(self.radius / 3), color[self.hand], cv2.FILLED) # draws most inner circle of target
 
         elif scene == "menu": 
             text = ["Targets", "Reaction", "Camera", "exit", "vol"]
@@ -28,13 +36,10 @@ class Target:
                 xDev = 20
                 yDev = 0
 
-
-            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5)
-
-
-            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 3)
+            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5) #draws the targets for menu navigation
+            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 3) #draws the text inside each target
         
-        elif scene == "reaction": 
+        elif scene == "end": 
             text = ["Retry", "Return to Menu"]
 
             if index == 0: 
@@ -44,10 +49,8 @@ class Target:
             
             yDev = 20
 
-
-            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5)
-            
-            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 2)
+            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5) #draws the target for the 2 options after the targets and reaction modes are finished to either navigate back to menu or redo the current mode
+            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 2) #draws the text on each target
 
 
 def slope(land1, land2):
@@ -80,10 +83,10 @@ cap = cv2.VideoCapture(0)
 logo = cv2.imread("Logo.png", cv2.IMREAD_COLOR)
 logo_h, logo_w, c = logo.shape
 
-logo_h *= 2
-logo_w *= 2
+logo_h *= 2 #logo height
+logo_w *= 2 #logo width
 
-logo = cv2.resize(logo, (logo_w, logo_h))
+logo = cv2.resize(logo, (logo_w, logo_h)) #image for logo
 
 pTime = 0
 
@@ -95,13 +98,13 @@ rState = ""
 
 lPrevStates = []
 rPrevStates = []
-sLength = 5
+sLength = 2
 
 lTargetReset = True
 rTargetReset = True
 
 curTime = 0
-startTime = time.time()
+startTime = -1
 
 reactionTime = 0
 delay = 0
@@ -116,6 +119,7 @@ curTarget = createTarget(w, h)
 lHandSize = 20
 rHandSize = 20
 
+#colour of the left and right hands
 lColour = (0, 170, 255)
 rColour = (191, 191, 0)
 
@@ -138,6 +142,7 @@ b2y = h
 rad1 = 150
 rad2 = 75
 
+#target objects for the options in the main menu, second and third arguments are the x and y coordinates and the fourth is the radius
 opt_targets = Target(0, 800, 350, rad1)
 opt_reaction = Target(0, 1200, 350, rad1)
 opt_camera = Target(0, 1600, 350, rad1)
@@ -149,10 +154,13 @@ menu_strings = ["targets", "reaction", "camera", "exit", "vol"]
 menu_hover_l = [False, False, False, False, False]
 menu_hover_r = [False, False, False, False, False]
 
-opt_replay = Target(0, int(w/2 - 200), 500, rad1)
-opt_return = Target(0, int(w/2 + 200), 500, rad1)
+#target objects for the options in the menu after reaction and targets modes are finished
+opt_replay = Target(0, int(w/2 - 300), 500, rad1)
+opt_return = Target(0, int(w/2 + 300), 500, rad1)
 
-reaction_options = [opt_replay, opt_return]
+end_options = [opt_replay, opt_return]
+
+opt_delay = -1
 
 #main loop
 while True:
@@ -174,7 +182,6 @@ while True:
     lm = results.pose_landmarks.landmark[11:17] + results.pose_landmarks.landmark[19:21]
 
     error = int(w / 13)
-
 
     for lm in lm:
  
@@ -215,6 +222,7 @@ while True:
     rSlope1 = slope(rShould, rElb)
     rSlope2 = slope(rElb, rWrist)
 
+    #shows user their fps
     cv2.putText(imgPlayer, "fps: " + str(int(fps)), (50,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
     '''
@@ -226,8 +234,21 @@ while True:
     '''
 
     if (abs(lSlope1 - lSlope2) < 1 or (abs(lShould.x*w - lElb.x*w) < error and abs(lShould.y*h - lElb.y*h) < error)) and lWrist.y*h <= 600: 
-        lHandSize = 50
+        lPrevStates.append("punch")
+    else: 
+        lPrevStates.append("none")
+    
+    if len(lPrevStates) > sLength: 
+        lPrevStates.pop(0)
+
+    if lPrevStates.count("punch") == len(lPrevStates): 
         lState = "punch"
+    else: 
+        lState = "none"
+
+
+    if lState == "punch": 
+        lHandSize = 50
 
         if scene == "menu": 
             for i, tar in enumerate(menu_options): 
@@ -242,6 +263,10 @@ while True:
 
 
         elif scene == "targets": 
+
+            if startTime == -1: 
+                startTime = time.time()
+
             if curTarget.hand == 1: 
                 if curTarget.x - curTarget.radius < lInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < lInd.y*h < curTarget.y + curTarget.radius and lTargetReset and curTime - startTime < 30: 
                     
@@ -251,9 +276,28 @@ while True:
                         lTargetReset = False
                         lAfterPunchT = curTime
                         score += 1
+                
+                if curTime - startTime > 30: 
+                    if opt_delay == -1: 
+                        opt_delay = time.time()
+                    if curTime - opt_delay > 1: 
+                        for i, tar in enumerate(end_options): 
+
+                            if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius and lTargetReset: 
+                                if(curTime - lAfterPunchT > 0.3):
+                                    lColour = (0, 255, 0)
+                                    lTargetReset = False
+                                    lAfterPunchT = curTime
+                                    
+                                    score = 0 
+                                    startTime = -1 
+                                    opt_delay = -1
+
+                                    if i == 1: 
+                                        scene = "menu"
         
         elif scene == "reaction" and reactionTime != 0: 
-            for i, tar in enumerate(reaction_options): 
+            for i, tar in enumerate(end_options): 
 
                 if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius and lTargetReset: 
                     if(curTime - lAfterPunchT > 0.3):
@@ -269,11 +313,9 @@ while True:
                             reactionTime = 0
                             scene = "menu"
 
-
     else: 
         lHandSize = 20
         lTargetReset = True
-        lState = "none"
 
         if scene == "menu": 
             for i, tar in enumerate(menu_options): 
@@ -282,11 +324,23 @@ while True:
                     menu_hover_l[i] = True
                 else:
                     menu_hover_l[i] = False
-
-
+    
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= 600: 
-        rHandSize = 50
+        rPrevStates.append("punch")
+    else: 
+        rPrevStates.append("none")
+    
+    if len(rPrevStates) > sLength: 
+        rPrevStates.pop(0)
+
+    if rPrevStates.count("punch") == len(rPrevStates): 
         rState = "punch"
+    elif rPrevStates.count("none") == len(rPrevStates): 
+        rState = "none"
+
+
+    if rState == "punch": 
+        rHandSize = 50
 
         if scene == "menu": 
             for i, tar in enumerate(menu_options): 
@@ -301,6 +355,10 @@ while True:
                         scene = menu_strings[i]
 
         elif scene == "targets": 
+
+            if startTime == -1: 
+                startTime = time.time()
+
             if curTarget.hand == 2: 
                 if curTarget.x - curTarget.radius < rInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < rInd.y*h < curTarget.y + curTarget.radius and rTargetReset and curTime - startTime < 30: 
                     
@@ -310,9 +368,29 @@ while True:
                         rTargetReset = False
                         rAfterPunchT = curTime
                         score += 1
-        
+
+            if curTime - startTime > 30: 
+
+                if opt_delay == -1: 
+                    opt_delay = time.time()
+
+                if curTime - opt_delay > 1: 
+                    for i, tar in enumerate(end_options): 
+
+                        if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius and rTargetReset: 
+                            if(curTime - lAfterPunchT > 0.3):
+                                rColour = (0, 255, 0)
+                                rTargetReset = False
+                                rAfterPunchT = curTime
+
+                                score = 0 
+                                startTime = -1 
+
+                                if i == 1: 
+                                    scene = "menu"
+            
         elif scene == "reaction" and reactionTime != 0: 
-            for i, tar in enumerate(reaction_options): 
+            for i, tar in enumerate(end_options): 
 
                 if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius and rTargetReset: 
                     if(curTime - lAfterPunchT > 0.3):
@@ -333,7 +411,6 @@ while True:
     else: 
         rHandSize = 20
         rTargetReset = True
-        rState = "none"
 
         if scene == "menu": 
             for i, tar in enumerate(menu_options): 
@@ -368,9 +445,22 @@ while True:
     '''
     
     if scene == "targets": 
-        curTarget.drawTarget(imgPlayer, -1, "targets")
-        cv2.putText(imgPlayer, "score: " + str(score), (800,100), cv2.FONT_HERSHEY_SIMPLEX,3, (255,255,255), 3)
-        cv2.putText(imgPlayer, "Time Remaining: " + str(max(round(30 - (curTime - startTime), 2), 0)) + "s", (1500, 300), cv2.FONT_HERSHEY_SIMPLEX,1, (255,255,255), 3)
+
+        if curTime - startTime > 30: 
+
+            imgPlayer[:] = (0, 0, 0)
+
+            cv2.putText(imgPlayer, "score: " + str(score), (650,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their final score after 30 seconds has finished
+
+            for i, tar in enumerate(end_options):
+
+                tar.drawTarget(imgPlayer, i, "end") #draws the targets for the navigation to either head back to the main menu or retry
+
+        else: 
+            curTarget.drawTarget(imgPlayer, -1, "targets") #draws the current target the user needs to hit
+            cv2.putText(imgPlayer, "score: " + str(score), (800,100), cv2.FONT_HERSHEY_SIMPLEX,3, (255,255,255), 3) #shows the current score while the user is playing
+            cv2.putText(imgPlayer, "Time Remaining: " + str(max(round(30 - (curTime - startTime), 2), 0)) + "s", (1500, 300), cv2.FONT_HERSHEY_SIMPLEX,1, (255,255,255), 3) #shows how much time the user has left
+
 
     elif scene == "menu": 
         for i, tar in enumerate(menu_options):
@@ -384,9 +474,9 @@ while True:
             else: 
                 tar.radius = rad
 
-            tar.drawTarget(imgPlayer, i, "menu")
+            tar.drawTarget(imgPlayer, i, "menu") #draws each target in the main menu screen
 
-        imgPlayer[100:100+logo_h, 30:30+logo_w, :] = logo
+        imgPlayer[100:100+logo_h, 30:30+logo_w, :] = logo # draws logo on screen
 
     elif scene == "reaction": 
 
@@ -396,19 +486,19 @@ while True:
         if reactionTime == 0: 
 
             if curTime < delay: 
-                imgPlayer[:] = (0, 0, 255)
-                cv2.putText(imgPlayer, "Wait", (800,600), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
+                imgPlayer[:] = (0, 0, 255) #turns whole screen red
+                cv2.putText(imgPlayer, "Wait", (800,600), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws wait
             else: 
-                imgPlayer[:] = (0, 255, 0)
-                cv2.putText(imgPlayer, "Punch", (750,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
+                imgPlayer[:] = (0, 255, 0) #turns whole screen green
+                cv2.putText(imgPlayer, "Punch", (750,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws punch
 
         else: 
-            imgPlayer[:] = (255, 0, 0)
-            cv2.putText(imgPlayer, str(reactionTime) + "s", (720,300), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
+            imgPlayer[:] = (255, 0, 0) #turns whole screen blue
+            cv2.putText(imgPlayer, str(reactionTime) + "s", (720,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their reaction time
 
-            for i, tar in enumerate(reaction_options):
+            for i, tar in enumerate(end_options):
 
-                tar.drawTarget(imgPlayer, i, "reaction")
+                tar.drawTarget(imgPlayer, i, "end") #draw the end navigation targets allowing the user to either go back to main menu or retry
 
     
     elif scene == "camera": 
@@ -425,9 +515,9 @@ while True:
             inAreaTime = time.time()
             col = (0, 0, 255)
 
-        cv2.putText(img, "place arms straight by your side", (470,100), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5)
-        cv2.putText(img, "move so that all blue points lie within the box", (200,200), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5)
-        img = cv2.rectangle(img, (b1x, b1y), (b2x, b2y), col, 5)
+        cv2.putText(img, "place arms straight by your side", (470,100), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5) #draws instructions
+        cv2.putText(img, "move so that all blue points lie within the box", (200,200), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5) #draws instructions
+        img = cv2.rectangle(img, (b1x, b1y), (b2x, b2y), col, 5) # draws the rectangle the user needs to be within
 
         if curTime - inAreaTime > 1: 
             scene = "menu"
@@ -438,15 +528,16 @@ while True:
 
         if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
             reactionTime = round(curTime - delay, 2)
+            lTargetReset = False
 
         lPunches += 1
 
     if rState == "punch" and rPrevState == "none": 
         if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
             reactionTime = round(curTime - delay, 2)
+            rTargetReset = False
 
         rPunches += 1
-
     
     elif scene == "exit": 
         break
@@ -459,9 +550,11 @@ while True:
     #imgPlayer[720:1080, 0:640, :] = img
     
     if scene != "camera": 
+        #draws the circles representing the players hands
         cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, lColour, cv2.FILLED)
         cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, rColour, cv2.FILLED)
 
+    #draw the image
     cv2.imshow("Image Player", imgPlayer)
 
     lPrevState = lState
