@@ -11,20 +11,20 @@ class Target:
         self.x = x
         self.y = y
     
-    def drawTarget(self, img, menu): 
-        if (self.hand == 1 or self.hand == 2) and menu == -1: 
+    def drawTarget(self, img, index, scene): 
+        if scene == "targets": 
             color = [0, (0, 170, 255), (191, 191, 0)]
             cv2.circle(img, (self.x, self.y), self.radius, color[self.hand], cv2.FILLED)
             cv2.circle(img, (self.x, self.y), int(self.radius * 2 / 3), (255, 255, 255), cv2.FILLED)
             cv2.circle(img, (self.x, self.y), int(self.radius / 3), color[self.hand], cv2.FILLED)
 
-        else: 
+        elif scene == "menu": 
             text = ["Targets", "Reaction", "Camera", "exit", "vol"]
 
             xDev = 70
             yDev = 20
 
-            if menu > 2: 
+            if index > 2: 
                 xDev = 20
                 yDev = 0
 
@@ -32,8 +32,22 @@ class Target:
             cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5)
 
 
-            cv2.putText(img, text[menu], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 3)
+            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 3)
+        
+        elif scene == "reaction": 
+            text = ["Retry", "Return to Menu"]
 
+            if index == 0: 
+                xDev = 40
+            else: 
+                xDev = 115
+            
+            yDev = 20
+
+
+            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5)
+            
+            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 2)
 
 
 def slope(land1, land2):
@@ -79,8 +93,9 @@ rPunches = 0
 lState = ""
 rState = ""
 
-lPrevState = ""
-rPrevState = ""
+lPrevStates = []
+rPrevStates = []
+sLength = 5
 
 lTargetReset = True
 rTargetReset = True
@@ -134,6 +149,11 @@ menu_strings = ["targets", "reaction", "camera", "exit", "vol"]
 menu_hover_l = [False, False, False, False, False]
 menu_hover_r = [False, False, False, False, False]
 
+opt_replay = Target(0, int(w/2 - 200), 500, rad1)
+opt_return = Target(0, int(w/2 + 200), 500, rad1)
+
+reaction_options = [opt_replay, opt_return]
+
 #main loop
 while True:
     inArea = True
@@ -153,7 +173,7 @@ while True:
 
     lm = results.pose_landmarks.landmark[11:17] + results.pose_landmarks.landmark[19:21]
 
-    error = int(w / 15)
+    error = int(w / 13)
 
 
     for lm in lm:
@@ -217,7 +237,6 @@ while True:
                         lColour = (0, 255, 0)
                         lTargetReset = False
                         lAfterPunchT = curTime
-                        score += 1
                         
                         scene = menu_strings[i]
 
@@ -232,6 +251,23 @@ while True:
                         lTargetReset = False
                         lAfterPunchT = curTime
                         score += 1
+        
+        elif scene == "reaction" and reactionTime != 0: 
+            for i, tar in enumerate(reaction_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius and lTargetReset: 
+                    if(curTime - lAfterPunchT > 0.3):
+                        lColour = (0, 255, 0)
+                        lTargetReset = False
+                        lAfterPunchT = curTime
+                        
+                        if i == 0: 
+                            prevScene = ""
+                            reactionTime = 0
+                        
+                        else: 
+                            reactionTime = 0
+                            scene = "menu"
 
 
     else: 
@@ -261,20 +297,38 @@ while True:
                         rColour = (0, 255, 0)
                         rTargetReset = False
                         rAfterPunchT = curTime
-                        score += 1
                     
-
                         scene = menu_strings[i]
 
-        if curTarget.hand == 2: 
-            if curTarget.x - curTarget.radius < rInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < rInd.y*h < curTarget.y + curTarget.radius and rTargetReset and curTime - startTime < 30: 
-                
-                if(curTime - lAfterPunchT > 0.3):
-                    curTarget = createTarget(w, h)
-                    rColour = (0, 255, 0)
-                    rTargetReset = False
-                    rAfterPunchT = curTime
-                    score += 1
+        elif scene == "targets": 
+            if curTarget.hand == 2: 
+                if curTarget.x - curTarget.radius < rInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < rInd.y*h < curTarget.y + curTarget.radius and rTargetReset and curTime - startTime < 30: 
+                    
+                    if(curTime - lAfterPunchT > 0.3):
+                        curTarget = createTarget(w, h)
+                        rColour = (0, 255, 0)
+                        rTargetReset = False
+                        rAfterPunchT = curTime
+                        score += 1
+        
+        elif scene == "reaction" and reactionTime != 0: 
+            for i, tar in enumerate(reaction_options): 
+
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius and rTargetReset: 
+                    if(curTime - lAfterPunchT > 0.3):
+                        rColour = (0, 255, 0)
+                        rTargetReset = False
+                        rAfterPunchT = curTime
+                        
+                        if i == 0: 
+                            prevScene = ""
+                            reactionTime = 0
+                        
+                        else: 
+                            reactionTime = 0
+                            scene = "menu"
+            
+            #delay = curTime + 1
 
     else: 
         rHandSize = 20
@@ -288,11 +342,6 @@ while True:
                     menu_hover_r[i] = True
                 else:
                     menu_hover_r[i] = False
-                    
-                    
-
-
-
 
     if(curTime - lAfterPunchT > 0.3): lColour = (0, 170, 255)
     if(curTime - rAfterPunchT > 0.3): rColour = (191, 191, 0)
@@ -303,23 +352,23 @@ while True:
 
     cv2.putText(imgPlayer, "punches: " + str(lPunches), (1400,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
     cv2.putText(imgPlayer, "punches: " + str(rPunches), (1650,100), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
-    '''
 
     if lState == "punch" and lPrevState == "none": 
 
-        if curTime > delay and delay != 0: 
+        if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
             reactionTime = round(curTime - delay, 2)
 
         lPunches += 1
 
     if rState == "punch" and rPrevState == "none": 
-        if curTime > delay and delay != 0: 
+        if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
             reactionTime = round(curTime - delay, 2)
 
         rPunches += 1
+    '''
     
     if scene == "targets": 
-        curTarget.drawTarget(imgPlayer, -1)
+        curTarget.drawTarget(imgPlayer, -1, "targets")
         cv2.putText(imgPlayer, "score: " + str(score), (800,100), cv2.FONT_HERSHEY_SIMPLEX,3, (255,255,255), 3)
         cv2.putText(imgPlayer, "Time Remaining: " + str(max(round(30 - (curTime - startTime), 2), 0)) + "s", (1500, 300), cv2.FONT_HERSHEY_SIMPLEX,1, (255,255,255), 3)
 
@@ -335,10 +384,12 @@ while True:
             else: 
                 tar.radius = rad
 
-            tar.drawTarget(imgPlayer, i)
+            tar.drawTarget(imgPlayer, i, "menu")
 
         imgPlayer[100:100+logo_h, 30:30+logo_w, :] = logo
+
     elif scene == "reaction": 
+
         if scene != prevScene: 
             delay = round(time.time() + (random.random() * 5 + 1), 2)
         
@@ -353,7 +404,12 @@ while True:
 
         else: 
             imgPlayer[:] = (255, 0, 0)
-            cv2.putText(imgPlayer, str(reactionTime) + "s", (650,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
+            cv2.putText(imgPlayer, str(reactionTime) + "s", (720,300), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10)
+
+            for i, tar in enumerate(reaction_options):
+
+                tar.drawTarget(imgPlayer, i, "reaction")
+
     
     elif scene == "camera": 
 
@@ -378,6 +434,19 @@ while True:
 
         imgPlayer = img
 
+    if lState == "punch" and lPrevState == "none": 
+
+        if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
+            reactionTime = round(curTime - delay, 2)
+
+        lPunches += 1
+
+    if rState == "punch" and rPrevState == "none": 
+        if curTime > delay and delay != 0 and reactionTime == 0 and scene == "reaction": 
+            reactionTime = round(curTime - delay, 2)
+
+        rPunches += 1
+
     
     elif scene == "exit": 
         break
@@ -388,6 +457,7 @@ while True:
     #img = cv2.resize(img, (640, 360))
 
     #imgPlayer[720:1080, 0:640, :] = img
+    
     if scene != "camera": 
         cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, lColour, cv2.FILLED)
         cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, rColour, cv2.FILLED)
