@@ -13,9 +13,9 @@ class Target:
     
     def drawTarget(self, img): 
         if self.hand == 1: 
-            color = (255, 0, 0)
+            color = (0, 170, 255)
         else:
-            color = (0, 0, 255)
+            color = (191, 191, 0)
 
         cv2.circle(img, (self.x, self.y), self.radius, color, 5)
         cv2.putText(img, str(self.hand), (self.x-50, self.y+40), cv2.FONT_HERSHEY_SIMPLEX,5, color, 3)
@@ -31,10 +31,10 @@ def createTarget(w, h):
     randHand = random.randint(1, 2)
 
     if randHand == 1: 
-        randX = random.randint(w/2-500, w/2+500)
+        randX = random.randint(w/2-100, w/2+500)
         randY = random.randint(300, h/2-200)
     else: 
-        randX = random.randint(w/2-500, w/2+500)
+        randX = random.randint(w/2-500, w/2+100)
         randY = random.randint(300, h/2-200)
 
     tar = Target(randHand, randX, randY, 150)
@@ -72,6 +72,12 @@ curTarget = createTarget(w, h)
 
 lHandSize = 20
 rHandSize = 20
+
+lColour = (0, 170, 255)
+rColour = (191, 191, 0)
+
+lAfterPunchT = 0
+rAfterPunchT = 0
 
 #main loop
 while True:
@@ -137,14 +143,18 @@ while True:
     cv2.putText(imgPlayer, "slope 2 right: " + str(rSlope2), (50,350), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
 
     if (abs(lSlope1 - lSlope2) < 1 or (abs(lShould.x*w - lElb.x*w) < error and abs(lShould.y*h - lElb.y*h) < error)) and lWrist.y*h <= h/2: 
-        lHandSize = 40
+        lHandSize = 50
         lState = "punch"
 
         if curTarget.hand == 1: 
             if curTarget.x - curTarget.radius < lInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < lInd.y*h < curTarget.y + curTarget.radius and lTargetReset and curTime - startTime < 30: 
-                curTarget = createTarget(w, h)
-                lTargetReset = False
-                score += 1
+                
+                if(curTime - lAfterPunchT > 0.3):
+                    curTarget = createTarget(w, h)
+                    lColour = (0, 255, 0)
+                    lTargetReset = False
+                    lAfterPunchT = curTime
+                    score += 1
 
     else: 
         lHandSize = 20
@@ -152,18 +162,28 @@ while True:
         lState = "none"
 
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= h/2: 
-        rHandSize = 40
+        rHandSize = 50
         rState = "punch"
 
         if curTarget.hand == 2: 
             if curTarget.x - curTarget.radius < rInd.x*w < curTarget.x + curTarget.radius and curTarget.y - curTarget.radius < rInd.y*h < curTarget.y + curTarget.radius and rTargetReset and curTime - startTime < 30: 
-                curTarget = createTarget(w, h)
-                rTargetReset = False
-                score += 1
+                
+                if(curTime - lAfterPunchT > 0.3):
+                    curTarget = createTarget(w, h)
+                    rColour = (0, 255, 0)
+                    rTargetReset = False
+                    rAfterPunchT = curTime
+                    score += 1
+
     else: 
         rHandSize = 20
         rTargetReset = True
         rState = "none"
+
+
+    if(curTime - lAfterPunchT > 0.3): lColour = (0, 170, 255)
+    if(curTime - rAfterPunchT > 0.3): rColour = (191, 191, 0)
+
 
     cv2.putText(imgPlayer, "left: " + lState, (1400,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
     cv2.putText(imgPlayer, "right: " + rState, (1650,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
@@ -181,8 +201,9 @@ while True:
     if rState == "punch" and rPrevState == "none": 
         rPunches += 1
     
-    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, (255, 0, 0), cv2.FILLED)
-    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, (0, 0, 255), cv2.FILLED)
+
+    cv2.circle(imgPlayer, (int(lInd.x*w), int(lInd.y*h)), lHandSize, lColour, cv2.FILLED)
+    cv2.circle(imgPlayer, (int(rInd.x*w), int(rInd.y*h)), rHandSize, rColour, cv2.FILLED)
 
     curTarget.drawTarget(imgPlayer)
 
