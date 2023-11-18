@@ -3,6 +3,7 @@ import mediapipe as mp
 import time
 import random
 import numpy as np
+
 '''
 To-Do list
 
@@ -161,6 +162,8 @@ opt_return = Target(0, int(w/2 + 300), 500, rad1)
 end_options = [opt_replay, opt_return]
 
 opt_delay = -1
+
+isTooEarly = False
 
 #main loop
 while True:
@@ -325,6 +328,7 @@ while True:
                 else:
                     menu_hover_l[i] = False
     
+
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= 600: 
         rPrevStates.append("punch")
     else: 
@@ -478,24 +482,51 @@ while True:
 
         imgPlayer[100:100+logo_h, 30:30+logo_w, :] = logo # draws logo on screen
 
+    
     elif scene == "reaction": 
 
         if scene != prevScene: 
             delay = round(time.time() + (random.random() * 5 + 1), 2)
-        
+
+        if isTooEarly:
+            curTime = 0
+            
+            if lPrevState == "none" and lState == "punch":
+                delay = round(time.time() + (random.random() * 5 + 2), 2)
+                isTooEarly = False
+
+            if rPrevState == "none" and rState == "punch":
+                delay = round(time.time() + (random.random() * 5 + 2), 2)
+                isTooEarly = False
+
         if reactionTime == 0: 
 
             if curTime < delay: 
-                imgPlayer[:] = (0, 0, 255) #turns whole screen red
-                cv2.putText(imgPlayer, "Wait", (800,600), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws wait
+                
+                if not isTooEarly and curTime > 1 and prevScene == "reaction":
+                    if lState == "punch" and lPrevState == "none":
+                        isTooEarly = True
+
+                    if rState == "punch" and rPrevState == "none":
+                        isTooEarly = True
+
+                if not isTooEarly:
+                    imgPlayer[:] = (0, 0, 255) #turns whole screen red
+                    cv2.putText(imgPlayer, "Wait", (800,600), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws wait
+
+                else:
+                    imgPlayer[:] = (255, 0, 0) #blue screen (too soon)
+                    cv2.putText(imgPlayer, "Too Soon!", (600,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws wait
+                    cv2.putText(imgPlayer, "Punch anywhere to try again.", (300,700), cv2.FONT_HERSHEY_SIMPLEX, 3, (255,255,255), 10)
+            
             else: 
                 imgPlayer[:] = (0, 255, 0) #turns whole screen green
                 cv2.putText(imgPlayer, "Punch", (750,500), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #draws punch
-
+       
         else: 
             imgPlayer[:] = (255, 0, 0) #turns whole screen blue
             cv2.putText(imgPlayer, str(reactionTime) + "s", (720,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their reaction time
-
+            
             for i, tar in enumerate(end_options):
 
                 tar.drawTarget(imgPlayer, i, "end") #draw the end navigation targets allowing the user to either go back to main menu or retry
