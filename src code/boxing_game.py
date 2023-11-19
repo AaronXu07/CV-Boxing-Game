@@ -31,7 +31,7 @@ class Target:
             cv2.circle(img, (self.x, self.y), int(self.radius / 3), color[self.hand], cv2.FILLED) # draws most inner circle of target
 
         elif scene == "menu": 
-            text = ["Targets", "Reaction", "Camera", "Exit", "Volume"]
+            text = ["Targets", "Reaction", "Camera", " Exit", "Volume"]
 
             xDev = 70
             yDev = 20
@@ -45,6 +45,19 @@ class Target:
         
         elif scene == "end": 
             text = ["Retry", "Return to Menu"]
+
+            if index == 0: 
+                xDev = 40
+            else: 
+                xDev = 115
+            
+            yDev = 20
+
+            cv2.circle(img, (self.x, self.y), self.radius, (255, 255, 255), 5) #draws the target for the 2 options after the targets and reaction modes are finished to either navigate back to menu or redo the current mode
+            cv2.putText(img, text[index], (self.x-xDev, self.y+yDev), cv2.FONT_HERSHEY_SIMPLEX,1, (255, 255, 255), 2) #draws the text on each target
+
+        elif scene == "volume":
+            text = ["Increase", "   Decrease", "   Menu"]
 
             if index == 0: 
                 xDev = 40
@@ -158,7 +171,7 @@ opt_exit = Target(0, 1550, 400, rad1)
 
 
 menu_options = [opt_targets, opt_reaction, opt_camera, opt_exit, opt_vol]
-menu_strings = ["targets", "reaction", "camera", "exit", "vol"]
+menu_strings = ["targets", "reaction", "camera", "exit", "volume"]
 menu_hover_l = [False, False, False, False, False]
 menu_hover_r = [False, False, False, False, False]
 
@@ -172,19 +185,32 @@ opt_replay = Target(0, int(w/2 - 300), 500, rad1+30)
 opt_return = Target(0, int(w/2 + 300), 500, rad1+30)
 
 end_options = [opt_replay, opt_return]
+end_hover_l = [False, False]
+end_hover_r = [False, False]
 
 opt_delay = -1
 
 isTooEarly = False
 
-curVol = 0.5
+curVol = 5
 
 #SOUND EFFECTS
 checkCameraSound = pygame.mixer.Sound("positivebeep-sfx.mp3")
 hoverSound = pygame.mixer.Sound("hover-sfx.mp3")
 punchSound = pygame.mixer.Sound("punch-sfx.mp3")
+targetSound = pygame.mixer.Sound("targetbreak.mp3")
 
 volColours = [(0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)]
+
+opt_increase = Target(0, 550, 450, rad1)
+opt_decrease = Target(0, 950, 450, rad1)
+opt_return = Target(0, 1300, 450, rad1)
+
+vol_options = [opt_increase, opt_decrease, opt_return]
+vol_strings = ["+", "-", "Menu"]
+vol_hover_l = [False, False, False]
+vol_hover_r = [False, False, False]
+
 
 #main loop
 while True:
@@ -247,9 +273,10 @@ while True:
     rSlope2 = slope(rElb, rWrist)
 
     #SET VOLUME
-    checkCameraSound.set_volume(curVol)
-    punchSound.set_volume(curVol)
-    hoverSound.set_volume(curVol)
+    checkCameraSound.set_volume(curVol/10)
+    punchSound.set_volume(curVol/10)
+    hoverSound.set_volume(curVol/10)
+    targetSound.set_volume(curVol/10)
 
     #shows user their fps
     cv2.putText(imgPlayer, "fps: " + str(int(fps)), (50,50), cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255), 3)
@@ -307,6 +334,7 @@ while True:
                         lColour = (0, 255, 0)
                         lTargetReset = False
                         lAfterPunchT = curTime
+                        pygame.mixer.Sound.play(targetSound)
                         score += 1
                 
                 if curTime - startTime > 30: 
@@ -345,6 +373,27 @@ while True:
                             reactionTime = 0
                             scene = "menu"
 
+
+        elif scene == "volume": 
+            for i, tar in enumerate(vol_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius and lTargetReset: 
+                    if(curTime - lAfterPunchT > 0.3):
+                        lColour = (0, 255, 0)
+                        lTargetReset = False
+                        lAfterPunchT = curTime
+                        
+                        if lPrevState == "none" and lState == "punch":
+                            if vol_strings[i] == "+" and curVol < 10:
+                                curVol+=1
+                        
+                            if vol_strings[i] == "-" and curVol > 0:
+                                curVol-=1
+                        
+                            if vol_strings[i] == "Menu" and curVol > 0:
+                                scene = "menu"
+                        
+
     else: 
         lHandSize = 20
         lTargetReset = True
@@ -357,6 +406,33 @@ while True:
 
                 else:
                     menu_hover_l[i] = False
+
+        if scene == "volume": 
+            for i, tar in enumerate(vol_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius: 
+                    vol_hover_l[i] = True
+
+                else:
+                    vol_hover_l[i] = False
+
+        if scene == "targets": 
+            for i, tar in enumerate(end_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius: 
+                    end_hover_l[i] = True
+
+                else:
+                    end_hover_l[i] = False
+
+        if scene == "reaction": 
+            for i, tar in enumerate(end_options): 
+
+                if tar.x - tar.radius < lInd.x*w < tar.x + tar.radius and tar.y - tar.radius < lInd.y*h < tar.y + tar.radius: 
+                    end_hover_l[i] = True
+
+                else:
+                    end_hover_l[i] = False
 
 
     if (abs(rSlope1 - rSlope2) < 1 or (abs(rShould.x*w - rElb.x*w) < error and abs(rShould.y*h - rElb.y*h) < error)) and rWrist.y*h <= 600: 
@@ -373,7 +449,7 @@ while True:
     elif rPrevStates.count("none") == len(rPrevStates): 
         rState = "none"
 
-    if rPrevState == "none" and rState == "punch":
+    if rPrevState == "none" and rState == "punch" and scene!="camera":
         pygame.mixer.Sound.play(punchSound)
 
     if rState == "punch": 
@@ -404,6 +480,7 @@ while True:
                         rColour = (0, 255, 0)
                         rTargetReset = False
                         rAfterPunchT = curTime
+                        pygame.mixer.Sound.play(targetSound)
                         score += 1
 
             if curTime - startTime > 30: 
@@ -445,6 +522,25 @@ while True:
             
             #delay = curTime + 1
 
+        elif scene == "volume": 
+            for i, tar in enumerate(vol_options): 
+
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius and rTargetReset: 
+                    if(curTime - rAfterPunchT > 0.3):
+                        rColour = (0, 255, 0)
+                        rTargetReset = False
+                        rAfterPunchT = curTime
+                        
+                        if rPrevState == "none" and rState == "punch":
+                            if vol_strings[i] == "+" and curVol < 10:
+                                curVol+=1
+                        
+                            if vol_strings[i] == "-" and curVol > 0:
+                                curVol-=1
+                        
+                            if vol_strings[i] == "Menu" and curVol > 0:
+                                scene = "menu"
+
     else: 
         rHandSize = 20
         rTargetReset = True
@@ -456,8 +552,34 @@ while True:
                     menu_hover_r[i] = True  
                 else:
                     menu_hover_r[i] = False
-                    
+        
+        if scene == "volume": 
+            for i, tar in enumerate(vol_options): 
 
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius: 
+                    vol_hover_r[i] = True
+
+                else:
+                    vol_hover_r[i] = False
+
+        if scene == "targets": 
+            for i, tar in enumerate(end_options): 
+
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius: 
+                    end_hover_r[i] = True
+
+                else:
+                    end_hover_r[i] = False
+
+        if scene == "reaction": 
+            for i, tar in enumerate(end_options): 
+
+                if tar.x - tar.radius < rInd.x*w < tar.x + tar.radius and tar.y - tar.radius < rInd.y*h < tar.y + tar.radius: 
+                    end_hover_r[i] = True
+
+                else:
+                    end_hover_r[i] = False
+                    
     if(curTime - lAfterPunchT > 0.3): lColour = (0, 170, 255)
     if(curTime - rAfterPunchT > 0.3): rColour = (191, 191, 0)
 
@@ -491,8 +613,23 @@ while True:
             cv2.putText(imgPlayer, "score: " + str(score), (650,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their final score after 30 seconds has finished
 
             for i, tar in enumerate(end_options):
+                rad = rad1+30
 
-                tar.drawTarget(imgPlayer, i, "end") #draws the targets for the navigation to either head back to the main menu or retry
+                if end_hover_l[i] or end_hover_r[i]:
+                    tar.radius = rad + 10
+                    hoverI = i
+                else: 
+                    tar.radius = rad
+
+                tar.drawTarget(imgPlayer, i, "end") #draws each target in the main menu screen
+
+            if(end_hover_l[hoverI] or end_hover_r[hoverI]):
+                isHover = True
+            else:
+                isHover = False
+            
+            if(not previsHover and isHover):
+                pygame.mixer.Sound.play(hoverSound)
 
         else: 
             curTarget.drawTarget(imgPlayer, -1, "targets") #draws the current target the user needs to hit
@@ -574,8 +711,23 @@ while True:
             cv2.putText(imgPlayer, str(reactionTime) + "s", (720,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their reaction time
             
             for i, tar in enumerate(end_options):
+                rad = rad1+30
 
-                tar.drawTarget(imgPlayer, i, "end") #draw the end navigation targets allowing the user to either go back to main menu or retry
+                if end_hover_l[i] or end_hover_r[i]:
+                    tar.radius = rad + 10
+                    hoverI = i
+                else: 
+                    tar.radius = rad
+
+                tar.drawTarget(imgPlayer, i, "end") #draws each target in the main menu screen
+
+            if(end_hover_l[hoverI] or end_hover_r[hoverI]):
+                isHover = True
+            else:
+                isHover = False
+            
+            if(not previsHover and isHover):
+                pygame.mixer.Sound.play(hoverSound)
 
     
     elif scene == "camera": 
@@ -591,6 +743,11 @@ while True:
 
             inAreaTime = time.time()
             col = (0, 0, 255)
+
+        if prevScene != "camera":
+            if inArea: 
+                inAreaTime = time.time()
+                col = (0, 255, 0)
 
         cv2.putText(img, "place arms straight by your side", (470,100), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5) #draws instructions
         cv2.putText(img, "move so that all blue points lie within the box", (200,200), cv2.FONT_HERSHEY_SIMPLEX,2, (255,255,255), 5) #draws instructions
@@ -621,19 +778,52 @@ while True:
         break
 
     elif scene == "volume": 
-        """
-        cv2.rect(imgPlayer, (300,700), (350, 750), volColours[0], -1)
-        cv2.rect(imgPlayer, (360,700), (410, 750), volColours[1], -1)
-        cv2.rect(imgPlayer, (420,700), (470, 750), volColours[2], -1)
-        cv2.rect(imgPlayer, (480,700), (530, 750), volColours[3], -1)
-        cv2.rect(imgPlayer, (540,700), (590, 750), volColours[4], -1)
-        cv2.rect(imgPlayer, (600,700), (650, 750), volColours[5], -1)
-        cv2.rect(imgPlayer, (660,700), (710, 750), volColours[6], -1)
-        cv2.rect(imgPlayer, (720,700), (770, 750), volColours[7], -1)
-        cv2.rect(imgPlayer, (780,700), (830, 750), volColours[8], -1)
-        cv2.rect(imgPlayer, (840,700), (890, 750), volColours[9], -1)
-        """
-        pass
+        
+        for i, tar in enumerate(vol_options):
+            if i <= 4: 
+                rad = rad1
+            else:
+                rad = rad2
+
+            if vol_hover_l[i] or vol_hover_r[i]:
+                tar.radius = rad + 10
+                hoverI = i
+            else: 
+                tar.radius = rad
+
+            tar.drawTarget(imgPlayer, i, "volume") #draws each target in the main menu screen
+
+        if(vol_hover_l[hoverI] or vol_hover_r[hoverI]):
+            isHover = True
+        else:
+            isHover = False
+        
+        if(not previsHover and isHover):
+            pygame.mixer.Sound.play(hoverSound)
+
+
+        cv2.rectangle(imgPlayer, (640,680), (1270, 770), (255, 255, 255), 3)
+
+
+        for i in range(curVol):
+            volColours[i] = (255, 255, 255)
+
+        for i in range(10-curVol):
+            volColours[i+curVol] = (0, 0, 0)
+
+
+        cv2.rectangle(imgPlayer, (660,700), (710, 750), volColours[0], -1)
+        cv2.rectangle(imgPlayer, (720,700), (770, 750), volColours[1], -1)
+        cv2.rectangle(imgPlayer, (780,700), (830, 750), volColours[2], -1)
+        cv2.rectangle(imgPlayer, (840,700), (890, 750), volColours[3], -1)
+        cv2.rectangle(imgPlayer, (900,700), (950, 750), volColours[4], -1)
+        cv2.rectangle(imgPlayer, (960,700), (1010, 750), volColours[5], -1)
+        cv2.rectangle(imgPlayer, (1020,700), (1070, 750), volColours[6], -1)
+        cv2.rectangle(imgPlayer, (1080,700), (1130, 750), volColours[7], -1)
+        cv2.rectangle(imgPlayer, (1140,700), (1190, 750), volColours[8], -1)
+        cv2.rectangle(imgPlayer, (1200,700), (1250, 750), volColours[9], -1)
+        
+        
     #img = cv2.resize(img, (640, 360))
 
     #imgPlayer[720:1080, 0:640, :] = img
