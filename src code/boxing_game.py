@@ -82,7 +82,7 @@ mpPose = mp.solutions.pose
 pose = mpPose.Pose()
 mpDraw = mp.solutions.drawing_utils
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 logo = cv2.imread("Logo.png", cv2.IMREAD_COLOR)
 logo_h, logo_w, c = logo.shape
@@ -705,6 +705,7 @@ while True:
             else: 
                 imgPlayer[:] = (255, 0, 0) #turns whole screen blue
                 cv2.putText(imgPlayer, str(reactionTime) + "s", (720,150), cv2.FONT_HERSHEY_SIMPLEX,5, (255,255,255), 10) #shows user their reaction time
+                hoverI = 0
                 
                 for i, tar in enumerate(end_options):
                     rad = rad1+30
@@ -774,6 +775,7 @@ while True:
             break
 
         elif scene == "volume": 
+            hoverI = 0
             
             for i, tar in enumerate(vol_options):
                 if i <= 4: 
