@@ -1,18 +1,20 @@
 import { useEffect, useRef } from 'react'
 import './App.css'
+import { initPoseLandmarker } from './mediapipe/poseLandmarker'
+import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 
 function App() {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
+  const poseLandmarkRef = useRef(null)
+  let rafId = useRef(null)
 
   useEffect(() => {
     let stream = null
 
-    let rafId = null
-
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+        stream = await navigator.mediaDevices.getUserMedia({ video: true })
         if (videoRef.current) {
           videoRef.current.srcObject = stream
 
@@ -28,48 +30,56 @@ function App() {
             console.warn('video.play() failed or is deferred:', playErr)
           }
 
-          // When the video starts playing, begin drawing frames into the canvas
-          const onPlay = () => {
-            const canvas = canvasRef.current
-            if (!canvas) return
-            const ctx = canvas.getContext('2d')
+          poseLandmarkRef.current = await initPoseLandmarker()
+          console.log('PoseLandmarker loaded')
 
-            // Ensure canvas pixel size matches the actual video frames
-            const vw = videoRef.current.videoWidth || 640
-            const vh = videoRef.current.videoHeight || 480
-            if (canvas.width !== vw || canvas.height !== vh) {
-              canvas.width = vw
-              canvas.height = vh
-              console.log('canvas resized to', vw, vh)
-            }
+          const canvas = canvasRef.current
+          if (!canvas) return
+          const ctx = canvas.getContext('2d')
+          const drawingUtils = new DrawingUtils(ctx)
 
-            // Draw a test background so we know the canvas is being updated
-            ctx.fillStyle = 'black'
-            ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-            const render = () => {
-              if (!videoRef.current) return
-              if (videoRef.current.readyState >= 2) {
-                // draw the current video frame to the canvas
-                try {
-                  ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
-                } catch (err) {
-                  // drawImage can throw if video not ready; log for debugging
-                  console.warn('drawImage failed:', err)
-                }
-              } else {
-                // not enough data yet — paint a subtle indicator
-                ctx.fillStyle = '#111'
-                ctx.fillRect(0, 0, canvas.width, canvas.height)
-              }
-              rafId = requestAnimationFrame(render)
-            }
-
-            // kick off the render loop
-            if (!rafId) render()
+          // Ensure canvas pixel size matches the actual video frames
+          const vw = videoRef.current.videoWidth || 640
+          const vh = videoRef.current.videoHeight || 480
+          if (canvas.width !== vw || canvas.height !== vh) {
+            canvas.width = vw
+            canvas.height = vh
+            console.log('canvas resized to', vw, vh)
           }
 
-          videoRef.current.addEventListener('play', onPlay, { once: true })
+          // Draw a test background so we know the canvas is being updated
+          ctx.fillStyle = 'black'
+          ctx.fillRect(0, 0, canvas.width, canvas.height); 
+
+          const processFrame = async () => {
+            if (!videoRef.current || !poseLandmarkRef.current) return
+            if (videoRef.current.readyState >= 2) {
+              const startTimeMS = performance.now()
+              let results = null
+              try {
+                results = await poseLandmarkRef.current.detectForVideo(videoRef.current, startTimeMS)
+              } catch (err) {
+                console.error('Pose detection failed:', err)
+              }
+
+              ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+              if (results && results.landmarks) {
+                for (let i = 0; i < results.landmarks.length; i++) {
+                  drawingUtils.drawLandmarks(results.landmarks[i])
+                  drawingUtils.drawConnectors(results.landmarks[i], PoseLandmarker.POSE_CONNECTIONS)
+                }
+              }
+            }
+          }
+
+          const render = async () => {
+            await processFrame()
+            rafId.current = requestAnimationFrame(render)
+          }
+
+          // kick off the render loop
+          render()
+          
         }
       } catch (err) {
         console.error('Error accessing webcam:', err)
@@ -83,7 +93,7 @@ function App() {
       if (stream) {
         stream.getTracks().forEach((t) => t.stop())
       }
-      if (rafId) cancelAnimationFrame(rafId)
+      if (rafId.current) cancelAnimationFrame(rafId.current)
     }
   }, [])
 
@@ -97,3 +107,5 @@ function App() {
 }
 
 export default App
+
+
