@@ -16,7 +16,12 @@ function App() {
 
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          } 
+        })
         if (videoRef.current) {
           videoRef.current.srcObject = stream
 
@@ -41,8 +46,8 @@ function App() {
           const drawingUtils = new DrawingUtils(ctx)
 
           // Ensure canvas pixel size matches the actual video frames
-          const vw = videoRef.current.videoWidth || 1280
-          const vh = videoRef.current.videoHeight || 720
+          const vw = videoRef.current.videoWidth || 1920
+          const vh = videoRef.current.videoHeight || 1080
           if (canvas.width !== vw || canvas.height !== vh) {
             canvas.width = vw
             canvas.height = vh
@@ -126,7 +131,7 @@ function App() {
     <div className="app-root">
       <h1>Punch Perfect — Webcam</h1>
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
-      <canvas id="output" ref={canvasRef} width={1280} height={720} />
+      <canvas id="output" ref={canvasRef} width={1920} height={1080} />
     </div>
   )
 }
