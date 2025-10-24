@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import './App.css'
 import { initPoseLandmarker } from './mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
+import { selectedLandmarks, selectedConnections } from './mediapipe/landmarks.js'
+import { detectPunches } from './mediapipe/detectPunches.js'
 
 function App() {
   const videoRef = useRef(null)
@@ -39,8 +41,8 @@ function App() {
           const drawingUtils = new DrawingUtils(ctx)
 
           // Ensure canvas pixel size matches the actual video frames
-          const vw = videoRef.current.videoWidth || 640
-          const vh = videoRef.current.videoHeight || 480
+          const vw = videoRef.current.videoWidth || 1280
+          const vh = videoRef.current.videoHeight || 720
           if (canvas.width !== vw || canvas.height !== vh) {
             canvas.width = vw
             canvas.height = vh
@@ -63,12 +65,35 @@ function App() {
               }
 
               ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+
               if (results && results.landmarks) {
                 for (let i = 0; i < results.landmarks.length; i++) {
-                  drawingUtils.drawLandmarks(results.landmarks[i])
-                  drawingUtils.drawConnectors(results.landmarks[i], PoseLandmarker.POSE_CONNECTIONS)
+                  let cur_body = results.landmarks[i]; 
+                  selectedLandmarks.forEach((lm) => {
+                    drawingUtils.drawLandmarks([cur_body[lm]], { color: 'red', fillColor: 'red', radius: 7})
+                  })
+
+                  drawingUtils.drawConnectors(cur_body, selectedConnections, { color: 'blue'})
                 }
               }
+
+              // Draw text on top of video + landmarks
+              ctx.save();
+
+              // Move origin to the right edge of the canvas
+              ctx.translate(canvas.width, 0);
+
+              // Flip horizontally
+              ctx.scale(-1, 1);
+
+              // Draw text
+              ctx.font = '20px Calibri';
+              ctx.fillStyle = 'black';
+              ctx.textAlign = 'left';
+              ctx.fillText(`FPS: ${(1000 / (performance.now() - startTimeMS)).toFixed(0)}`, 30, 100); 
+              ctx.fillText(`Punches: ${detectPunches(results.landmarks[0])}`, 30, 130); 
+
+              ctx.restore();
             }
           }
 
@@ -101,11 +126,9 @@ function App() {
     <div className="app-root">
       <h1>Punch Perfect — Webcam</h1>
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
-      <canvas id="output" ref={canvasRef} width={640} height={480} />
+      <canvas id="output" ref={canvasRef} width={1280} height={720} />
     </div>
   )
 }
 
 export default App
-
-
