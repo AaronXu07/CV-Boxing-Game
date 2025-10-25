@@ -1,14 +1,14 @@
 // selected arm landmarks
 
-export const lShoulder = 12; 
-export const lElbow = 14; 
-export const lWrist = 16; 
-export const lIndex = 20; 
+export const rShoulder = 12; 
+export const rElbow = 14; 
+export const rWrist = 16; 
+export const rIndex = 20; 
 
-export const rShoulder = 11; 
-export const rElbow = 13; 
-export const rWrist = 15; 
-export const rIndex = 19; 
+export const lShoulder = 11; 
+export const lElbow = 13; 
+export const lWrist = 15; 
+export const lIndex = 19; 
 
 export const lArm = [lShoulder, lElbow, lWrist, lIndex];
 export const rArm = [rShoulder, rElbow, rWrist, rIndex];

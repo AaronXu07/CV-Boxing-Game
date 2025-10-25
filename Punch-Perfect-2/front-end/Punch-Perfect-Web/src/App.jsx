@@ -109,8 +109,8 @@ function App() {
                   let cur_body = results.landmarks[i]; 
                   selectedLandmarks.forEach((lm) => {
                     // Check if this is a hand landmark (wrist or index finger) and a punch is detected
-                    const isLeftHand = (lm === 20); // lWrist or lIndex
-                    const isRightHand = (lm === 19); // rWrist or rIndex
+                    const isLeftHand = (lm === 19); // lWrist or lIndex
+                    const isRightHand = (lm === 20); // rWrist or rIndex
                     
                     if ((isLeftHand && punchData.leftArm) || (isRightHand && punchData.rightArm)) {
                       drawingUtils.drawLandmarks([cur_body[lm]], punchLandmarkOptions);
@@ -138,9 +138,9 @@ function App() {
                 if (punchData.leftArm && punchData.rightArm) {
                   punchText = 'Both Arms!';
                 } else if (punchData.leftArm) {
-                  punchText = 'Right Arm';
-                } else if (punchData.rightArm) {
                   punchText = 'Left Arm';
+                } else if (punchData.rightArm) {
+                  punchText = 'Right Arm';
                 }
               }
 
