@@ -58,10 +58,27 @@ function App() {
           ctx.fillStyle = 'black'
           ctx.fillRect(0, 0, canvas.width, canvas.height); 
 
+          const targetFPS = 60
+          const frameTime = 1000 / targetFPS
+          let lastFrameTime = performance.now()
+          let actualFPS = 0
+          let frameCount = 0
+          let fpsUpdateTime = performance.now()
+
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
             if (videoRef.current.readyState >= 2) {
               const startTimeMS = performance.now()
+              
+              // Calculate actual FPS
+              frameCount++
+              const timeSinceLastUpdate = startTimeMS - fpsUpdateTime
+              if (timeSinceLastUpdate >= 1000) {
+                actualFPS = Math.round((frameCount * 1000) / timeSinceLastUpdate)
+                frameCount = 0
+                fpsUpdateTime = startTimeMS
+              }
+              
               let results = null
               try {
                 results = await poseLandmarkRef.current.detectForVideo(videoRef.current, startTimeMS)
@@ -70,15 +87,39 @@ function App() {
               }
 
               ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+              
+              // Detect punches
+              const punchData = detectPunches(results.landmarks[0]);
+
+              const connectorDrawingOptions = {
+                color: '#0059ffff',
+                lineWidth: 10,
+              };
+              const landmarkDrawingOptions = {
+                fillColor: '#ff0000ff',
+                radius: 15,
+              };
+              const punchLandmarkOptions = {
+                fillColor: '#00ff00ff',
+                radius: 45,
+              };
 
               if (results && results.landmarks) {
                 for (let i = 0; i < results.landmarks.length; i++) {
                   let cur_body = results.landmarks[i]; 
                   selectedLandmarks.forEach((lm) => {
-                    drawingUtils.drawLandmarks([cur_body[lm]], { color: 'red', fillColor: 'red', radius: 7})
+                    // Check if this is a hand landmark (wrist or index finger) and a punch is detected
+                    const isLeftHand = (lm === 20); // lWrist or lIndex
+                    const isRightHand = (lm === 19); // rWrist or rIndex
+                    
+                    if ((isLeftHand && punchData.leftArm) || (isRightHand && punchData.rightArm)) {
+                      drawingUtils.drawLandmarks([cur_body[lm]], punchLandmarkOptions);
+                    } else {
+                      drawingUtils.drawLandmarks([cur_body[lm]], landmarkDrawingOptions);
+                    }
                   })
 
-                  drawingUtils.drawConnectors(cur_body, selectedConnections, { color: 'blue'})
+                  drawingUtils.drawConnectors(cur_body, selectedConnections, connectorDrawingOptions);
                 }
               }
 
@@ -91,19 +132,38 @@ function App() {
               // Flip horizontally
               ctx.scale(-1, 1);
 
+              // Display punch info
+              let punchText = 'None';
+              if (punchData.detected) {
+                if (punchData.leftArm && punchData.rightArm) {
+                  punchText = 'Both Arms!';
+                } else if (punchData.leftArm) {
+                  punchText = 'Right Arm';
+                } else if (punchData.rightArm) {
+                  punchText = 'Left Arm';
+                }
+              }
+
               // Draw text
-              ctx.font = '20px Calibri';
+              ctx.font = '50px Calibri';
               ctx.fillStyle = 'black';
               ctx.textAlign = 'left';
-              ctx.fillText(`FPS: ${(1000 / (performance.now() - startTimeMS)).toFixed(0)}`, 30, 100); 
-              ctx.fillText(`Punches: ${detectPunches(results.landmarks[0])}`, 30, 130); 
+              ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
+              ctx.fillText(`Punch: ${punchText}`, 30, 150); 
 
               ctx.restore();
             }
           }
 
           const render = async () => {
-            await processFrame()
+            const now = performance.now()
+            const delta = now - lastFrameTime
+
+            if (delta >= frameTime) {
+              lastFrameTime = now - (delta % frameTime)
+              await processFrame()
+            }
+
             rafId.current = requestAnimationFrame(render)
           }
 
