@@ -83,12 +83,12 @@ export const detectPunches = (landmarks) => {
     rVerticalBottom = verticalDistance(landmarks[rArm[1]], landmarks[rArm[2]]);
 
 
-    const leftArmExtended = lAngle > 120; 
-    const leftArmForward = lHorizontalTop < 0.15 && lHorizontalBottom < 0.15 && lVerticalTop < 0.15 && lVerticalBottom < 0.15;
+    const leftArmExtended = lAngle > 110; 
+    const leftArmForward = lHorizontalTop < 0.13 && lHorizontalBottom < 0.13 && lVerticalTop < 0.15 && lVerticalBottom < 0.15;
     const leftPunch = leftArmForward || leftArmExtended;
 
-    const rightArmExtended = rAngle > 120; 
-    const rightArmForward = rHorizontalTop < 0.15 && rHorizontalBottom < 0.15 && rVerticalTop < 0.15 && rVerticalBottom < 0.15;
+    const rightArmExtended = rAngle > 110; 
+    const rightArmForward = rHorizontalTop < 0.13 && rHorizontalBottom < 0.13 && rVerticalTop < 0.15 && rVerticalBottom < 0.15;
     const rightPunch = rightArmForward || rightArmExtended;
 
     return {
