@@ -1,13 +1,25 @@
 import { lArm, rArm } from './landmarks.js';
 
-/*
-const slope = (landmark1, landmark2) => {
-    let yDiff = landmark2.y - landmark1.y; 
-    let xDiff = landmark2.x - landmark1.x; 
-    console.log(`yDiff: ${yDiff} xDiff: ${xDiff}`); 
-    return yDiff / xDiff; 
+const punchState = {
+    leftExtendedStartTime: null,
+    leftForwardStartTime: null,
+    rightExtendedStartTime: null,
+    rightForwardStartTime: null,
+    requiredDuration: 150 //in milliseconds
+};
+
+const punchInstant = {
+    angle: 110,
+    hDistance: 0.13,
+    vDistance: 0.15
+};
+
+const punchReturn = {
+    angle: 90,
+    punchTime: 300,
+    leftReturned: true,
+    rightReturned: true,
 }
-*/
 
 const angleBetweenSegments = (point1, joint, point2) => {
     const v1x = point1.x - joint.x;
@@ -82,14 +94,86 @@ export const detectPunches = (landmarks) => {
     rVerticalTop = verticalDistance(landmarks[rArm[0]], landmarks[rArm[1]]); 
     rVerticalBottom = verticalDistance(landmarks[rArm[1]], landmarks[rArm[2]]);
 
+    // Check instant conditions
+    const leftArmExtended = lAngle > punchInstant.angle; 
+    const leftArmForward = lHorizontalTop < punchInstant.hDistance && lHorizontalBottom < punchInstant.hDistance && lVerticalTop < punchInstant.vDistance && lVerticalBottom < punchInstant.vDistance;
+    const rightArmExtended = rAngle > punchInstant.angle; 
+    const rightArmForward = rHorizontalTop < punchInstant.hDistance && rHorizontalBottom < punchInstant.hDistance && rVerticalTop < punchInstant.vDistance && rVerticalBottom < punchInstant.vDistance;
 
-    const leftArmExtended = lAngle > 110; 
-    const leftArmForward = lHorizontalTop < 0.13 && lHorizontalBottom < 0.13 && lVerticalTop < 0.15 && lVerticalBottom < 0.15;
-    const leftPunch = leftArmForward || leftArmExtended;
+    if(lAngle <= punchReturn.angle){
+        punchReturn.leftReturned = true;
+    }
+    if(rAngle <= punchReturn.angle){
+        punchReturn.rightReturned = true;
+    }
 
-    const rightArmExtended = rAngle > 110; 
-    const rightArmForward = rHorizontalTop < 0.13 && rHorizontalBottom < 0.13 && rVerticalTop < 0.15 && rVerticalBottom < 0.15;
-    const rightPunch = rightArmForward || rightArmExtended;
+    if(leftArmExtended){
+        if (punchState.leftExtendedStartTime === null){
+            punchState.leftExtendedStartTime = performance.now();
+        }
+    } 
+    else{
+        punchState.leftExtendedStartTime = null;
+    }
+
+    if(leftArmForward){
+        if (punchState.leftForwardStartTime === null){
+            punchState.leftForwardStartTime = performance.now();
+        }
+    } 
+    else{
+        punchState.leftForwardStartTime = null;
+    }
+
+    if(rightArmExtended){
+        if (punchState.rightExtendedStartTime === null){
+            punchState.rightExtendedStartTime = performance.now();
+        }
+    } 
+    else{
+        punchState.rightExtendedStartTime = null;
+    }
+
+    if(rightArmForward){
+        if (punchState.rightForwardStartTime === null){
+            punchState.rightForwardStartTime = performance.now();
+        }
+    } 
+    else{
+        punchState.rightForwardStartTime = null;
+    }
+
+    const leftExtendedLongEnough = punchState.leftExtendedStartTime !== null && performance.now() - punchState.leftExtendedStartTime >= punchState.requiredDuration;
+    const leftForwardLongEnough = punchState.leftForwardStartTime !== null && performance.now() - punchState.leftForwardStartTime >= punchState.requiredDuration;
+    
+    const rightExtendedLongEnough = punchState.rightExtendedStartTime !== null && performance.now() - punchState.rightExtendedStartTime >= punchState.requiredDuration;
+    const rightForwardLongEnough = punchState.rightForwardStartTime !== null && performance.now() - punchState.rightForwardStartTime >= punchState.requiredDuration;
+
+    // LEFT ARM LOGIC
+    const islInstantPunch = leftExtendedLongEnough || leftForwardLongEnough;
+    
+    const lExtendedTooLong = punchState.leftExtendedStartTime !== null && performance.now() - punchState.leftExtendedStartTime >= punchReturn.punchTime;
+    const lForwardTooLong = punchState.leftForwardStartTime !== null && performance.now() - punchState.leftForwardStartTime >= punchReturn.punchTime;
+    const lPunchExpired = lExtendedTooLong || lForwardTooLong;
+
+    const leftPunch = islInstantPunch && punchReturn.leftReturned && !lPunchExpired;
+
+    if (lPunchExpired) {
+        punchReturn.leftReturned = false;
+    }
+
+    // RIGHT ARM LOGIC
+    const isrInstantPunch = rightExtendedLongEnough || rightForwardLongEnough;
+    
+    const rExtendedTooLong = punchState.rightExtendedStartTime !== null && performance.now() - punchState.rightExtendedStartTime >= punchReturn.punchTime;
+    const rForwardTooLong = punchState.rightForwardStartTime !== null && performance.now() - punchState.rightForwardStartTime >= punchReturn.punchTime;
+    const rPunchExpired = rExtendedTooLong || rForwardTooLong;
+
+    const rightPunch = isrInstantPunch && punchReturn.rightReturned && !rPunchExpired;
+
+    if (rPunchExpired) {
+        punchReturn.rightReturned = false;
+    }
 
     return {
         detected: leftPunch || rightPunch,
