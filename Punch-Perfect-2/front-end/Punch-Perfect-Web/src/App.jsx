@@ -58,12 +58,20 @@ function App() {
           ctx.fillStyle = 'black'
           ctx.fillRect(0, 0, canvas.width, canvas.height); 
 
-          const targetFPS = 60
-          const frameTime = 1000 / targetFPS
-          let lastFrameTime = performance.now()
-          let actualFPS = 0
-          let frameCount = 0
-          let fpsUpdateTime = performance.now()
+          const targetFPS = 60;
+          const frameTime = 1000 / targetFPS;
+          let lastFrameTime = performance.now();
+          let actualFPS = 0;
+          let frameCount = 0;
+          let fpsUpdateTime = performance.now();
+
+          let LpunchCounter = 0;
+          let LprevPunch;
+          let LcurPunch;
+
+          let RpunchCounter = 0;
+          let RprevPunch;
+          let RcurPunch;
 
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
@@ -144,13 +152,23 @@ function App() {
                 }
               }
 
+              if(LprevPunch && !punchData.leftArm){
+                LpunchCounter++;
+              }
+              if(RprevPunch && !punchData.rightArm){
+                RpunchCounter++;
+              }
+              LprevPunch = punchData.leftArm;
+              RprevPunch = punchData.rightArm;
+
               // Draw text
               ctx.font = '50px Calibri';
               ctx.fillStyle = 'black';
               ctx.textAlign = 'left';
               ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
               ctx.fillText(`Punch: ${punchText}`, 30, 150); 
-
+              ctx.fillText(`L Punches: ${LpunchCounter}`, 1600, 100); 
+              ctx.fillText(`R Punches: ${RpunchCounter}`, 1600, 150); 
               ctx.restore();
             }
           }
