@@ -5,7 +5,7 @@ import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision'
 import { selectedLandmarks, selectedConnections } from './mediapipe/landmarks.js'
 import { detectPunches } from './mediapipe/detectPunches.js'
 
-function App({ onRightHandPositionUpdate, onLeftHandPositionUpdate, onRightPunchUpdate, onLeftPunchUpdate }) {
+function App({ onRightHandPositionUpdate, onLeftHandPositionUpdate, onRightPunchUpdate, onLeftPunchUpdate, onWebcamDimensionsUpdate }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
@@ -52,6 +52,10 @@ function App({ onRightHandPositionUpdate, onLeftHandPositionUpdate, onRightPunch
             canvas.width = vw
             canvas.height = vh
             console.log('canvas resized to', vw, vh)
+            // Send dimensions to parent
+            if (onWebcamDimensionsUpdate) {
+              onWebcamDimensionsUpdate({ width: vw, height: vh })
+            }
           }
 
           // Draw a test background so we know the canvas is being updated
@@ -102,17 +106,15 @@ function App({ onRightHandPositionUpdate, onLeftHandPositionUpdate, onRightPunch
                 // Right hand position (index landmark 20)
                 const rightFist = results.landmarks[0][20];
                 if (rightFist && onRightHandPositionUpdate) {
-                  const gameX = (rightFist.x * 2) - 1;
-                  const gameY = 1 - (rightFist.y * 2); // Flip Y
-                  onRightHandPositionUpdate({ x: gameX, y: gameY });
+                  // Send raw normalized coordinates (0-1) for exact mapping
+                  onRightHandPositionUpdate({ x: rightFist.x, y: rightFist.y });
                 }
 
                 // Left hand position (index landmark 19)
                 const leftFist = results.landmarks[0][19];
                 if (leftFist && onLeftHandPositionUpdate) {
-                  const gameX = (leftFist.x * 2) - 1;
-                  const gameY = 1 - (leftFist.y * 2); // Flip Y
-                  onLeftHandPositionUpdate({ x: gameX, y: gameY });
+                  // Send raw normalized coordinates (0-1) for exact mapping
+                  onLeftHandPositionUpdate({ x: leftFist.x, y: leftFist.y });
                 }
 
                 // Send individual punch states

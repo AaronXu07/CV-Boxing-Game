@@ -1,32 +1,34 @@
 import { useEffect, useRef } from 'react'
-import { initBasicGame, stopBasicGame, setHandPosition, setLeftHandPosition, setPunching } from './game/basicGame.js'
+import { initPhaserGame, stopPhaserGame, setRightHandPosition, setLeftHandPosition, setPunching } from './game/phaserGame.js'
 
-function BasicGame({ rightHandPosition, leftHandPosition, isRightPunching, isLeftPunching }) {
+function BasicGame({ rightHandPosition, leftHandPosition, isRightPunching, isLeftPunching, webcamDimensions }) {
   const containerRef = useRef(null)
   const gameInitialized = useRef(false)
 
   useEffect(() => {
     // Add a small delay to ensure container is rendered
     const timer = setTimeout(() => {
-      // Initialize game once
+      // Initialize game once with responsive dimensions
       if (containerRef.current && !gameInitialized.current) {
-        initBasicGame(containerRef.current)
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        initPhaserGame(containerRef.current, containerWidth, containerHeight)
         gameInitialized.current = true
-        console.log('Basic game initialized')
+        console.log('Phaser game initialized with dimensions:', containerWidth, containerHeight)
       }
     }, 100);
 
     // Cleanup on unmount
     return () => {
       clearTimeout(timer);
-      stopBasicGame()
+      stopPhaserGame()
     }
   }, [])
 
   useEffect(() => {
     // Update right hand position when it changes
     if (gameInitialized.current && rightHandPosition) {
-      setHandPosition(rightHandPosition.x, rightHandPosition.y)
+      setRightHandPosition(rightHandPosition.x, rightHandPosition.y)
     }
   }, [rightHandPosition])
 
@@ -46,15 +48,18 @@ function BasicGame({ rightHandPosition, leftHandPosition, isRightPunching, isLef
 
   return (
     <div className="basic-game-section">
-      <h2>Basic Three.js Game</h2>
+      <h2>Phaser Boxing Game</h2>
       <div 
         ref={containerRef} 
         style={{ 
-          width: '100%', 
-          height: '800px', 
+          width: '100%',
+          maxWidth: '1920px',
+          height: 'auto',
+          aspectRatio: '16/9',
           border: '2px solid #00ff00',
           borderRadius: '8px',
-          backgroundColor: '#000'
+          backgroundColor: '#1a1a2e',
+          margin: '0 auto'
         }}
       ></div>
     </div>

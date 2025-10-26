@@ -13,6 +13,7 @@
     "@mediapipe/camera_utils": "^0.3.1675466862",
     "@mediapipe/hands": "^0.4.1675469240",
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
+    "phaser": "^3.90.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "three": "^0.180.0"

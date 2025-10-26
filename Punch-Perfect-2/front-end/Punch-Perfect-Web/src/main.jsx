@@ -9,6 +9,7 @@ function Main() {
   const [leftHandPosition, setLeftHandPosition] = useState(null)
   const [isRightPunching, setIsRightPunching] = useState(false)
   const [isLeftPunching, setIsLeftPunching] = useState(false)
+  const [webcamDimensions, setWebcamDimensions] = useState({ width: 1920, height: 1080 })
 
   return (
     <div style={{ 
@@ -24,12 +25,14 @@ function Main() {
         onLeftHandPositionUpdate={setLeftHandPosition}
         onRightPunchUpdate={setIsRightPunching}
         onLeftPunchUpdate={setIsLeftPunching}
+        onWebcamDimensionsUpdate={setWebcamDimensions}
       />
       <BasicGame 
         rightHandPosition={rightHandPosition}
         leftHandPosition={leftHandPosition}
         isRightPunching={isRightPunching}
         isLeftPunching={isLeftPunching}
+        webcamDimensions={webcamDimensions}
       />
     </div>
   )
