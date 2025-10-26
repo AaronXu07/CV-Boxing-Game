@@ -49,7 +49,7 @@ export function initBasicGame(container) {
   function animate() {
     // Rotate targets slightly for visual effect
     targets.forEach(target => {
-      target.rotation.y += 0.01;
+      target.rotation.y += 0.05;
     });
     
     // Check for collisions with targets
@@ -61,27 +61,25 @@ export function initBasicGame(container) {
 }
 
 function createTargets() {
-  // Create 4 targets in different positions - same z-plane as hands
-  const targetPositions = [
-    { x: -4, y: 2, z: 0 },
-    { x: 4, y: 2, z: 0 },
-    { x: -4, y: -2, z: 0 },
-    { x: 4, y: -2, z: 0 }
-  ];
-
-  targetPositions.forEach((pos, index) => {
-    const geometry = new THREE.BoxGeometry(1, 1, 0.5);
+  // Create 2 targets in random positions - same z-plane as hands
+  for (let i = 0; i < 2; i++) {
+    const geometry = new THREE.BoxGeometry(1, 1, 0.1);
     const material = new THREE.MeshStandardMaterial({ 
       color: 0xff0000,
       emissive: 0x330000
     });
     const target = new THREE.Mesh(geometry, material);
-    target.position.set(pos.x, pos.y, pos.z);
+    
+    // Random position within visible range
+    const randomX = (Math.random() - 0.5) * 12; // Range: -6 to 6
+    const randomY = (Math.random() - 0.5) * 6;  // Range: -3 to 3
+    target.position.set(randomX, randomY, 0);
+    
     target.userData.isActive = true;
-    target.userData.index = index;
+    target.userData.index = i;
     scene.add(target);
     targets.push(target);
-  });
+  }
 }
 
 function checkCollisions() {
@@ -93,7 +91,7 @@ function checkCollisions() {
     // Check collision with left hand (only when punching)
     if (isLeftPunching) {
       const leftDistance = leftHand.position.distanceTo(target.position);
-      if (leftDistance < 2.0) { // Increased collision threshold for easier hits
+      if (leftDistance < 1.5) { // Increased collision threshold for easier hits
         hitTarget(target);
       }
     }
@@ -101,7 +99,7 @@ function checkCollisions() {
     // Check collision with right hand (only when punching)
     if (isRightPunching) {
       const rightDistance = rightHand.position.distanceTo(target.position);
-      if (rightDistance < 2.0) { // Increased collision threshold for easier hits
+      if (rightDistance < 1.5) { // Increased collision threshold for easier hits
         hitTarget(target);
       }
     }
@@ -128,12 +126,17 @@ function hitTarget(target) {
     
     if (shrinkProgress >= 1) {
       clearInterval(shrinkInterval);
-      // Reset the target after 2 seconds
+      // Reset the target after 2 seconds at a new random position
       setTimeout(() => {
         target.scale.copy(originalScale);
         target.material.color.setHex(0xff0000);
         target.material.emissive.setHex(0x330000);
         target.userData.isActive = true;
+        
+        // Randomize position when respawning
+        const randomX = (Math.random() - 0.5) * 12; // Range: -6 to 6
+        const randomY = (Math.random() - 0.5) * 6;  // Range: -3 to 3
+        target.position.set(randomX, randomY, 0);
       }, 2000);
     }
   }, 16);
@@ -141,40 +144,39 @@ function hitTarget(target) {
 
 export function setHandPosition(x, y) {
   if (rightHand) {
-    // Invert x to match mirrored camera, scale for better visibility
-    rightHand.position.x = -x * 8;
+    rightHand.position.x = -x * 8.5;
     rightHand.position.y = y * 3;
   }
 }
 
 export function setLeftHandPosition(x, y) {
   if (leftHand) {
-    // Invert x to match mirrored camera, scale for better visibility
-    leftHand.position.x = -x * 8;
+    leftHand.position.x = -x * 8.5;
     leftHand.position.y = y * 3;
   }
 }
 
 export function setPunching(rightPunching, leftPunching) {
-  // Store punching state for collision detection
   isRightPunching = rightPunching;
   isLeftPunching = leftPunching;
   
-  // Change right hand color when punching
   if (rightHand) {
     if (rightPunching) {
-      rightHand.material.color.setHex(0xff00ff); // Bright magenta when punching
+      rightHand.material.color.setHex(0xff8fe5); 
+      rightHand.scale.set(1.5, 1.5, 1.5);
     } else {
-      rightHand.material.color.setHex(0x9900ff); // Purple normal
+      rightHand.material.color.setHex(0x9900ff); 
+      rightHand.scale.set(1, 1, 1); 
     }
   }
 
-  // Change left hand color when punching
   if (leftHand) {
     if (leftPunching) {
-      leftHand.material.color.setHex(0xffff00); // Bright yellow when punching
+      leftHand.material.color.setHex(0xa9ff8f); 
+      leftHand.scale.set(1.5, 1.5, 1.5); 
     } else {
-      leftHand.material.color.setHex(0xff8800); // Orange normal
+      leftHand.material.color.setHex(0xff8800); 
+      leftHand.scale.set(1, 1, 1);
     }
   }
 }
