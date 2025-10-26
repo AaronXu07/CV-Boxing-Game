@@ -9,7 +9,7 @@ html, body, #root {
 }
 
 .app-root {
-  height: 100vh;
+  min-height: auto;
   display: flex;
   flex-direction: column;
   align-items: center; /* center children horizontally (title + video) */
