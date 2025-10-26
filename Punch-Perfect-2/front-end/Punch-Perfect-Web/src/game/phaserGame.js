@@ -9,6 +9,11 @@ let isLeftPunching = false;
 let targetHorizontal = 400;
 let targetVertical = 200;
 
+// ========== MOUSE CONTROL TOGGLE ==========
+// Set to true to enable mouse control, false to disable
+const ENABLE_MOUSE_CONTROL = true;
+// ==========================================
+
 class BoxingGame extends Phaser.Scene {
   constructor() {
     super({ key: 'BoxingGame' });
@@ -32,6 +37,35 @@ class BoxingGame extends Phaser.Scene {
 
     // Create initial targets
     this.createTargets();
+
+    // ========== MOUSE CONTROL SETUP ==========
+    if (ENABLE_MOUSE_CONTROL) {
+      // Make right hand follow mouse
+      this.input.on('pointermove', (pointer) => {
+        if (rightHandSprite) {
+          rightHandSprite.x = pointer.x;
+          rightHandSprite.y = pointer.y;
+        }
+      });
+
+      // Mouse click = punch
+      this.input.on('pointerdown', () => {
+        isRightPunching = true;
+        if (rightHandSprite) {
+          rightHandSprite.setFillStyle(0xff00ff); // Magenta when punching
+          rightHandSprite.setRadius(30); // Bigger when punching
+        }
+      });
+
+      this.input.on('pointerup', () => {
+        isRightPunching = false;
+        if (rightHandSprite) {
+          rightHandSprite.setFillStyle(0x034efc); // Purple normal
+          rightHandSprite.setRadius(20); // Normal size
+        }
+      });
+    }
+    // ==========================================
   }
 
   createTargets() {
@@ -43,12 +77,30 @@ class BoxingGame extends Phaser.Scene {
       const x = Phaser.Math.Between(targetHorizontal, gameWidth - targetHorizontal);
       const y = Phaser.Math.Between(targetVertical, gameHeight - targetVertical);
       
-      const target = this.add.rectangle(x, y, 120, 120, 0xff0000);
-      target.setStrokeStyle(4, 0xff6666);
-      target.isActive = true;
-      target.setData('rotation', 0);
+      // Create a container for the bullseye target
+      const targetContainer = this.add.container(x, y);
       
-      targets.push(target);
+      // Outer red circle (increased from 60 to 80)
+      const outerCircle = this.add.circle(0, 0, 80, 0xff0000);
+      outerCircle.setStrokeStyle(4, 0x000000);
+      
+      // White circle (increased from 45 to 60)
+      const whiteCircle = this.add.circle(0, 0, 60, 0xffffff);
+      
+      // Blue circle (increased from 30 to 40)
+      const blueCircle = this.add.circle(0, 0, 40, 0x0066ff);
+      
+      // Red center (bullseye) (increased from 15 to 20)
+      const centerCircle = this.add.circle(0, 0, 20, 0xff0000);
+      
+      // Add all circles to container
+      targetContainer.add([outerCircle, whiteCircle, blueCircle, centerCircle]);
+      
+      // Store properties on container
+      targetContainer.isActive = true;
+      targetContainer.setData('rotation', 0);
+      
+      targets.push(targetContainer);
     }
   }
 
@@ -76,7 +128,7 @@ class BoxingGame extends Phaser.Scene {
           leftHandSprite.x, leftHandSprite.y,
           target.x, target.y
         );
-        if (leftDistance < 60) {
+        if (leftDistance < 80) { // Updated from 60 to 80 to match larger target
           this.hitTarget(target);
         }
       }
@@ -87,7 +139,7 @@ class BoxingGame extends Phaser.Scene {
           rightHandSprite.x, rightHandSprite.y,
           target.x, target.y
         );
-        if (rightDistance < 60) {
+        if (rightDistance < 80) { // Updated from 60 to 80 to match larger target
           this.hitTarget(target);
         }
       }
@@ -103,20 +155,20 @@ class BoxingGame extends Phaser.Scene {
     const hitX = target.x;
     const hitY = target.y;
 
-    // Create breaking pieces (fragments)
-    const fragmentCount = 12;
+    // Create breaking pieces (arc fragments for bullseye)
+    const fragmentCount = 16;
     const fragments = [];
+    const colors = [0xff0000, 0xffffff, 0x0066ff, 0xff0000]; // Target colors
     
     for (let i = 0; i < fragmentCount; i++) {
       const angle = (Math.PI * 2 * i) / fragmentCount;
-      const distance = Phaser.Math.Between(20, 40);
       
-      const fragment = this.add.rectangle(
+      // Create arc-shaped fragments (pieces of the rings)
+      const fragment = this.add.circle(
         hitX,
         hitY,
-        Phaser.Math.Between(15, 30),
-        Phaser.Math.Between(15, 30),
-        0xff0000
+        Phaser.Math.Between(10, 25),
+        colors[i % colors.length]
       );
       fragment.setRotation(Phaser.Math.FloatBetween(0, Math.PI * 2));
       fragments.push(fragment);
@@ -124,13 +176,13 @@ class BoxingGame extends Phaser.Scene {
       // Animate each fragment flying outward
       this.tweens.add({
         targets: fragment,
-        x: hitX + Math.cos(angle) * Phaser.Math.Between(80, 150),
-        y: hitY + Math.sin(angle) * Phaser.Math.Between(80, 150) + Phaser.Math.Between(50, 100), // Add gravity effect
-        rotation: fragment.rotation + Phaser.Math.FloatBetween(-2, 2),
+        x: hitX + Math.cos(angle) * Phaser.Math.Between(100, 180),
+        y: hitY + Math.sin(angle) * Phaser.Math.Between(100, 180) + Phaser.Math.Between(50, 100), // Add gravity effect
+        rotation: fragment.rotation + Phaser.Math.FloatBetween(-3, 3),
         alpha: 0,
         scaleX: 0,
         scaleY: 0,
-        duration: Phaser.Math.Between(400, 700),
+        duration: Phaser.Math.Between(500, 800),
         ease: 'Cubic.easeOut',
         onComplete: () => {
           fragment.destroy();
@@ -165,7 +217,7 @@ class BoxingGame extends Phaser.Scene {
       }
     });
 
-    // Make original target invisible and shrink
+    // Make original target invisible
     target.setAlpha(0);
 
     // Wait then respawn at random position
@@ -177,8 +229,6 @@ class BoxingGame extends Phaser.Scene {
       target.y = Phaser.Math.Between(targetVertical, gameHeight - targetVertical);
       target.setScale(1);
       target.setAlpha(1);
-      target.setFillStyle(0xff0000);
-      target.setStrokeStyle(4, 0xff6666);
       target.isActive = true;
     });
   }
