@@ -1,10 +1,15 @@
-import { StrictMode } from 'react'
+import { StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import BasicGame from './BasicGame.jsx'
 
 function Main() {
+  const [rightHandPosition, setRightHandPosition] = useState(null)
+  const [leftHandPosition, setLeftHandPosition] = useState(null)
+  const [isRightPunching, setIsRightPunching] = useState(false)
+  const [isLeftPunching, setIsLeftPunching] = useState(false)
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -14,8 +19,18 @@ function Main() {
       padding: '20px',
       backgroundColor: '#0f1724'
     }}>
-      <App />
-      <BasicGame />
+      <App 
+        onRightHandPositionUpdate={setRightHandPosition}
+        onLeftHandPositionUpdate={setLeftHandPosition}
+        onRightPunchUpdate={setIsRightPunching}
+        onLeftPunchUpdate={setIsLeftPunching}
+      />
+      <BasicGame 
+        rightHandPosition={rightHandPosition}
+        leftHandPosition={leftHandPosition}
+        isRightPunching={isRightPunching}
+        isLeftPunching={isLeftPunching}
+      />
     </div>
   )
 }

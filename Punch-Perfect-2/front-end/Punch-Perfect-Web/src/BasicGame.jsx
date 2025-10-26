@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { initBasicGame, stopBasicGame } from './game/basicGame.js'
+import { initBasicGame, stopBasicGame, setHandPosition, setLeftHandPosition, setPunching } from './game/basicGame.js'
 
-function BasicGame() {
+function BasicGame({ rightHandPosition, leftHandPosition, isRightPunching, isLeftPunching }) {
   const containerRef = useRef(null)
   const gameInitialized = useRef(false)
 
@@ -23,6 +23,27 @@ function BasicGame() {
     }
   }, [])
 
+  useEffect(() => {
+    // Update right hand position when it changes
+    if (gameInitialized.current && rightHandPosition) {
+      setHandPosition(rightHandPosition.x, rightHandPosition.y)
+    }
+  }, [rightHandPosition])
+
+  useEffect(() => {
+    // Update left hand position when it changes
+    if (gameInitialized.current && leftHandPosition) {
+      setLeftHandPosition(leftHandPosition.x, leftHandPosition.y)
+    }
+  }, [leftHandPosition])
+
+  useEffect(() => {
+    // Update punching state when it changes
+    if (gameInitialized.current) {
+      setPunching(isRightPunching, isLeftPunching)
+    }
+  }, [isRightPunching, isLeftPunching])
+
   return (
     <div className="basic-game-section">
       <h2>Basic Three.js Game</h2>
@@ -30,7 +51,7 @@ function BasicGame() {
         ref={containerRef} 
         style={{ 
           width: '100%', 
-          height: '500px', 
+          height: '800px', 
           border: '2px solid #00ff00',
           borderRadius: '8px',
           backgroundColor: '#000'

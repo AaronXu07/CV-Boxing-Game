@@ -5,7 +5,7 @@ import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision'
 import { selectedLandmarks, selectedConnections } from './mediapipe/landmarks.js'
 import { detectPunches } from './mediapipe/detectPunches.js'
 
-function App() {
+function App({ onRightHandPositionUpdate, onLeftHandPositionUpdate, onRightPunchUpdate, onLeftPunchUpdate }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
@@ -58,7 +58,7 @@ function App() {
           ctx.fillStyle = 'black'
           ctx.fillRect(0, 0, canvas.width, canvas.height); 
 
-          const targetFPS = 30;
+          const targetFPS = 60;
           const frameTime = 1000 / targetFPS;
           let lastFrameTime = performance.now();
           let actualFPS = 0;
@@ -96,6 +96,33 @@ function App() {
               
               // Detect punches
               const punchData = detectPunches(results.landmarks[0]);
+
+              // Send data to game
+              if (results && results.landmarks && results.landmarks[0]) {
+                // Right hand position (index landmark 20)
+                const rightFist = results.landmarks[0][20];
+                if (rightFist && onRightHandPositionUpdate) {
+                  const gameX = (rightFist.x * 2) - 1;
+                  const gameY = 1 - (rightFist.y * 2); // Flip Y
+                  onRightHandPositionUpdate({ x: gameX, y: gameY });
+                }
+
+                // Left hand position (index landmark 19)
+                const leftFist = results.landmarks[0][19];
+                if (leftFist && onLeftHandPositionUpdate) {
+                  const gameX = (leftFist.x * 2) - 1;
+                  const gameY = 1 - (leftFist.y * 2); // Flip Y
+                  onLeftHandPositionUpdate({ x: gameX, y: gameY });
+                }
+
+                // Send individual punch states
+                if (onRightPunchUpdate) {
+                  onRightPunchUpdate(punchData.rightArm);
+                }
+                if (onLeftPunchUpdate) {
+                  onLeftPunchUpdate(punchData.leftArm);
+                }
+              }
 
               const connectorDrawingOptions = {
                 color: '#0059ffff',
