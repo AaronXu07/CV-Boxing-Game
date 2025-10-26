@@ -58,7 +58,7 @@ function App() {
           ctx.fillStyle = 'black'
           ctx.fillRect(0, 0, canvas.width, canvas.height); 
 
-          const targetFPS = 60;
+          const targetFPS = 30;
           const frameTime = 1000 / targetFPS;
           let lastFrameTime = performance.now();
           let actualFPS = 0;
@@ -67,11 +67,9 @@ function App() {
 
           let LpunchCounter = 0;
           let LprevPunch;
-          let LcurPunch;
 
           let RpunchCounter = 0;
           let RprevPunch;
-          let RcurPunch;
 
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
