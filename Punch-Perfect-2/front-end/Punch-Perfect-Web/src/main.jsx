@@ -44,7 +44,7 @@ function Main() {
           onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
           onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
         >
-          🥊 Boxing Game
+          Boxing Game
         </button>
         <button
           onClick={() => setGameMode('reaction')}
@@ -62,7 +62,7 @@ function Main() {
           onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
           onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
         >
-          ⚡ Reaction Test
+          Reaction Test
         </button>
       </div>
     </div>
@@ -102,14 +102,6 @@ function Main() {
       >
         ← Back to Menu
       </button>
-
-      <App 
-        onRightHandPositionUpdate={setRightHandPosition}
-        onLeftHandPositionUpdate={setLeftHandPosition}
-        onRightPunchUpdate={setIsRightPunching}
-        onLeftPunchUpdate={setIsLeftPunching}
-        onWebcamDimensionsUpdate={setWebcamDimensions}
-      />
       
       {gameMode === 'boxing' && (
         <BasicGame 
@@ -128,6 +120,15 @@ function Main() {
           webcamDimensions={webcamDimensions}
         />
       )}
+
+      <App 
+        onRightHandPositionUpdate={setRightHandPosition}
+        onLeftHandPositionUpdate={setLeftHandPosition}
+        onRightPunchUpdate={setIsRightPunching}
+        onLeftPunchUpdate={setIsLeftPunching}
+        onWebcamDimensionsUpdate={setWebcamDimensions}
+      />
+
     </div>
   )
 }

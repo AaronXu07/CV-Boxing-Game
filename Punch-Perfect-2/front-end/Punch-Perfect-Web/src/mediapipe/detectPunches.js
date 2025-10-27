@@ -5,18 +5,18 @@ const punchState = {
     leftForwardStartTime: null,
     rightExtendedStartTime: null,
     rightForwardStartTime: null,
-    requiredDuration: 70 //in milliseconds
+    requiredDuration: 25 //in milliseconds
 };
 
 const punchInstant = {
     angle: 115,
     hDistance: 0.13,
-    vDistance: 0.15
+    vDistance: 0.13
 };
 
 const punchReturn = {
     angle: 100,
-    punchTime: 300,
+    punchTime: 250,
     leftReturned: true,
     rightReturned: true,
 }
