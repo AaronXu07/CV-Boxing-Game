@@ -10,6 +10,9 @@ let greenStartTime = 0;
 let isRightPunching = false;
 let isLeftPunching = false;
 let gameState = 'waiting'; // 'waiting', 'ready', 'green', 'finished'
+let punchCooldown = false; // Prevents punch detection during cooldown
+let lastPunchDetected = false; // Tracks previous punch state for edge detection
+let currentDelayTimer = null; // Reference to the current delay timer
 
 class ReactionGame extends Phaser.Scene {
   constructor() {
@@ -73,13 +76,20 @@ class ReactionGame extends Phaser.Scene {
     reactionTimeText.setVisible(false);
     replayButton.setVisible(false);
 
+    // Cancel any existing delay timer
+    if (currentDelayTimer) {
+      currentDelayTimer.remove();
+      currentDelayTimer = null;
+    }
+
     // Random delay between 2-5 seconds before turning green
     const randomDelay = Phaser.Math.Between(2000, 5000);
     
-    this.time.delayedCall(randomDelay, () => {
+    currentDelayTimer = this.time.delayedCall(randomDelay, () => {
       if (gameState === 'ready') { // Check if user didn't punch early
         this.turnGreen();
       }
+      currentDelayTimer = null;
     });
   }
 
@@ -92,23 +102,35 @@ class ReactionGame extends Phaser.Scene {
   }
 
   update() {
-    // Check if player punched during green screen
-    if (gameState === 'green' && waitingForGreen && (isRightPunching || isLeftPunching)) {
-      this.recordReactionTime();
+    // Detect punch edge (only trigger on new punch, not held punch)
+    const isPunching = isRightPunching || isLeftPunching;
+    const punchJustStarted = isPunching && !lastPunchDetected;
+    
+    // Don't update lastPunchDetected during cooldown to prevent edge detection
+    if (!punchCooldown) {
+      lastPunchDetected = isPunching;
     }
 
-    // Check for early punch (punching before green)
-    if (gameState === 'ready' && (isRightPunching || isLeftPunching)) {
+    // Check if player punched during green screen (no cooldown here)
+    if (gameState === 'green' && waitingForGreen && punchJustStarted) {
+      this.recordReactionTime();
+      return; // Exit to prevent multiple triggers
+    }
+
+    // Check for early punch (punching before green) (no cooldown here)
+    if (gameState === 'ready' && punchJustStarted && !punchCooldown) {
       this.earlyPunch();
+      return; // Exit to prevent multiple triggers
+    }
+
+    // Ignore punches during cooldown ONLY for restart
+    if (punchCooldown) {
+      return;
     }
 
     // Check if player punched to restart after finished state
-    if (gameState === 'finished' && (isRightPunching || isLeftPunching)) {
-      // Wait a brief moment to avoid immediate restart
-      this.time.delayedCall(500, () => {
-        this.restartGame();
-      });
-      gameState = 'restarting'; // Prevent multiple restarts
+    if (gameState === 'finished' && punchJustStarted) {
+      this.restartGame();
     }
   }
 
@@ -122,6 +144,12 @@ class ReactionGame extends Phaser.Scene {
     reactionTimeText.setText(`Reaction Time: ${reactionTime} ms\n\nPunch anywhere to restart`);
     reactionTimeText.setVisible(true);
     replayButton.setVisible(false); // Hide the button
+
+    // Enable punch cooldown to prevent immediate restart
+    punchCooldown = true;
+    this.time.delayedCall(500, () => {
+      punchCooldown = false;
+    });
   }
 
   earlyPunch() {
@@ -133,10 +161,24 @@ class ReactionGame extends Phaser.Scene {
     reactionTimeText.setText('Wait for the green screen\n\nPunch anywhere to restart');
     reactionTimeText.setVisible(true);
     replayButton.setVisible(false); // Hide the button
+
+    // Enable punch cooldown to prevent immediate restart
+    punchCooldown = true;
+    this.time.delayedCall(500, () => {
+      punchCooldown = false;
+    });
   }
 
   restartGame() {
+    // Activate cooldown immediately when restarting
+    punchCooldown = true;
+    
     this.startReactionTest();
+    
+    // Clear cooldown after 500ms
+    this.time.delayedCall(500, () => {
+      punchCooldown = false;
+    });
   }
 }
 

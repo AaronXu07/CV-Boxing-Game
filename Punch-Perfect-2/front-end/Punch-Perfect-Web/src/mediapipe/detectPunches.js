@@ -11,7 +11,7 @@ const punchState = {
 const punchInstant = {
     angle: 115,
     hDistance: 0.13,
-    vDistance: 0.13
+    vDistance: 0.14
 };
 
 const punchReturn = {
