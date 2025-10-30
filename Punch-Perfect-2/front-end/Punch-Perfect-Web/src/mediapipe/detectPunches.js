@@ -5,7 +5,7 @@ const punchState = {
     leftForwardStartTime: null,
     rightExtendedStartTime: null,
     rightForwardStartTime: null,
-    requiredDuration: 70 //in milliseconds
+    requiredDuration: 50 //in milliseconds
 };
 
 const punchInstant = {
