@@ -1,0 +1,55 @@
+.menu-container{
+    background: rgb(0, 0, 0);
+    min-height: 100vh;
+}
+
+.menu-container h1{
+    text-align: center;
+    padding-top: 5%;
+}
+
+.menu-buttons{
+    padding-top: 20%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 30%;
+    margin: 0 auto;
+}
+
+.menu-buttons .start-button{
+    padding: 20px 20px;
+
+    font-size: 30px;
+    font-style: bold;
+    cursor: pointer;
+    border-radius: 20px;
+
+    background: rgb(105, 161, 180);
+    color: rgba(0, 0, 90, 0.893);
+
+    transition: transform 0.2s;
+}
+.menu-buttons .start-button:hover{
+    transform: scale(1.05);
+    background: rgba(0, 0, 90, 0.893);
+    color: white;
+}
+
+.menu-buttons button{
+    padding: 20px 20px;
+
+    font-size: 20px;
+    color: white;
+
+    cursor: pointer;
+    border-radius: 20px;
+    background: rgba(0, 0, 90, 0.893);
+    transition: transform 0.2s;
+}
+
+.menu-buttons button:hover{
+    transform: scale(1.05);
+    background: rgb(105, 161, 180);
+    color: rgba(0, 0, 90, 0.893);
+}
