@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import './App.css'
 import { initPoseLandmarker } from './mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
-import { selectedLandmarks, selectedConnections } from './mediapipe/landmarks.js'
+import { selectedLandmarks, selectedConnections, lIndex, rIndex } from './mediapipe/landmarks.js'
 import { detectPunches } from './mediapipe/detectPunches.js'
 
 function App() {
@@ -92,7 +92,10 @@ function App() {
                 console.error('Pose detection failed:', err)
               }
 
-              ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+              //ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(videoRef.current, 1920-640, 1080-360, 640, 360); 
               
               // Detect punches
               const punchData = detectPunches(results.landmarks[0]);
@@ -103,16 +106,22 @@ function App() {
               };
               const landmarkDrawingOptions = {
                 fillColor: '#ff0000ff',
-                radius: 15,
+                radius: 30,
               };
               const punchLandmarkOptions = {
                 fillColor: '#00ff00ff',
                 radius: 45,
               };
 
+              ctx.save(); 
+              ctx.translate(1920-640, 1080-360); 
+              ctx.scale(1/3, 1/3);
+              
+              let cur_body; 
+
               if (results && results.landmarks) {
                 for (let i = 0; i < results.landmarks.length; i++) {
-                  let cur_body = results.landmarks[i]; 
+                  cur_body = results.landmarks[i]; 
                   selectedLandmarks.forEach((lm) => {
                     // Check if this is a hand landmark (wrist or index finger) and a punch is detected
                     const isLeftHand = (lm === 19); // lWrist or lIndex
@@ -129,8 +138,28 @@ function App() {
                 }
               }
 
+
+              ctx.restore(); 
               // Draw text on top of video + landmarks
               ctx.save();
+              
+              if(cur_body) {
+
+                //draw left and right hand landmark 
+                if(punchData.leftArm) {
+                  drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
+                } else {
+                  drawingUtils.drawLandmarks([cur_body[lIndex]], landmarkDrawingOptions);
+                }
+
+                if(punchData.rightArm) {
+                  drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
+                } else {
+                  drawingUtils.drawLandmarks([cur_body[rIndex]], landmarkDrawingOptions);
+                }
+
+              }
+              
 
               // Move origin to the right edge of the canvas
               ctx.translate(canvas.width, 0);
@@ -161,7 +190,7 @@ function App() {
 
               // Draw text
               ctx.font = '50px Calibri';
-              ctx.fillStyle = 'black';
+              ctx.fillStyle = 'white';
               ctx.textAlign = 'left';
               ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
               ctx.fillText(`Punch: ${punchText}`, 30, 150); 
