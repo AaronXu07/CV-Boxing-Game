@@ -142,19 +142,24 @@ function App() {
               ctx.restore(); 
               // Draw text on top of video + landmarks
               ctx.save();
+              
+              if(cur_body) {
 
-              //draw left and right hand landmark 
-              if(punchData.leftArm) {
-                drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
-              } else {
-                drawingUtils.drawLandmarks([cur_body[lIndex]], landmarkDrawingOptions);
-              }
+                //draw left and right hand landmark 
+                if(punchData.leftArm) {
+                  drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
+                } else {
+                  drawingUtils.drawLandmarks([cur_body[lIndex]], landmarkDrawingOptions);
+                }
 
-              if(punchData.rightArm) {
-                drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
-              } else {
-                drawingUtils.drawLandmarks([cur_body[rIndex]], landmarkDrawingOptions);
+                if(punchData.rightArm) {
+                  drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
+                } else {
+                  drawingUtils.drawLandmarks([cur_body[rIndex]], landmarkDrawingOptions);
+                }
+
               }
+              
 
               // Move origin to the right edge of the canvas
               ctx.translate(canvas.width, 0);
