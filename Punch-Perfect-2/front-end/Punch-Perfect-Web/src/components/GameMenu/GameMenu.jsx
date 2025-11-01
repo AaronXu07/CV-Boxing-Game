@@ -21,7 +21,8 @@ function GameMenu() {
       </div>
 
       <div className="game-menu-buttons">
-        <button onClick={startTargetMode}>Target Mode</button>
+        <button onClick={startTargetMode}>Range</button>
+        <button>Target Test</button>
         <button>Reaction Time Test</button>
         <button>Fruit Ninja</button>
       </div>
