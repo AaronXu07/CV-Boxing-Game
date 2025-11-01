@@ -6,6 +6,7 @@ import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../me
 import { detectPunches } from '../../mediapipe/detectPunches.js'
 import CamCalibration from './CamCalibration.jsx'
 import { useNavigate } from 'react-router-dom';
+import { Target } from './Target.js'
 
 function App() {
   const navigate = useNavigate();
@@ -19,11 +20,23 @@ function App() {
   let rafId = useRef(null)
   const [isCalibrated, setIsCalibrated] = useState(false);
 
+  const targetsRef = useRef([]);
+
+  // Helper function to spawn a new target
+  const spawnTarget = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const newTarget = new Target(canvas.width, canvas.height);
+    targetsRef.current = [...targetsRef.current, newTarget];
+  };
+
   useEffect(() => {
 
     if(!isCalibrated) return;
 
     let stream = null
+    let spawnInterval = null
 
     async function startCamera() {
       try {
@@ -123,6 +136,14 @@ function App() {
                 fillColor: '#00ff00ff',
                 radius: 45,
               };
+              const leftHandOptions = {
+                fillColor: '#ffa200ff', 
+                radius: 45,
+              };
+              const rightHandOptions = {
+                fillColor: '#0000ffff', 
+                radius: 45,
+              };
 
               ctx.save(); 
               ctx.translate(1920-640, 1080-360); 
@@ -159,24 +180,56 @@ function App() {
                 //draw left and right hand landmark 
                 if(punchData.leftArm) {
                   drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
-                } else {
-                  drawingUtils.drawLandmarks([cur_body[lIndex]], landmarkDrawingOptions);
+                } 
+                else {
+                  drawingUtils.drawLandmarks([cur_body[lIndex]], leftHandOptions);
                 }
 
                 if(punchData.rightArm) {
                   drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
-                } else {
-                  drawingUtils.drawLandmarks([cur_body[rIndex]], landmarkDrawingOptions);
+                } 
+                else {
+                  drawingUtils.drawLandmarks([cur_body[rIndex]], rightHandOptions);
+                }
+
+                if (punchData.leftArm) {
+                  const leftHand = { x: 1920 - (cur_body[lIndex].x * 1920), y: cur_body[lIndex].y * 1080 };
+                  
+                  targetsRef.current = targetsRef.current.filter(target => {
+                    const hitByLeft = target.checkCollisionLeft(leftHand.x, leftHand.y);
+                    
+                    if (hitByLeft) {
+                      console.log('Left hand target hit!', { target, leftHand });
+                      target.hit();
+                      return false; // Remove target
+                    }
+                    return true; // Keep target
+                  });
+                }
+                
+                if (punchData.rightArm) {
+                  const rightHand = { x: 1920 - (cur_body[rIndex].x * 1920), y: cur_body[rIndex].y * 1080 };
+                  
+                  targetsRef.current = targetsRef.current.filter(target => {
+                    const hitByRight = target.checkCollisionRight(rightHand.x, rightHand.y);
+                    
+                    if (hitByRight) {
+                      console.log('Right hand target hit!', { target, rightHand });
+                      target.hit();
+                      return false; // Remove target
+                    }
+                    return true; // Keep target
+                  });
                 }
 
               }
               
-
-              // Move origin to the right edge of the canvas
               ctx.translate(canvas.width, 0);
-
-              // Flip horizontally
               ctx.scale(-1, 1);
+
+              targetsRef.current.forEach(target => {
+                target.draw(ctx);
+              });
 
               // Display punch info
               let punchText = 'None';
@@ -223,8 +276,15 @@ function App() {
             rafId.current = requestAnimationFrame(render)
           }
 
-          // kick off the render loop
           render()
+        
+          spawnTarget();
+          
+          spawnInterval = setInterval(() => {
+            if (targetsRef.current.length === 0) {
+              spawnTarget();
+            }
+          }, 100); // Check every 100ms
           
         }
       } catch (err) {
@@ -240,6 +300,7 @@ function App() {
         stream.getTracks().forEach((t) => t.stop())
       }
       if (rafId.current) cancelAnimationFrame(rafId.current)
+      if (spawnInterval) clearInterval(spawnInterval)
     }
   }, [isCalibrated])
 
@@ -247,7 +308,7 @@ function App() {
     <>
     {!isCalibrated ? (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>) :
     (<div className="app-root">
-      <h1>Punch Perfect — Webcam</h1>
+      <h1>Punch Perfect — Range Mode</h1>
 
       <div className="outside-buttons">
         <button className="back-button" onClick={back}>◄ Back to Menu</button>
