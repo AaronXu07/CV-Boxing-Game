@@ -5,7 +5,7 @@ const punchState = {
     leftForwardStartTime: null,
     rightExtendedStartTime: null,
     rightForwardStartTime: null,
-    requiredDuration: 50 //in milliseconds
+    requiredDuration: 30 //in milliseconds
 };
 
 const punchInstant = {
@@ -42,12 +42,12 @@ const angleBetweenSegments = (point1, joint, point2) => {
 
 const horizontalDistance = (landmark1, landmark2) => {
     let xDiff = Math.abs(landmark1.x-landmark2.x);
-    console.log(`xDiff: ${xDiff}`);
+    //console.log(`xDiff: ${xDiff}`);
     return xDiff;
 }
 const verticalDistance = (landmark1, landmark2) => {
     let yDiff = Math.abs(landmark1.y-landmark2.y);
-    console.log(`yDiff: ${yDiff}`);
+    //console.log(`yDiff: ${yDiff}`);
     return yDiff;
 }
 
@@ -68,31 +68,24 @@ export const detectPunches = (landmarks) => {
             landmarks[rArm[2]]  
         );
 
-        console.log(`Left arm angle: ${lAngle.toFixed(1)}°, Right arm angle: ${rAngle.toFixed(1)}°`);
+        //console.log(`Left arm angle: ${lAngle.toFixed(1)}°, Right arm angle: ${rAngle.toFixed(1)}°`);
     } catch (err) {
-        console.log(`Error: ${err}`); 
+        //console.log(`Error: ${err}`); 
         return { detected: false, leftArm: false, rightArm: false }; 
     }
     
-    let lHorizontalTop;
-    let lHorizontalBottom;
-    let rHorizontalTop;
-    let rHorizontalBottom;
-    let lVerticalTop;
-    let lVerticalBottom;
-    let rVerticalTop;
-    let rVerticalBottom;
-    lHorizontalTop = horizontalDistance(landmarks[lArm[0]], landmarks[lArm[1]]); 
-    lHorizontalBottom = horizontalDistance(landmarks[lArm[1]], landmarks[lArm[2]]); 
+    // indexes: 0 - shoulder, 1 - elbow, 2 - wrist
+    let lHorizontalTop = horizontalDistance(landmarks[lArm[0]], landmarks[lArm[1]]); 
+    let lHorizontalBottom = horizontalDistance(landmarks[lArm[1]], landmarks[lArm[2]]); 
 
-    rHorizontalTop = horizontalDistance(landmarks[rArm[0]], landmarks[rArm[1]]); 
-    rHorizontalBottom = horizontalDistance(landmarks[rArm[1]], landmarks[rArm[2]]); 
+    let rHorizontalTop = horizontalDistance(landmarks[rArm[0]], landmarks[rArm[1]]); 
+    let rHorizontalBottom = horizontalDistance(landmarks[rArm[1]], landmarks[rArm[2]]); 
 
-    lVerticalTop = verticalDistance(landmarks[lArm[0]], landmarks[lArm[1]]); 
-    lVerticalBottom = verticalDistance(landmarks[lArm[1]], landmarks[lArm[2]]); 
+    let lVerticalTop = verticalDistance(landmarks[lArm[0]], landmarks[lArm[1]]); 
+    let lVerticalBottom = verticalDistance(landmarks[lArm[1]], landmarks[lArm[2]]); 
 
-    rVerticalTop = verticalDistance(landmarks[rArm[0]], landmarks[rArm[1]]); 
-    rVerticalBottom = verticalDistance(landmarks[rArm[1]], landmarks[rArm[2]]);
+    let rVerticalTop = verticalDistance(landmarks[rArm[0]], landmarks[rArm[1]]); 
+    let rVerticalBottom = verticalDistance(landmarks[rArm[1]], landmarks[rArm[2]]);
 
     // Check instant conditions
     const leftArmExtended = lAngle > punchInstant.angle; 
@@ -156,7 +149,8 @@ export const detectPunches = (landmarks) => {
     const lForwardTooLong = punchState.leftForwardStartTime !== null && performance.now() - punchState.leftForwardStartTime >= punchReturn.punchTime;
     const lPunchExpired = lExtendedTooLong || lForwardTooLong;
 
-    const leftPunch = islInstantPunch && punchReturn.leftReturned && !lPunchExpired;
+    //const leftPunch = islInstantPunch && punchReturn.leftReturned && !lPunchExpired;
+    const leftPunch = islInstantPunch; 
 
     if (lPunchExpired) {
         punchReturn.leftReturned = false;
@@ -169,7 +163,8 @@ export const detectPunches = (landmarks) => {
     const rForwardTooLong = punchState.rightForwardStartTime !== null && performance.now() - punchState.rightForwardStartTime >= punchReturn.punchTime;
     const rPunchExpired = rExtendedTooLong || rForwardTooLong;
 
-    const rightPunch = isrInstantPunch && punchReturn.rightReturned && !rPunchExpired;
+    //const rightPunch = isrInstantPunch && punchReturn.rightReturned && !rPunchExpired;
+    const rightPunch = isrInstantPunch; 
 
     if (rPunchExpired) {
         punchReturn.rightReturned = false;
