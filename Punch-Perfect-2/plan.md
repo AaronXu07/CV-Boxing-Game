@@ -40,8 +40,7 @@ The goal of this new version is to transform the concept into a **polished, full
 ### Backend
 **Stack:**
 - **Node.js + Express** (API)
-- **MongoDB** (player data and scores)
-- **WebSockets (Socket.io)** (real-time multiplayer)
+- **PostgreSQL** (player data and scores)
 - **JWT Authentication** (secure login)
 
 **Responsibilities:**
@@ -57,7 +56,6 @@ The goal of this new version is to transform the concept into a **polished, full
 - **Backend:** Render / Railway / AWS  
 - **Database:** MongoDB Atlas  
 - **CI/CD:** GitHub Actions  
-
 ---
 
 ## 🕹️ Planned Game Modes
@@ -108,7 +106,7 @@ The goal of this new version is to transform the concept into a **polished, full
 - [ ] Track Highscores
 
 ### Phase 4 — Backend Integration (Weeks 7–8)
-- [ ] Build Express API and MongoDB schema
+- [ ] Build Express API and PostgreSQL schema
 - [ ] Connect frontend to backend via REST
 - [ ] Store and display player history
 - [ ] Implement JWT authentication
