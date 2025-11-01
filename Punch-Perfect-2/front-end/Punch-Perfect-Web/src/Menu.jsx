@@ -8,6 +8,10 @@ function Menu() {
     navigate('/game');
   };
 
+  const startAbout = () => {
+    navigate('/about');
+  };
+
   return (
     <div className="menu-container">
       <h1>Punch Perfect Menu</h1>
@@ -15,7 +19,7 @@ function Menu() {
         <button className="start-button" onClick={startGame}>Start Game</button>
         <button>Settings</button>
         <button>Leaderboard</button>
-        <button>About</button>
+        <button onClick={startAbout}>About</button>
       </div>
     </div>
   );
