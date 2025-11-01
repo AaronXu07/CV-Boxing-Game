@@ -5,7 +5,7 @@ function Menu() {
   const navigate = useNavigate();
 
   const startGame = () => {
-    navigate('/game');
+    navigate('/gamemenu');
   };
 
   const startAbout = () => {
