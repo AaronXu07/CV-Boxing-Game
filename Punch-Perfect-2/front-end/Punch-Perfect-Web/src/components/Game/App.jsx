@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 import './App.css'
-import { initPoseLandmarker } from './mediapipe/poseLandmarker'
+import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
-import { selectedLandmarks, selectedConnections, lIndex, rIndex } from './mediapipe/landmarks.js'
-import { detectPunches } from './mediapipe/detectPunches.js'
-import { drawBox, checkBox } from './mediapipe/calibration.js'
+import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
+import { detectPunches } from '../../mediapipe/detectPunches.js'
+import { drawBox, checkBox } from '../../mediapipe/calibration.js'
 
 function App() {
   const videoRef = useRef(null)

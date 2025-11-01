@@ -1,11 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './index.css'
-import Menu from './Menu.jsx'
-import App from './App.jsx'
-import About from './About.jsx'
-import GameMenu from './GameMenu.jsx'
+import './styles/index.css'
+import Menu from './components/Menu/Menu.jsx'
+import App from './components/Game/App.jsx'
+import About from './components/About/About.jsx'
+import GameMenu from './components/GameMenu/GameMenu.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
