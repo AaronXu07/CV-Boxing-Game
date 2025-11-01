@@ -6,6 +6,7 @@ import Menu from './components/Menu/Menu.jsx'
 import App from './components/Game/App.jsx'
 import About from './components/About/About.jsx'
 import GameMenu from './components/GameMenu/GameMenu.jsx'
+import CamCalibration from './components/Game/CamCalibration.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
