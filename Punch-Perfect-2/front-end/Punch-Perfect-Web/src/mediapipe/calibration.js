@@ -4,8 +4,8 @@ const winWidth = 1920;
 const winHeight = 1080;
 
 const calibration_box = {
-    width: 500, 
-    height: 1000, 
+    width: 600, 
+    height: 700, 
 }
 
 const bounds = {
@@ -29,7 +29,7 @@ export const checkBox = (ctx, landmarks) => {
                 within = true; 
             } else {
                 within = false; 
-                //console.log("not within"); 
+                //console.log("not within:", lm); 
                 break; 
             }
         }
@@ -45,7 +45,7 @@ export const checkBox = (ctx, landmarks) => {
                     within = true; 
                 } else {
                     within = false; 
-                    //console.log("not within"); 
+                    //console.log("not within:", lm);
                     break; 
                 }
             }
@@ -58,15 +58,16 @@ export const checkBox = (ctx, landmarks) => {
 
     if(within) {
         drawBox(ctx, "green"); 
+        return true; 
     } else {
         drawBox(ctx, "red"); 
+        return false; 
     }
 }
 
 export const drawBox = (ctx, colour) => {
     ctx.strokeStyle = colour;  // outline color
-    ctx.lineWidth = 2;        // optional: outline thickness
-
+    ctx.lineWidth = 7;        // optional: outline thickness
     ctx.strokeRect(
     winWidth / 2 - calibration_box.width / 2,
     winHeight - calibration_box.height,

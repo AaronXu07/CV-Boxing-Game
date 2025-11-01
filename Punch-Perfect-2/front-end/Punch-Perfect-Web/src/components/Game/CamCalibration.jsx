@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import './App.css'
 import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
-import { detectPunches } from '../../mediapipe/detectPunches.js'
-import CamCalibration from './CamCalibration.jsx'
+import { drawBox, checkBox } from '../../mediapipe/calibration.js'
 
-function App() {
+function CamCalibration({isCalibrated, setIsCalibrated}) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
   let rafId = useRef(null)
-  const [isCalibrated, setIsCalibrated] = useState(false);
 
   useEffect(() => {
     let stream = null
@@ -67,12 +65,6 @@ function App() {
           let frameCount = 0;
           let fpsUpdateTime = performance.now();
 
-          let lPunchCounter = 0; 
-          let lPrevPunch; 
-
-          let rPunchCounter = 0; 
-          let rPrevPunch; 
-
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
             if (videoRef.current.readyState >= 2) {
@@ -94,13 +86,13 @@ function App() {
                 console.error('Pose detection failed:', err)
               }
 
-              //ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
-              ctx.fillStyle = "black";
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(videoRef.current, 1920-640, 1080-360, 640, 360); 
+              ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
+              let within = checkBox(ctx, results.landmarks[0]); 
+
+              if(within) {
+                setIsCalibrated(true); 
+              }
               
-              // Detect punches
-              const punchData = detectPunches(results.landmarks[0]);
 
               const connectorDrawingOptions = {
                 color: '#0059ffff',
@@ -108,16 +100,8 @@ function App() {
               };
               const landmarkDrawingOptions = {
                 fillColor: '#ff0000ff',
-                radius: 30,
+                radius: 20,
               };
-              const punchLandmarkOptions = {
-                fillColor: '#00ff00ff',
-                radius: 45,
-              };
-
-              ctx.save(); 
-              ctx.translate(1920-640, 1080-360); 
-              ctx.scale(1/3, 1/3);
               
               let cur_body; 
 
@@ -125,43 +109,16 @@ function App() {
                 for (let i = 0; i < results.landmarks.length; i++) {
                   cur_body = results.landmarks[i]; 
                   selectedLandmarks.forEach((lm) => {
-                    // Check if this is a hand landmark (wrist or index finger) and a punch is detected
-                    const isLeftHand = (lm === 19); // lWrist or lIndex
-                    const isRightHand = (lm === 20); // rWrist or rIndex
-                    
-                    if ((isLeftHand && punchData.leftArm) || (isRightHand && punchData.rightArm)) {
-                      drawingUtils.drawLandmarks([cur_body[lm]], punchLandmarkOptions);
-                    } else {
-                      drawingUtils.drawLandmarks([cur_body[lm]], landmarkDrawingOptions);
-                    }
+                    drawingUtils.drawLandmarks([cur_body[lm]], landmarkDrawingOptions);
                   })
 
                   drawingUtils.drawConnectors(cur_body, selectedConnections, connectorDrawingOptions);
                 }
               }
 
-
               ctx.restore(); 
               // Draw text on top of video + landmarks
               ctx.save();
-              
-              if(cur_body) {
-
-                //draw left and right hand landmark 
-                if(punchData.leftArm) {
-                  drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
-                } else {
-                  drawingUtils.drawLandmarks([cur_body[lIndex]], landmarkDrawingOptions);
-                }
-
-                if(punchData.rightArm) {
-                  drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
-                } else {
-                  drawingUtils.drawLandmarks([cur_body[rIndex]], landmarkDrawingOptions);
-                }
-
-              }
-              
 
               // Move origin to the right edge of the canvas
               ctx.translate(canvas.width, 0);
@@ -169,35 +126,11 @@ function App() {
               // Flip horizontally
               ctx.scale(-1, 1);
 
-              // Display punch info
-              let punchText = 'None';
-              if (punchData.detected) {
-                if (punchData.leftArm && punchData.rightArm) {
-                  punchText = 'Both Arms!';
-                } else if (punchData.leftArm) {
-                  punchText = 'Left Arm';
-                } else if (punchData.rightArm) {
-                  punchText = 'Right Arm';
-                }
-              }
-
-              if(punchData.leftArm && !lPrevPunch){
-                lPunchCounter++;
-              }
-              if(punchData.rightArm && !rPrevPunch){
-                rPunchCounter++;
-              }
-              lPrevPunch = punchData.leftArm;
-              rPrevPunch = punchData.rightArm;
-
               // Draw text
               ctx.font = '50px Calibri';
               ctx.fillStyle = 'white';
               ctx.textAlign = 'left';
               ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
-              ctx.fillText(`Punch: ${punchText}`, 30, 150); 
-              ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100); 
-              ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150); 
               ctx.restore();
             }
           }
@@ -235,15 +168,12 @@ function App() {
   }, [])
 
   return (
-    <>
-    {!isCalibrated ? (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>) :
-    (<div className="app-root">
+    <div className="app-root">
       <h1>Punch Perfect — Webcam</h1>
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
       <canvas id="output" ref={canvasRef} width={1920} height={1080} />
-    </div>)}
-    </>
+    </div>
   )
 }
 
-export default App
+export default CamCalibration
