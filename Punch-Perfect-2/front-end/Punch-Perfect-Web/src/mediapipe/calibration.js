@@ -5,7 +5,7 @@ const winHeight = 1080;
 
 const calibration_box = {
     width: 600, 
-    height: 700, 
+    height: 800, 
 }
 
 const bounds = {
@@ -16,7 +16,7 @@ const bounds = {
 }
 
 export const checkBox = (ctx, landmarks) => {
-    let within = true; 
+    let within = false; 
 
     try {
         for (const lm of lArm) {

@@ -95,6 +95,14 @@ function App() {
           let rPunchCounter = 0; 
           let rPrevPunch; 
 
+          let lPunchState = false; 
+          let rPunchState = false; 
+
+          let lPrevPunchState = false; 
+          let rPrevPunchState = false; 
+
+          let smoothedLandmarks; 
+
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
             if (videoRef.current.readyState >= 2) {
@@ -151,48 +159,81 @@ function App() {
               
               let cur_body; 
 
-              if (results && results.landmarks) {
-                for (let i = 0; i < results.landmarks.length; i++) {
-                  cur_body = results.landmarks[i]; 
-                  selectedLandmarks.forEach((lm) => {
-                    // Check if this is a hand landmark (wrist or index finger) and a punch is detected
-                    const isLeftHand = (lm === 19); // lWrist or lIndex
-                    const isRightHand = (lm === 20); // rWrist or rIndex
-                    
-                    if ((isLeftHand && punchData.leftArm) || (isRightHand && punchData.rightArm)) {
-                      drawingUtils.drawLandmarks([cur_body[lm]], punchLandmarkOptions);
-                    } else {
-                      drawingUtils.drawLandmarks([cur_body[lm]], landmarkDrawingOptions);
-                    }
-                  })
-
-                  drawingUtils.drawConnectors(cur_body, selectedConnections, connectorDrawingOptions);
+              if (results && results.landmarks[0]) {
+                const newLandmarks = results.landmarks[0]; // person #1
+                
+                if (!smoothedLandmarks) {
+                  // Initialize first frame directly
+                  smoothedLandmarks = results.landmarks[0];
+                } else {
+                  // Blend each landmark with its previous smoothed version
+                  const smoothFactor = 0.4; // 0 = no smoothing, 1 = very stable but laggy
+                  for (let i = 0; i < newLandmarks.length; i++) {
+                    smoothedLandmarks[i].x =
+                      smoothFactor * smoothedLandmarks[i].x + (1 - smoothFactor) * newLandmarks[i].x;
+                    smoothedLandmarks[i].y =
+                      smoothFactor * smoothedLandmarks[i].y + (1 - smoothFactor) * newLandmarks[i].y;
+                    smoothedLandmarks[i].z =
+                      smoothFactor * smoothedLandmarks[i].z + (1 - smoothFactor) * newLandmarks[i].z;
+                    smoothedLandmarks[i].visibility =
+                      smoothFactor * smoothedLandmarks[i].visibility + (1 - smoothFactor) * newLandmarks[i].visibility;
+                  }
                 }
-              }
 
+                cur_body = smoothedLandmarks; 
+
+                lPunchState = false; 
+                rPunchState = false; 
+
+                selectedLandmarks.forEach((lm) => {
+                  // Check if this is a hand landmark (wrist or index finger) and a punch is detected
+                  const isLeftHand = (lm === 19); // lWrist or lIndex
+                  const isRightHand = (lm === 20); // rWrist or rIndex
+
+                  const landmark = cur_body[lm];
+                  const visible = landmark.visibility !== undefined ? landmark.visibility > 0.3 : true; // threshold
+  
+                  if (!visible) return;
+
+                  if(isLeftHand && punchData.leftArm && lPrevPunch) {
+                    lPunchState = true; 
+                  } 
+
+                  if(isRightHand && punchData.rightArm && rPrevPunch) {
+                    rPunchState = true; 
+                  } 
+                  
+                  if (lPunchState && isLeftHand || rPunchState && isRightHand) {
+                    drawingUtils.drawLandmarks([cur_body[lm]], punchLandmarkOptions);
+                  } else {
+                    drawingUtils.drawLandmarks([cur_body[lm]], landmarkDrawingOptions);
+                  }
+                })
+
+                drawingUtils.drawConnectors(cur_body, selectedConnections, connectorDrawingOptions);
+              }
 
               ctx.restore(); 
               // Draw text on top of video + landmarks
               ctx.save();
               
               if(cur_body) {
-
                 //draw left and right hand landmark 
-                if(punchData.leftArm) {
+                if(lPunchState) {
                   drawingUtils.drawLandmarks([cur_body[lIndex]], punchLandmarkOptions);
                 } 
                 else {
                   drawingUtils.drawLandmarks([cur_body[lIndex]], leftHandOptions);
                 }
 
-                if(punchData.rightArm) {
+                if(rPunchState) {
                   drawingUtils.drawLandmarks([cur_body[rIndex]], punchLandmarkOptions);
                 } 
                 else {
                   drawingUtils.drawLandmarks([cur_body[rIndex]], rightHandOptions);
                 }
 
-                if (punchData.leftArm) {
+                if (lPunchState) {
                   const leftHand = { x: 1920 - (cur_body[lIndex].x * 1920), y: cur_body[lIndex].y * 1080 };
                   
                   targetsRef.current = targetsRef.current.filter(target => {
@@ -207,7 +248,7 @@ function App() {
                   });
                 }
                 
-                if (punchData.rightArm) {
+                if (rPunchState) {
                   const rightHand = { x: 1920 - (cur_body[rIndex].x * 1920), y: cur_body[rIndex].y * 1080 };
                   
                   targetsRef.current = targetsRef.current.filter(target => {
@@ -234,21 +275,24 @@ function App() {
               // Display punch info
               let punchText = 'None';
               if (punchData.detected) {
-                if (punchData.leftArm && punchData.rightArm) {
+                if (lPunchState && rPunchState) {
                   punchText = 'Both Arms!';
-                } else if (punchData.leftArm) {
+                } else if (lPunchState) {
                   punchText = 'Left Arm';
-                } else if (punchData.rightArm) {
+                } else if (rPunchState) {
                   punchText = 'Right Arm';
                 }
               }
 
-              if(punchData.leftArm && !lPrevPunch){
+              if(lPunchState && !lPrevPunchState){
                 lPunchCounter++;
               }
-              if(punchData.rightArm && !rPrevPunch){
+              if(rPunchState && !rPrevPunchState){
                 rPunchCounter++;
               }
+
+              lPrevPunchState = lPunchState; 
+              rPrevPunchState = rPunchState; 
               lPrevPunch = punchData.leftArm;
               rPrevPunch = punchData.rightArm;
 

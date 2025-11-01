@@ -41,14 +41,14 @@ export class Target{
     checkCollisionRight(x, y){
         if(this.hand > 1){
             const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2)
-            return distance < this.radius + 5;
+            return distance < this.radius + 30;
         }
         return false;
     }
     checkCollisionLeft(x, y){
         if(this.hand <= 1){
             const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2)
-            return distance < this.radius + 5;
+            return distance < this.radius + 30;
         }
         return false;
     }
