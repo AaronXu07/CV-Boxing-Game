@@ -14,6 +14,9 @@ function App() {
   const [isCalibrated, setIsCalibrated] = useState(false);
 
   useEffect(() => {
+
+    if(!isCalibrated) return;
+
     let stream = null
 
     async function startCamera() {
@@ -232,7 +235,7 @@ function App() {
       }
       if (rafId.current) cancelAnimationFrame(rafId.current)
     }
-  }, [])
+  }, [isCalibrated])
 
   return (
     <>
