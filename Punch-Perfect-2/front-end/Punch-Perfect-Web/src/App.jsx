@@ -4,6 +4,7 @@ import { initPoseLandmarker } from './mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from './mediapipe/landmarks.js'
 import { detectPunches } from './mediapipe/detectPunches.js'
+import { drawBox, checkBox } from './mediapipe/calibration.js'
 
 function App() {
   const videoRef = useRef(null)
@@ -25,20 +26,20 @@ function App() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream
 
-          console.log('webcam stream attached to video element', stream)
-          console.log('video element readyState', videoRef.current.readyState)
-          console.log('initial canvas size', canvasRef.current?.width, canvasRef.current?.height)
+          //console.log('webcam stream attached to video element', stream)
+          //console.log('video element readyState', videoRef.current.readyState)
+          //console.log('initial canvas size', canvasRef.current?.width, canvasRef.current?.height)
 
           // try to start playback (some browsers require an explicit play call)
           try {
             await videoRef.current.play()
-            console.log('video.play() succeeded')
+            //console.log('video.play() succeeded')
           } catch (playErr) {
             console.warn('video.play() failed or is deferred:', playErr)
           }
 
           poseLandmarkRef.current = await initPoseLandmarker()
-          console.log('PoseLandmarker loaded')
+          //console.log('PoseLandmarker loaded')
 
           const canvas = canvasRef.current
           if (!canvas) return
@@ -51,7 +52,7 @@ function App() {
           if (canvas.width !== vw || canvas.height !== vh) {
             canvas.width = vw
             canvas.height = vh
-            console.log('canvas resized to', vw, vh)
+            //console.log('canvas resized to', vw, vh)
           }
 
           // Draw a test background so we know the canvas is being updated
@@ -65,11 +66,11 @@ function App() {
           let frameCount = 0;
           let fpsUpdateTime = performance.now();
 
-          let LpunchCounter = 0;
-          let LprevPunch;
+          let lPunchCounter = 0;
+          let lPrevPunch;
 
-          let RpunchCounter = 0;
-          let RprevPunch;
+          let rPunchCounter = 0;
+          let rPrevPunch;
 
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
@@ -99,6 +100,7 @@ function App() {
               
               // Detect punches
               const punchData = detectPunches(results.landmarks[0]);
+              checkBox(ctx, results.landmarks[0]); 
 
               const connectorDrawingOptions = {
                 color: '#0059ffff',
@@ -179,14 +181,14 @@ function App() {
                 }
               }
 
-              if(LprevPunch && !punchData.leftArm){
-                LpunchCounter++;
+              if(punchData.leftArm && !lPrevPunch){
+                lPunchCounter++;
               }
-              if(RprevPunch && !punchData.rightArm){
-                RpunchCounter++;
+              if(punchData.rightArm && !rPrevPunch){
+                rPunchCounter++;
               }
-              LprevPunch = punchData.leftArm;
-              RprevPunch = punchData.rightArm;
+              lPrevPunch = punchData.leftArm;
+              rPrevPunch = punchData.rightArm;
 
               // Draw text
               ctx.font = '50px Calibri';
@@ -194,8 +196,8 @@ function App() {
               ctx.textAlign = 'left';
               ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
               ctx.fillText(`Punch: ${punchText}`, 30, 150); 
-              ctx.fillText(`L Punches: ${LpunchCounter}`, 1600, 100); 
-              ctx.fillText(`R Punches: ${RpunchCounter}`, 1600, 150); 
+              ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100); 
+              ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150); 
               ctx.restore();
             }
           }
