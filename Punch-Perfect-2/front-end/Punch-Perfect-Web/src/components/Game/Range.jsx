@@ -7,6 +7,7 @@ import { detectPunches } from '../../mediapipe/detectPunches.js'
 import CamCalibration from './CamCalibration.jsx'
 import { useNavigate } from 'react-router-dom'
 import { Target } from './Target.js'
+import { useSound } from '../../hooks/useSound.js'
 
 //==================== SOUNDS =======================
 import punchSound from '../../assets/sounds/punch.mp3'
@@ -75,6 +76,7 @@ function Range() {
 
   // ===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
+  const { playPunchSound, playHitSound } = useSound(); 
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -86,37 +88,37 @@ function Range() {
   const punchAudioRef = useRef(null);
   const targetBreakAudioRef = useRef(null);
 
-  // ===== Initialize Sounds =====
-  useEffect(() => {
-    // Create audio elements
-    punchAudioRef.current = new Audio(punchSound);
-    targetBreakAudioRef.current = new Audio(targetBreakSound);
+  // // ===== Initialize Sounds =====
+  // useEffect(() => {
+  //   // Create audio elements
+  //   punchAudioRef.current = new Audio(punchSound);
+  //   targetBreakAudioRef.current = new Audio(targetBreakSound);
     
-    // Configure audio (optional)
-    punchAudioRef.current.volume = 0.5; // 50% volume
-    targetBreakAudioRef.current.volume = 0.5; // 75% volume
+  //   // Configure audio (optional)
+  //   punchAudioRef.current.volume = 0.5; // 50% volume
+  //   targetBreakAudioRef.current.volume = 0.5; // 75% volume
 
-    // Preload sounds
-    punchAudioRef.current.load();
-    targetBreakAudioRef.current.load();
-  }, []);
+  //   // Preload sounds
+  //   punchAudioRef.current.load();
+  //   targetBreakAudioRef.current.load();
+  // }, []);
 
-  // ===== Sound Playing Functions =====
-  const playPunchSound = () => {
-    if (punchAudioRef.current) {
-      const sound = punchAudioRef.current.cloneNode();
-      sound.playBackRate = 1.2; //1.2x speed
-      sound.play().catch(err => console.warn('Punch sound failed:', err));
-    }
-  };
+  // // ===== Sound Playing Functions =====
+  // const playPunchSound = () => {
+  //   if (punchAudioRef.current) {
+  //     const sound = punchAudioRef.current.cloneNode();
+  //     sound.playBackRate = 1.2; //1.2x speed
+  //     sound.play().catch(err => console.warn('Punch sound failed:', err));
+  //   }
+  // };
 
-  const playTargetBreakSound = () => {
-    if (targetBreakAudioRef.current) {
-      const sound = targetBreakAudioRef.current.cloneNode();
-      sound.playBackRate = 1.2; //1.2x speed
-      sound.play().catch(err => console.warn('Target Break sound failed:', err));
-    }
-  };
+  // const playTargetBreakSound = () => {
+  //   if (targetBreakAudioRef.current) {
+  //     const sound = targetBreakAudioRef.current.cloneNode();
+  //     sound.playBackRate = 1.2; //1.2x speed
+  //     sound.play().catch(err => console.warn('Target Break sound failed:', err));
+  //   }
+  // };
 
   // ===== Navigation =====
   const back = () => {
@@ -251,7 +253,7 @@ function Range() {
         if (hitByLeft) {
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
-          playTargetBreakSound();
+          playHitSound();
           return false;
         }
         return true;
@@ -269,7 +271,7 @@ function Range() {
         if (hitByRight) {
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
-          playTargetBreakSound();
+          playHitSound();
           return false;
         }
         return true;
