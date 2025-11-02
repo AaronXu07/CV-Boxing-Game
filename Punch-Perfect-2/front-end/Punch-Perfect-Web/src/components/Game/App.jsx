@@ -8,6 +8,9 @@ import CamCalibration from './CamCalibration.jsx'
 import { useNavigate } from 'react-router-dom'
 import { Target } from './Target.js'
 
+//==================== SOUNDS =======================
+import punchSound from '../../assets/sounds/punch.mp3'
+import targetBreakSound from '../../assets/sounds/target-break.mp3'
 //==================== CONSTANTS ====================
 const VIDEO_CONFIG = {
   width: { ideal: 1920 },
@@ -78,6 +81,42 @@ function App() {
   const poseLandmarkRef = useRef(null);
   const rafId = useRef(null);
   const targetsRef = useRef([]);
+
+  // ===== Sound Refs =====
+  const punchAudioRef = useRef(null);
+  const targetBreakAudioRef = useRef(null);
+
+  // ===== Initialize Sounds =====
+  useEffect(() => {
+    // Create audio elements
+    punchAudioRef.current = new Audio(punchSound);
+    targetBreakAudioRef.current = new Audio(targetBreakSound);
+    
+    // Configure audio (optional)
+    punchAudioRef.current.volume = 0.5; // 50% volume
+    targetBreakAudioRef.current.volume = 0.5; // 75% volume
+
+    // Preload sounds
+    punchAudioRef.current.load();
+    targetBreakAudioRef.current.load();
+  }, []);
+
+  // ===== Sound Playing Functions =====
+  const playPunchSound = () => {
+    if (punchAudioRef.current) {
+      const sound = punchAudioRef.current.cloneNode();
+      sound.playBackRate = 1.2; //1.2x speed
+      sound.play().catch(err => console.warn('Punch sound failed:', err));
+    }
+  };
+
+  const playTargetBreakSound = () => {
+    if (targetBreakAudioRef.current) {
+      const sound = targetBreakAudioRef.current.cloneNode();
+      sound.playBackRate = 1.2; //1.2x speed
+      sound.play().catch(err => console.warn('Target Break sound failed:', err));
+    }
+  };
 
   // ===== Navigation =====
   const back = () => {
@@ -212,6 +251,7 @@ function App() {
         if (hitByLeft) {
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
+          playTargetBreakSound();
           return false;
         }
         return true;
@@ -229,6 +269,7 @@ function App() {
         if (hitByRight) {
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
+          playTargetBreakSound();
           return false;
         }
         return true;
@@ -352,9 +393,11 @@ function App() {
             // Update punch counters
             if (lPunchState && !lPrevPunchState) {
               lPunchCounter++;
+              playPunchSound();
             }
             if (rPunchState && !rPrevPunchState) {
               rPunchCounter++;
+              playPunchSound();
             }
 
             // Update previous states
