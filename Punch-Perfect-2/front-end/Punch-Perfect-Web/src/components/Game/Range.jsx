@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import './App.css'
+import './Range.css'
 import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils } from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
@@ -70,7 +70,7 @@ const DRAWING_OPTIONS = {
 };
 
 // ==================== COMPONENT ====================
-function App() {
+function Range() {
   const navigate = useNavigate();
 
   // ===== State & Refs =====
@@ -492,4 +492,4 @@ function App() {
   );
 }
 
-export default App
+export default Range

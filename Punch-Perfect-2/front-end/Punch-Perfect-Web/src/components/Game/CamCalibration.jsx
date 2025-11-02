@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import './App.css'
+import './Range.css'
 import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
