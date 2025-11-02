@@ -1,14 +1,44 @@
-.about-container{
-    background: rgb(0, 0, 0);
+/* About Container */
+.about-container {
     min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    padding: 2rem;
+    box-sizing: border-box;
+    position: relative;
+    font-family: 'Arial', sans-serif;
 }
 
-.about-container h1{
+/* Fixed background layer */
+.about-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    z-index: -1;
+}
+
+/* Header */
+.about-container h1 {
     text-align: center;
     padding-top: 5%;
+    font-size: 3rem;
+    margin: 0;
+    margin-bottom: 2rem;
+    background: linear-gradient(45deg, #a8d5ff, #d4e9ff, #85c1ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 8px rgba(133, 193, 255, 0.5);
 }
 
-.about-buttons{
+/* Back Button Container */
+.about-buttons {
     padding-top: 20%;
     display: flex;
     flex-direction: column;
@@ -17,55 +47,88 @@
     margin: 0 auto;
 }
 
-.about-buttons .back-button{
-    font-size: 24px;
+/* Back Button */
+.about-buttons .back-button {
     position: absolute;
-    top: 5%; 
-    left: 2%; 
-    
-    padding: 10px 20px;
-    font-size: 20px;
-    color: white;
+    top: 5%;
+    left: 2%;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
     cursor: pointer;
-    border-radius: 20px;
-    background: rgba(0, 0, 90, 0.893);
-    transition: transform 0.2s;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.about-buttons button{
-    padding: 20px 20px;
+.about-buttons .back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(-5px);
+}
 
-    font-size: 20px;
-    color: white;
-
+.about-buttons button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
     cursor: pointer;
-    border-radius: 20px;
-    background: rgba(0, 0, 90, 0.893);
-    transition: transform 0.2s;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.about-buttons button:hover{
-    transform: scale(1.05);
-    background: rgb(105, 161, 180);
-    color: rgba(0, 0, 90, 0.893);
+.about-buttons button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.about-text{
+/* About Text Content */
+.about-text {
     display: flex;
     flex-direction: column;
-    width: 60%;
+    max-width: 800px;
+    width: 70%;
     margin: 0 auto;
-    padding: 20px;
-    
-    font-size: 18px;
-    line-height: 1.8; 
-    color: white;
-    
-    background: rgba(0, 0, 90, 0.893);
-    border-radius: 10px;
+    margin-top: 2rem;
+    padding: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .about-text p {
-    margin-bottom: 20px;
-    text-align: justify; 
+    margin: 0;
+    text-align: justify;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .about-container h1 {
+        font-size: 2rem;
+        padding-top: 10%;
+    }
+
+    .about-text {
+        width: 90%;
+        padding: 1.5rem;
+        font-size: 1rem;
+    }
+
+    .about-buttons .back-button {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+    }
 }

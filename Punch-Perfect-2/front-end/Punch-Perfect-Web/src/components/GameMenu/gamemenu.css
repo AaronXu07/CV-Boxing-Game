@@ -1,42 +1,78 @@
-.game-menu-container{
-    background: rgb(0, 0, 0);
+/* Game Menu Container */
+.game-menu-container {
     min-height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    padding: 2rem;
+    box-sizing: border-box;
+    position: relative;
+    font-family: 'Arial', sans-serif;
 }
 
-.game-menu-container h1{
+/* Fixed background layer */
+.game-menu-container::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+    z-index: -1;
+}
+
+/* Header */
+.game-menu-container h1 {
     text-align: center;
     padding-top: 5%;
+    font-size: 3rem;
+    margin: 0;
+    margin-bottom: 2rem;
+    background: linear-gradient(45deg, #a8d5ff, #d4e9ff, #85c1ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 4px 8px rgba(133, 193, 255, 0.5);
 }
 
-.game-menu-buttons{
-    padding-top: 1%;
+/* Game Mode Buttons Container */
+.game-menu-buttons {
+    padding-top: 5%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 1.5rem;
     width: 30%;
+    max-width: 500px;
+    min-width: 300px;
     margin: 0 auto;
 }
 
-.game-menu-buttons button{
-    padding: 20px 20px;
-
-    font-size: 20px;
-    color: white;
-
+/* Game Mode Buttons */
+.game-menu-buttons button {
+    padding: 1.5rem 2rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ffffff;
     cursor: pointer;
-    border-radius: 20px;
-    background: rgba(0, 0, 90, 0.893);
-    transition: transform 0.2s;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.game-menu-buttons button:hover{
-    transform: scale(1.05);
-    background: rgb(105, 161, 180);
-    color: rgba(0, 0, 90, 0.893);
+.game-menu-buttons button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.about-buttons{
-    padding-top: 20%;
+/* Back Button Container */
+.about-buttons {
+    padding: 5%;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -44,35 +80,69 @@
     margin: 0 auto;
 }
 
-.about-buttons .back-button{
-    font-size: 24px;
+/* Back Button */
+.about-buttons .back-button {
     position: absolute;
-    top: 5%; 
-    left: 2%; 
-    
-    padding: 10px 20px;
-    font-size: 20px;
-    color: white;
+    top: 5%;
+    left: 2%;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
     cursor: pointer;
-    border-radius: 20px;
-    background: rgba(0, 0, 90, 0.893);
-    transition: transform 0.2s;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.about-buttons button{
-    padding: 20px 20px;
-
-    font-size: 20px;
-    color: white;
-
-    cursor: pointer;
-    border-radius: 20px;
-    background: rgba(0, 0, 90, 0.893);
-    transition: transform 0.2s;
+.about-buttons .back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(-5px);
 }
 
-.about-buttons button:hover{
-    transform: scale(1.05);
-    background: rgb(105, 161, 180);
-    color: rgba(0, 0, 90, 0.893);
+.about-buttons button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.about-buttons button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-menu-container h1 {
+        font-size: 2rem;
+        padding-top: 10%;
+    }
+
+    .game-menu-buttons {
+        width: 80%;
+        min-width: unset;
+        padding-top: 10%;
+    }
+
+    .game-menu-buttons button {
+        font-size: 1.1rem;
+        padding: 1.2rem 1.5rem;
+    }
+
+    .about-buttons .back-button {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+    }
 }
