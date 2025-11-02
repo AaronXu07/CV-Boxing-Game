@@ -5,11 +5,19 @@ import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision'
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
 import { drawBox, checkBox } from '../../mediapipe/calibration.js'
 
+import { useNavigate } from 'react-router-dom'
+
 function CamCalibration({isCalibrated, setIsCalibrated}) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
   let rafId = useRef(null)
+
+  const navigate = useNavigate();
+  
+  const back = () => {
+    navigate('/');
+  };
 
   useEffect(() => {
     let stream = null
@@ -169,7 +177,12 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
 
   return (
     <div className="app-root">
-      <h1>Punch Perfect — Webcam</h1>
+      <h1>Camera Calibration</h1>
+
+      <div className="outside-buttons">
+            <button className="back-button" onClick={back}>◄ Back to Menu</button>
+      </div>
+
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
       <canvas id="output" ref={canvasRef} width={1920} height={1080} />
     </div>
