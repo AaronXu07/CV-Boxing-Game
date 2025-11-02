@@ -18,23 +18,61 @@ export class Target{
     }
     
     draw(ctx){
-        ctx.beginPath();
-
         if(this.hand > 1){
+            // Right hand target (Blue)
+
+            ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 0, 255, 1)';
+            ctx.fillStyle = 'rgba(140, 0, 255, 1)';
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
-            ctx.lineWidth = 5;
-            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(140, 0, 255, 1)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            ctx.fill();
         }
         else{
+            // Left hand target (Orange) - Draw from largest to smallest
+
+            ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(255, 162, 0, 1)';
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
-            ctx.lineWidth = 5;
-            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 162, 0, 1)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+            ctx.fill();
         }
     }
 

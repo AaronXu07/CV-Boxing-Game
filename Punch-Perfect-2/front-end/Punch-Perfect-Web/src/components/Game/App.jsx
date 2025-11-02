@@ -31,7 +31,7 @@ const MINIVIEW_POSITION = {
 
 const TARGET_FPS = 30;
 const FRAME_TIME = 1000 / TARGET_FPS;
-const SMOOTH_FACTOR = 0.35; // 0 = no smoothing, 1 = very stable but laggy
+const SMOOTH_FACTOR = 0.38; // 0 = no smoothing, 1 = very stable but laggy
 const VISIBILITY_THRESHOLD = 0.3;
 const TARGET_SPAWN_INTERVAL = 100; // Check every 100ms
 
@@ -44,17 +44,25 @@ const DRAWING_OPTIONS = {
     fillColor: '#ff0000ff',
     radius: 30,
   },
-  punchLandmark: {
-    fillColor: '#00ff00ff',
-    radius: 45,
+  LpunchLandmark: {
+    fillColor: '#ffa200ff',
+    color: '#00ff00ff',  
+    lineWidth: 6,
+    radius: 50,
+  },
+  RpunchLandmark: {
+    fillColor: '#ae00ffff',
+    color: '#00ff00ff',    
+    lineWidth: 6,
+    radius: 50,
   },
   leftHand: {
-    fillColor: '#ffa200ff',
-    radius: 45,
+    fillColor: '#ffa200aa',
+    radius: 30,
   },
   rightHand: {
-    fillColor: '#0000ffff',
-    radius: 45,
+    fillColor: '#ae00ffaa',
+    radius: 30,
   }
 };
 
@@ -147,8 +155,11 @@ function App() {
       if (!visible) return;
 
       let options = DRAWING_OPTIONS.landmark;
-      if ((lPunchState && isLeftHand) || (rPunchState && isRightHand)) {
-        options = DRAWING_OPTIONS.punchLandmark;
+      if(lPunchState && isLeftHand){
+        options = DRAWING_OPTIONS.LpunchLandmark;
+      }
+      if(rPunchState && isRightHand){
+        options = DRAWING_OPTIONS.RpunchLandmark;
       }
 
       drawingUtils.drawLandmarks([landmark], options);
@@ -162,11 +173,11 @@ function App() {
     const { lPunchState, rPunchState } = punchStates;
 
     // Left hand
-    const leftOptions = lPunchState ? DRAWING_OPTIONS.punchLandmark : DRAWING_OPTIONS.leftHand;
+    const leftOptions = lPunchState ? DRAWING_OPTIONS.LpunchLandmark : DRAWING_OPTIONS.leftHand;
     drawingUtils.drawLandmarks([landmarks[lIndex]], leftOptions);
 
     // Right hand
-    const rightOptions = rPunchState ? DRAWING_OPTIONS.punchLandmark : DRAWING_OPTIONS.rightHand;
+    const rightOptions = rPunchState ? DRAWING_OPTIONS.RpunchLandmark : DRAWING_OPTIONS.rightHand;
     drawingUtils.drawLandmarks([landmarks[rIndex]], rightOptions);
   };
 
