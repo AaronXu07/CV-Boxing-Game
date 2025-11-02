@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './styles/index.css'
 import Menu from './components/Menu/Menu.jsx'
-import App from './components/Game/App.jsx'
+import Range from './components/Game/Range.jsx'
 import About from './components/About/About.jsx'
 import GameMenu from './components/GameMenu/GameMenu.jsx'
 import CamCalibration from './components/Game/CamCalibration.jsx'
@@ -14,7 +14,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<Menu />} />
         <Route path="/gamemenu" element={<GameMenu />} />
-        <Route path="/game" element={<App />} />
+        <Route path="/game" element={<Range />} />
         <Route path="/about" element={<About />} />
       </Routes>
     </BrowserRouter>
