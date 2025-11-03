@@ -76,7 +76,7 @@ function Range() {
 
   // ===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
-  const { playPunchSound, playHitSound } = useSound(); 
+  const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
   
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -88,7 +88,12 @@ function Range() {
   const punchAudioRef = useRef(null);
   const targetBreakAudioRef = useRef(null);
 
-  // // ===== Initialize Sounds =====
+  // Play success sound when calibration is completed
+  useEffect(() => {
+    if (isCalibrated) {
+      playSuccessSound();
+    }
+  }, [isCalibrated, playSuccessSound]);  // // ===== Initialize Sounds =====
   // useEffect(() => {
   //   // Create audio elements
   //   punchAudioRef.current = new Audio(punchSound);
@@ -122,7 +127,8 @@ function Range() {
 
   // ===== Navigation =====
   const back = () => {
-    navigate('/');
+    playButtonSound();
+    setTimeout(() => navigate('/'), 100);
   };
 
   // ===== Target Management =====

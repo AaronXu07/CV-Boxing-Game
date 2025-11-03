@@ -1,19 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import './Menu.css';
+import { useSound } from '../../hooks/useSound.js';
 
 function Menu() {
   const navigate = useNavigate();
+  const { playButtonSound } = useSound();
 
   const startGame = () => {
-    navigate('/gamemenu');
+    playButtonSound();
+    setTimeout(() => navigate('/gamemenu'), 100);
   };
 
   const startAbout = () => {
-    navigate('/about');
+    playButtonSound();
+    setTimeout(() => navigate('/about'), 100);
   };
 
   const startLeaderboard = () => {
-    navigate('/leaderboard')
+    playButtonSound();
+    setTimeout(() => navigate('/leaderboard'), 100);
   }
 
   return (
@@ -21,10 +26,10 @@ function Menu() {
       <h1>Punch Perfect Menu</h1>
       <div className="menu-buttons">
         <button className="start-button" onClick={startGame}>Start Game</button>
-        <button>Settings</button>
+        <button onClick={() => playButtonSound()}>Settings</button>
         <button onClick={startLeaderboard}>Leaderboard</button>
         <button onClick={startAbout}>About</button>
-        <button >Account</button>
+        <button onClick={() => playButtonSound()}>Account</button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
 import { drawBox, checkBox } from '../../mediapipe/calibration.js'
+import { useSound } from '../../hooks/useSound.js'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -14,13 +15,16 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
   let rafId = useRef(null)
 
   const navigate = useNavigate();
+  const { playButtonSound, playSuccessSound } = useSound();
   
   const back = () => {
-    navigate('/');
+    playButtonSound();
+    setTimeout(() => navigate('/'), 100);
   };
 
   useEffect(() => {
     let stream = null
+    let hasPlayedSuccessSound = false;
 
     async function startCamera() {
       try {
@@ -97,8 +101,9 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
               ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
               let within = checkBox(ctx, results.landmarks[0]); 
 
-              if(within) {
-                setIsCalibrated(true); 
+              if(within && !hasPlayedSuccessSound) {
+                hasPlayedSuccessSound = true;
+                setTimeout(() => setIsCalibrated(true), 100);
               }
               
 

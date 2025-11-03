@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import './about.css';
+import { useSound } from '../../hooks/useSound.js';
 
 function About() {
   const navigate = useNavigate();
+  const { playButtonSound } = useSound();
 
   const back = () => {
-    navigate('/');
+    playButtonSound();
+    setTimeout(() => navigate('/'), 100);
   };
 
   return (

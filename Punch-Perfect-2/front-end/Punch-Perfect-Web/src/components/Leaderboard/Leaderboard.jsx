@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './leaderboard.css'
+import { useSound } from '../../hooks/useSound.js'
 
 // Mock data - will be replaced with backend data later
 const mockData = {
@@ -44,10 +45,17 @@ const mockData = {
 
 function Leaderboard() {
   const navigate = useNavigate();
+  const { playButtonSound } = useSound();
   const [activeTab, setActiveTab] = useState('reactionTime');
 
   const back = () => {
-    navigate('/');
+    playButtonSound();
+    setTimeout(() => navigate('/'), 100);
+  };
+
+  const handleTabChange = (tab) => {
+    playButtonSound();
+    setActiveTab(tab);
   };
 
   const getTabData = () => {
@@ -100,19 +108,19 @@ function Leaderboard() {
       <div className="tab-navigation">
         <button
           className={`tab-button ${activeTab === 'reactionTime' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reactionTime')}
+          onClick={() => handleTabChange('reactionTime')}
         >
           Reaction Time
         </button>
         <button
           className={`tab-button ${activeTab === 'targetTest' ? 'active' : ''}`}
-          onClick={() => setActiveTab('targetTest')}
+          onClick={() => handleTabChange('targetTest')}
         >
           Target Test
         </button>
         <button
           className={`tab-button ${activeTab === 'fruitNinja' ? 'active' : ''}`}
-          onClick={() => setActiveTab('fruitNinja')}
+          onClick={() => handleTabChange('fruitNinja')}
         >
           Fruit Ninja
         </button>

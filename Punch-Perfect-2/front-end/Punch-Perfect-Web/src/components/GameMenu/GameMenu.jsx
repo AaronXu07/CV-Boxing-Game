@@ -1,15 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import './gamemenu.css';
+import { useSound } from '../../hooks/useSound.js';
 
 function GameMenu() {
   const navigate = useNavigate();
+  const { playButtonSound } = useSound();
 
   const startTargetMode = () => {
-    navigate('/game');
+    playButtonSound();
+    setTimeout(() => navigate('/game'), 100);
   };
 
   const back = () => {
-    navigate('/');
+    playButtonSound();
+    setTimeout(() => navigate('/'), 100);
   };
 
   return (
@@ -22,9 +26,9 @@ function GameMenu() {
 
       <div className="game-menu-buttons">
         <button onClick={startTargetMode}>Range</button>
-        <button>Target Test</button>
-        <button>Reaction Time Test</button>
-        <button>Fruit Ninja</button>
+        <button onClick={() => playButtonSound()}>Target Test</button>
+        <button onClick={() => playButtonSound()}>Reaction Time Test</button>
+        <button onClick={() => playButtonSound()}>Fruit Ninja</button>
       </div>
     </div>
   );
