@@ -239,10 +239,11 @@ function Range() {
   };
 
   // ===== Collision Detection =====
-  const handleCollisions = (landmarks, punchStates) => {
+  const handleCollisions = (landmarks, punchStates, handStates) => {
     const { lPunchState, rPunchState } = punchStates;
+    const { leftHandCanHit, rightHandCanHit, setLeftHandCanHit, setRightHandCanHit } = handStates;
 
-    if (lPunchState) {
+    if (lPunchState && leftHandCanHit) {
       const leftHand = { 
         x: CANVAS_SIZE.width - (landmarks[lIndex].x * CANVAS_SIZE.width), 
         y: landmarks[lIndex].y * CANVAS_SIZE.height 
@@ -254,13 +255,14 @@ function Range() {
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
           playHitSound();
+          setLeftHandCanHit(false); // Left hand must return to non-punching state
           return false;
         }
         return true;
       });
     }
     
-    if (rPunchState) {
+    if (rPunchState && rightHandCanHit) {
       const rightHand = { 
         x: CANVAS_SIZE.width - (landmarks[rIndex].x * CANVAS_SIZE.width), 
         y: landmarks[rIndex].y * CANVAS_SIZE.height 
@@ -272,6 +274,7 @@ function Range() {
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
           playHitSound();
+          setRightHandCanHit(false); // Right hand must return to non-punching state
           return false;
         }
         return true;
@@ -336,6 +339,10 @@ function Range() {
         let lPrevPunchState = false;
         let rPrevPunchState = false;
 
+        // Hand hit cooldown tracking - hands must return to non-punching state after a hit
+        let leftHandCanHit = true;
+        let rightHandCanHit = true;
+
         // Landmark smoothing
         let smoothedLandmarks = null;
 
@@ -374,6 +381,16 @@ function Range() {
             // Detect punches
             const punchData = detectPunches(results.landmarks[0]);
             
+            // Check if hands have returned to non-punching state and re-enable hitting
+            if (!punchData.leftArm && !leftHandCanHit) {
+              leftHandCanHit = true;
+              console.log('Left hand returned to non-punching state - can hit again');
+            }
+            if (!punchData.rightArm && !rightHandCanHit) {
+              rightHandCanHit = true;
+              console.log('Right hand returned to non-punching state - can hit again');
+            }
+            
             // Determine punch states
             const lPunchState = punchData.leftArm && lPrevPunch;
             const rPunchState = punchData.rightArm && rPrevPunch;
@@ -387,7 +404,13 @@ function Range() {
             drawFullSizeHandLandmarks(ctx, drawingUtils, smoothedLandmarks, punchStates);
 
             // Handle target collisions
-            handleCollisions(smoothedLandmarks, punchStates);
+            const handStates = {
+              leftHandCanHit,
+              rightHandCanHit,
+              setLeftHandCanHit: (value) => { leftHandCanHit = value; },
+              setRightHandCanHit: (value) => { rightHandCanHit = value; }
+            };
+            handleCollisions(smoothedLandmarks, punchStates, handStates);
 
             // Draw targets (mirrored)
             drawTargets(ctx, canvas.width);
