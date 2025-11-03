@@ -1,26 +1,16 @@
-export class Target{
+
+class BaseTarget{
     constructor(canvasWidth, canvasHeight){
+        this.canvasWidth = canvasWidth
+        this.canvasHeight = canvasHeight
         this.radius = 80;
         this.isHit = false;
         this.hand = Math.random()*2; // 0-1 = left hand, 1.01-2 = right hand
-        
-        // Position based on which hand
-        if(this.hand > 1){
-            // Right hand target: spawn in middle-left 30% of canvas (20% - 50% from left)
-            this.x = (0.2 + Math.random() * 0.3) * canvasWidth;
-            this.y = (0.1 + Math.random() * 0.4) * canvasHeight; // (10% - 50%) vertically
-        }
-        else{
-            // Left hand target: spawn in middle-right 30% of canvas (50% - 80% from left)
-            this.x = (0.5 + Math.random() * 0.3) * canvasWidth;
-            this.y = (0.1 + Math.random() * 0.4) * canvasHeight; // (10%-50%) vertically
-        }
     }
     
     draw(ctx){
         if(this.hand > 1){
             // Right hand target (Blue)
-
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(140, 0, 255, 1)';
@@ -95,8 +85,76 @@ export class Target{
         this.isHit = true;
         this.color = 'rgba(0, 251, 71, 0.5)';
     }
+}
 
-    update(deltaTime){
+export class StaticTarget extends BaseTarget{
+    constructor(canvasWidth, canvasHeight) {
+        super(canvasWidth, canvasHeight); 
+        // Position based on which hand
+        if(this.hand > 1){
+            // Right hand target: spawn in middle-left 30% of canvas (20% - 50% from left)
+            this.x = (0.2 + Math.random() * 0.3) * canvasWidth;
+            this.y = (0.1 + Math.random() * 0.4) * canvasHeight; // (10% - 50%) vertically
+        }
+        else{
+            // Left hand target: spawn in middle-right 30% of canvas (50% - 80% from left)
+            this.x = (0.5 + Math.random() * 0.3) * canvasWidth;
+            this.y = (0.1 + Math.random() * 0.4) * canvasHeight; // (10%-50%) vertically
+        }
+    }
+}
+
+export class FruitTarget extends BaseTarget {
+    constructor(canvasWidth, canvasHeight){
+        super(canvasWidth, canvasHeight); 
+        
+        // Physics properties
+        this.gravity = 0.7;
+        this.initialVelocityY = -Math.random() * 15 - 20; // Random upward velocity
+        this.velocityY = this.initialVelocityY;
+        this.rotation = 0;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+        
+        // Position based on which hand
+        if(this.hand > 1){
+            // Right hand target: start from bottom-left
+            this.x = (0.2 + Math.random() * 0.3) * canvasWidth;
+            this.velocityX = Math.random() * 5; // Move right
+        }
+        else{
+            // Left hand target: start from bottom-right
+            this.x = (0.5 + Math.random() * 0.3) * canvasWidth;
+            this.velocityX = -Math.random() * 5; // Move left
+        }
+        // Start below screen
+        this.y = canvasHeight + 50;
+    }
+    
+    // draw(ctx){
+    //     ctx.save();
+        
+    //     // Move to target position and apply rotation
+    //     ctx.translate(this.x, this.y);
+    //     ctx.rotate(this.rotation);
+        
+    //     super.draw(ctx); 
+        
+    //     ctx.restore();
+    // }
+
+    update(){
+        // Update position based on velocity
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        
+        // Apply gravity
+        this.velocityY += this.gravity;
+        
+        // Update rotation
+        this.rotation += this.rotationSpeed;
+        
+        // Return false if target is off screen (to remove it)
+        return this.y < this.canvasHeight + 100;
 
     }
 }

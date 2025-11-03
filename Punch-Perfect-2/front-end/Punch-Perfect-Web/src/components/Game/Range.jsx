@@ -6,12 +6,10 @@ import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../me
 import { detectPunches } from '../../mediapipe/detectPunches.js'
 import CamCalibration from './CamCalibration.jsx'
 import { useNavigate } from 'react-router-dom'
-import { Target } from './Target.js'
+import { StaticTarget, FruitTarget } from './Targets.js'
+
 import { useSound } from '../../hooks/useSound.js'
 
-//==================== SOUNDS =======================
-import punchSound from '../../assets/sounds/punch.mp3'
-import targetBreakSound from '../../assets/sounds/target-break.mp3'
 //==================== CONSTANTS ====================
 const VIDEO_CONFIG = {
   width: { ideal: 1920 },
@@ -76,6 +74,7 @@ function Range() {
 
   // ===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
+  const [ targetType, setTargetType ] = useState('fruit'); 
   const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
   
   const videoRef = useRef(null);
@@ -94,36 +93,6 @@ function Range() {
       playSuccessSound();
     }
   }, [isCalibrated, playSuccessSound]);  // // ===== Initialize Sounds =====
-  // useEffect(() => {
-  //   // Create audio elements
-  //   punchAudioRef.current = new Audio(punchSound);
-  //   targetBreakAudioRef.current = new Audio(targetBreakSound);
-    
-  //   // Configure audio (optional)
-  //   punchAudioRef.current.volume = 0.5; // 50% volume
-  //   targetBreakAudioRef.current.volume = 0.5; // 75% volume
-
-  //   // Preload sounds
-  //   punchAudioRef.current.load();
-  //   targetBreakAudioRef.current.load();
-  // }, []);
-
-  // // ===== Sound Playing Functions =====
-  // const playPunchSound = () => {
-  //   if (punchAudioRef.current) {
-  //     const sound = punchAudioRef.current.cloneNode();
-  //     sound.playBackRate = 1.2; //1.2x speed
-  //     sound.play().catch(err => console.warn('Punch sound failed:', err));
-  //   }
-  // };
-
-  // const playTargetBreakSound = () => {
-  //   if (targetBreakAudioRef.current) {
-  //     const sound = targetBreakAudioRef.current.cloneNode();
-  //     sound.playBackRate = 1.2; //1.2x speed
-  //     sound.play().catch(err => console.warn('Target Break sound failed:', err));
-  //   }
-  // };
 
   // ===== Navigation =====
   const back = () => {
@@ -131,12 +100,26 @@ function Range() {
     setTimeout(() => navigate('/'), 100);
   };
 
+  // ===== Target Toggling ====
+  const toggleTarget = () => {
+    playButtonSound(); 
+    setTargetType(prev => prev === 'fruit' ? 'target' : 'fruit'); 
+  }
+
   // ===== Target Management =====
   const spawnTarget = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    let newTarget; 
     
-    const newTarget = new Target(canvas.width, canvas.height);
+    if(targetType === 'fruit') {
+      newTarget = new FruitTarget(canvas.width, canvas.height);
+      console.log("new fruit created"); 
+    } else if(targetType === 'target') {
+      newTarget = new StaticTarget(canvas.width, canvas.height);
+    }
+    
     targetsRef.current = [...targetsRef.current, newTarget];
   };
 
@@ -249,6 +232,13 @@ function Range() {
     const { lPunchState, rPunchState } = punchStates;
     const { leftHandCanHit, rightHandCanHit, setLeftHandCanHit, setRightHandCanHit } = handStates;
 
+    if(targetType === 'fruit') {
+      targetsRef.current = targetsRef.current.filter(target => {
+        console.log("fruit updated")
+        return target.update(); 
+      })
+    }
+    
     if (lPunchState && leftHandCanHit) {
       const leftHand = { 
         x: CANVAS_SIZE.width - (landmarks[lIndex].x * CANVAS_SIZE.width), 
@@ -305,6 +295,7 @@ function Range() {
 
     let stream = null;
     let spawnInterval = null;
+    targetsRef.current = []; 
 
     async function startCamera() {
       try {
@@ -488,7 +479,7 @@ function Range() {
         clearInterval(spawnInterval);
       }
     };
-  }, [isCalibrated]);
+  }, [isCalibrated, targetType]);
 
   // ===== Render =====
   return (
@@ -501,7 +492,8 @@ function Range() {
 
           <div className="outside-buttons">
             <button className="back-button" onClick={back}>◄ Back to Menu</button>
-          </div>
+             <button className="target-button" onClick={toggleTarget}>{targetType}</button>
+          </div> 
 
           <video 
             id="webcam" 
