@@ -6,7 +6,7 @@ import { StaticTarget, FruitTarget } from '../components/Game/Targets.js';
 /**
  * Custom hook for managing targets and collision detection
  */
-export const useTargetManager = (targetType, isActive, playHitSound) => {
+export const useTargetManager = (targetType, isActive, playHitSound, playFruitSound) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
 
@@ -55,7 +55,14 @@ export const useTargetManager = (targetType, isActive, playHitSound) => {
         if(hitByLeft){
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
-          playHitSound();
+          
+          // Play appropriate sound based on target type
+          if(targetType === 'fruit' && target.fruitType) {
+            playFruitSound(target.fruitType.name);
+          } else {
+            playHitSound();
+          }
+          
           setLeftHandCanHit(false);
           return false;
         }
@@ -75,14 +82,21 @@ export const useTargetManager = (targetType, isActive, playHitSound) => {
         if(hitByRight){
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
-          playHitSound();
+          
+          // Play appropriate sound based on target type
+          if(targetType === 'fruit' && target.fruitType) {
+            playFruitSound(target.fruitType.name);
+          } else {
+            playHitSound();
+          }
+          
           setRightHandCanHit(false);
           return false;
         }
         return true;
       });
     }
-  }, [targetType, playHitSound]);
+  }, [targetType, playHitSound, playFruitSound]);
 
   /**
    * Start spawning targets

@@ -1,4 +1,6 @@
 
+import { FRUIT_TYPES } from './FruitDrawings.js';
+
 class BaseTarget{
     constructor(canvasWidth, canvasHeight){
         this.canvasWidth = canvasWidth
@@ -108,6 +110,9 @@ export class FruitTarget extends BaseTarget {
     constructor(canvasWidth, canvasHeight){
         super(canvasWidth, canvasHeight); 
         
+        // Select a random fruit type
+        this.fruitType = FRUIT_TYPES[Math.floor(Math.random() * FRUIT_TYPES.length)];
+        
         // Physics properties
         this.gravity = 0.7;
         this.initialVelocityY = -Math.random() * 15 - 20; // Random upward velocity
@@ -115,32 +120,37 @@ export class FruitTarget extends BaseTarget {
         this.rotation = 0;
         this.rotationSpeed = (Math.random() - 0.5) * 0.1;
         
-        // Position based on which hand
-        if(this.hand > 1){
-            // Right hand target: start from bottom-left
-            this.x = (0.2 + Math.random() * 0.3) * canvasWidth;
-            this.velocityX = Math.random() * 5; // Move right
-        }
-        else{
-            // Left hand target: start from bottom-right
-            this.x = (0.5 + Math.random() * 0.3) * canvasWidth;
-            this.velocityX = -Math.random() * 5; // Move left
-        }
+        // Spawn fruits from random positions across the bottom
+        this.x = (0.2 + Math.random() * 0.6) * canvasWidth; // Anywhere in center 60%
+        this.velocityX = (Math.random() - 0.5) * 8; // Random horizontal velocity (left or right)
+        
         // Start below screen
         this.y = canvasHeight + 50;
     }
     
-    // draw(ctx){
-    //     ctx.save();
+    // Override collision methods - fruits can be hit by EITHER hand
+    checkCollisionRight(x, y){
+        const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2);
+        return distance < this.radius + 30;
+    }
+    
+    checkCollisionLeft(x, y){
+        const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2);
+        return distance < this.radius + 30;
+    }
+    
+    draw(ctx){
+        ctx.save();
         
-    //     // Move to target position and apply rotation
-    //     ctx.translate(this.x, this.y);
-    //     ctx.rotate(this.rotation);
+        // Move to target position and apply rotation
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
         
-    //     super.draw(ctx); 
+        // Draw the fruit
+        this.fruitType.draw(ctx, this.radius);
         
-    //     ctx.restore();
-    // }
+        ctx.restore();
+    }
 
     update(){
         // Update position based on velocity

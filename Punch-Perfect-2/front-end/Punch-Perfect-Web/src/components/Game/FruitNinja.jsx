@@ -21,12 +21,12 @@ import {
 } from '../../utils/drawingHelpers.js'
 
 //==================== COMPONENT ====================
-function Range(){
+function FruitNinja(){
   const navigate = useNavigate();
 
   //===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
-  const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
+  const { playPunchSound, playButtonSound, playSuccessSound, playFruitSound } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -36,7 +36,7 @@ function Range(){
   const {videoRef} = useWebcam(isCalibrated);
   const {detectPose} = usePoseDetection(isCalibrated);
   const {processPunches} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, playHitSound, null);
+  const {targetsRef, handleCollisions} = useTargetManager('fruit', isCalibrated, null, playFruitSound);
 
   //Play success sound when calibration is completed
   useEffect(() => {
@@ -102,7 +102,7 @@ function Range(){
         <CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>
       ) : (
         <div className="app-root">
-          <h1>Punch Perfect — Range Mode</h1>
+          <h1>Punch Perfect — Fruit Ninja Mode</h1>
 
           <div className="outside-buttons">
             <button className="back-button" onClick={back}>◄ Back to Menu</button>
@@ -128,4 +128,4 @@ function Range(){
   );
 }
 
-export default Range
+export default FruitNinja

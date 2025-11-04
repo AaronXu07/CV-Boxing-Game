@@ -11,6 +11,11 @@ function GameMenu() {
     setTimeout(() => navigate('/game'), 100);
   };
 
+  const startFruitNinja = () => {
+    playButtonSound();
+    setTimeout(() => navigate('/fruitninja'), 100);
+  };
+
   const back = () => {
     playButtonSound();
     setTimeout(() => navigate('/'), 100);
@@ -28,7 +33,7 @@ function GameMenu() {
         <button onClick={startTargetMode}>Range</button>
         <button onClick={() => playButtonSound()}>Target Test</button>
         <button onClick={() => playButtonSound()}>Reaction Time Test</button>
-        <button onClick={() => playButtonSound()}>Fruit Ninja</button>
+        <button onClick={startFruitNinja}>Fruit Ninja</button>
       </div>
     </div>
   );
