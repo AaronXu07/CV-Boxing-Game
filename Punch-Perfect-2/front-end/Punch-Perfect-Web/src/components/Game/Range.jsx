@@ -1,487 +1,108 @@
 import { useEffect, useRef, useState } from 'react'
 import './Range.css'
-import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils } from '@mediapipe/tasks-vision' 
-import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
-import { detectPunches } from '../../mediapipe/detectPunches.js'
 import CamCalibration from './CamCalibration.jsx'
 import { useNavigate } from 'react-router-dom'
-import { StaticTarget, FruitTarget } from './Targets.js'
-
 import { useSound } from '../../hooks/useSound.js'
+import { useWebcam } from '../../hooks/useWebcam.js'
+import { usePoseDetection } from '../../hooks/usePoseDetection.js'
+import { usePunchTracking } from '../../hooks/usePunchTracking.js'
+import { useTargetManager } from '../../hooks/useTargetManager.js'
+import { useGameLoop } from '../../hooks/useGameLoop.js'
+import { CANVAS_SIZE } from '../../utils/constants.js'
+import {
+  setupCanvas,
+  drawMiniview,
+  drawLandmarksInMiniview,
+  drawFullSizeHandLandmarks,
+  drawTargets,
+  drawUI,
+  getPunchText
+} from '../../utils/drawingHelpers.js'
 
-//==================== CONSTANTS ====================
-const VIDEO_CONFIG = {
-  width: { ideal: 1920 },
-  height: { ideal: 1080 }
-};
-
-const CANVAS_SIZE = {
-  width: 1920,
-  height: 1080
-};
-
-const MINIVIEW_SIZE = {
-  width: 640,
-  height: 360
-};
-
-const MINIVIEW_POSITION = {
-  x: CANVAS_SIZE.width - MINIVIEW_SIZE.width,
-  y: CANVAS_SIZE.height - MINIVIEW_SIZE.height
-};
-
-const TARGET_FPS = 30;
-const FRAME_TIME = 1000 / TARGET_FPS;
-const SMOOTH_FACTOR = 0.38; // 0 = no smoothing, 1 = very stable but laggy
-const VISIBILITY_THRESHOLD = 0.3;
-const TARGET_SPAWN_INTERVAL = 100; // Check every 100ms
-
-const DRAWING_OPTIONS = {
-  connector: {
-    color: '#0059ffff',
-    lineWidth: 10,
-  },
-  landmark: {
-    fillColor: '#ff0000ff',
-    radius: 30,
-  },
-  LpunchLandmark: {
-    fillColor: '#ffa200ff',
-    color: '#00ff00ff',  
-    lineWidth: 6,
-    radius: 50,
-  },
-  RpunchLandmark: {
-    fillColor: '#ae00ffff',
-    color: '#00ff00ff',    
-    lineWidth: 6,
-    radius: 50,
-  },
-  leftHand: {
-    fillColor: '#ffa200aa',
-    radius: 30,
-  },
-  rightHand: {
-    fillColor: '#ae00ffaa',
-    radius: 30,
-  }
-};
-
-// ==================== COMPONENT ====================
-function Range() {
+//==================== COMPONENT ====================
+function Range(){
   const navigate = useNavigate();
 
-  // ===== State & Refs =====
+  //===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
-  const [ targetType, setTargetType ] = useState('fruit'); 
+  const [targetType, setTargetType] = useState('fruit'); 
   const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
   
-  const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const poseLandmarkRef = useRef(null);
-  const rafId = useRef(null);
-  const targetsRef = useRef([]);
+  const ctxRef = useRef(null);
+  const drawingUtilsRef = useRef(null);
 
-  // ===== Sound Refs =====
-  const punchAudioRef = useRef(null);
-  const targetBreakAudioRef = useRef(null);
+  //===== Custom Hooks =====
+  const {videoRef} = useWebcam(isCalibrated);
+  const {detectPose} = usePoseDetection(isCalibrated);
+  const {processPunches} = usePunchTracking(playPunchSound);
+  const {targetsRef, handleCollisions} = useTargetManager(targetType, isCalibrated, playHitSound);
 
-  // Play success sound when calibration is completed
+  //Play success sound when calibration is completed
   useEffect(() => {
     if (isCalibrated) {
       playSuccessSound();
     }
-  }, [isCalibrated, playSuccessSound]);  // // ===== Initialize Sounds =====
+  }, [isCalibrated, playSuccessSound]);
 
-  // ===== Navigation =====
+  //===== Navigation =====
   const back = () => {
     playButtonSound();
     setTimeout(() => navigate('/'), 100);
   };
 
-  // ===== Target Toggling ====
+  //===== Target Toggling =====
   const toggleTarget = () => {
     playButtonSound(); 
     setTargetType(prev => prev === 'fruit' ? 'target' : 'fruit'); 
-  }
+  };
 
-  // ===== Target Management =====
-  const spawnTarget = () => {
+  //===== Frame Processing =====
+  const processFrame = async (fps, timestamp) => {
+    if(!videoRef.current || !canvasRef.current) return;
+
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    let newTarget; 
     
-    if(targetType === 'fruit') {
-      newTarget = new FruitTarget(canvas.width, canvas.height);
-      console.log("new fruit created"); 
-    } else if(targetType === 'target') {
-      newTarget = new StaticTarget(canvas.width, canvas.height);
-    }
-    
-    targetsRef.current = [...targetsRef.current, newTarget];
-  };
-
-  // ===== Canvas Setup =====
-  const setupCanvas = (video, canvas) => {
-    const vw = video.videoWidth || CANVAS_SIZE.width;
-    const vh = video.videoHeight || CANVAS_SIZE.height;
-    
-    if (canvas.width !== vw || canvas.height !== vh) {
-      canvas.width = vw;
-      canvas.height = vh;
+    //Initialize canvas and drawing utils if needed
+    if(!ctxRef.current){
+      ctxRef.current = setupCanvas(videoRef.current, canvas);
+      drawingUtilsRef.current = new DrawingUtils(ctxRef.current);
     }
 
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    return ctx;
-  };
+    const ctx = ctxRef.current;
+    const drawingUtils = drawingUtilsRef.current;
 
-  // ===== Landmark Smoothing =====
-  const smoothLandmarks = (prevLandmarks, newLandmarks) => {
-    if (!prevLandmarks) {
-      return newLandmarks;
-    }
+    drawMiniview(ctx, videoRef.current);
 
-    return newLandmarks.map((newLm, i) => ({
-      x: SMOOTH_FACTOR * prevLandmarks[i].x + (1 - SMOOTH_FACTOR) * newLm.x,
-      y: SMOOTH_FACTOR * prevLandmarks[i].y + (1 - SMOOTH_FACTOR) * newLm.y,
-      z: SMOOTH_FACTOR * prevLandmarks[i].z + (1 - SMOOTH_FACTOR) * newLm.z,
-      visibility: SMOOTH_FACTOR * prevLandmarks[i].visibility + (1 - SMOOTH_FACTOR) * newLm.visibility
-    }));
-  };
+    //Detect pose
+    const landmarks = await detectPose(videoRef.current, timestamp);
 
-  // ===== Drawing Functions =====
-  const drawMiniview = (ctx, video) => {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
-    ctx.drawImage(
-      video, 
-      MINIVIEW_POSITION.x, 
-      MINIVIEW_POSITION.y, 
-      MINIVIEW_SIZE.width, 
-      MINIVIEW_SIZE.height
-    );
-  };
+    //Process landmarks if detected
+    if(landmarks){
+  
+      const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
 
-  const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchStates) => {
-    ctx.save();
-    ctx.translate(MINIVIEW_POSITION.x, MINIVIEW_POSITION.y);
-    ctx.scale(1/3, 1/3);
+      drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
 
-    const { lPunchState, rPunchState } = punchStates;
+      ctx.save();
+      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
 
-    selectedLandmarks.forEach((lm) => {
-      const isLeftHand = lm === 19;
-      const isRightHand = lm === 20;
-      const landmark = landmarks[lm];
-      const visible = landmark.visibility !== undefined 
-        ? landmark.visibility > VISIBILITY_THRESHOLD 
-        : true;
+      handleCollisions(landmarks, punchStates, handStates);
 
-      if (!visible) return;
+      drawTargets(ctx, targetsRef.current, canvas.width);
 
-      let options = DRAWING_OPTIONS.landmark;
-      if(lPunchState && isLeftHand){
-        options = DRAWING_OPTIONS.LpunchLandmark;
-      }
-      if(rPunchState && isRightHand){
-        options = DRAWING_OPTIONS.RpunchLandmark;
-      }
-
-      drawingUtils.drawLandmarks([landmark], options);
-    });
-
-    drawingUtils.drawConnectors(landmarks, selectedConnections, DRAWING_OPTIONS.connector);
-    ctx.restore();
-  };
-
-  const drawFullSizeHandLandmarks = (ctx, drawingUtils, landmarks, punchStates) => {
-    const { lPunchState, rPunchState } = punchStates;
-
-    // Left hand
-    const leftOptions = lPunchState ? DRAWING_OPTIONS.LpunchLandmark : DRAWING_OPTIONS.leftHand;
-    drawingUtils.drawLandmarks([landmarks[lIndex]], leftOptions);
-
-    // Right hand
-    const rightOptions = rPunchState ? DRAWING_OPTIONS.RpunchLandmark : DRAWING_OPTIONS.rightHand;
-    drawingUtils.drawLandmarks([landmarks[rIndex]], rightOptions);
-  };
-
-  const drawTargets = (ctx, canvasWidth) => {
-    ctx.translate(canvasWidth, 0);
-    ctx.scale(-1, 1);
-    targetsRef.current.forEach(target => target.draw(ctx));
-  };
-
-  const drawUI = (ctx, fps, punchText, lPunchCounter, rPunchCounter) => {
-    ctx.font = '50px Calibri';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    ctx.fillText(`FPS: ${fps}`, 30, 100);
-    ctx.fillText(`Punch: ${punchText}`, 30, 150);
-    ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
-    ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
-  };
-
-  // ===== Collision Detection =====
-  const handleCollisions = (landmarks, punchStates, handStates) => {
-    const { lPunchState, rPunchState } = punchStates;
-    const { leftHandCanHit, rightHandCanHit, setLeftHandCanHit, setRightHandCanHit } = handStates;
-
-    if(targetType === 'fruit') {
-      targetsRef.current = targetsRef.current.filter(target => {
-        console.log("fruit updated")
-        return target.update(); 
-      })
-    }
-    
-    if (lPunchState && leftHandCanHit) {
-      const leftHand = { 
-        x: CANVAS_SIZE.width - (landmarks[lIndex].x * CANVAS_SIZE.width), 
-        y: landmarks[lIndex].y * CANVAS_SIZE.height 
-      };
+      const punchText = getPunchText(punchData, punchStates);
+      drawUI(ctx, fps, punchText, counters.left, counters.right);
       
-      targetsRef.current = targetsRef.current.filter(target => {
-        const hitByLeft = target.checkCollisionLeft(leftHand.x, leftHand.y);
-        if (hitByLeft) {
-          console.log('Left hand target hit!', { target, leftHand });
-          target.hit();
-          playHitSound();
-          setLeftHandCanHit(false); // Left hand must return to non-punching state
-          return false;
-        }
-        return true;
-      });
-    }
-    
-    if (rPunchState && rightHandCanHit) {
-      const rightHand = { 
-        x: CANVAS_SIZE.width - (landmarks[rIndex].x * CANVAS_SIZE.width), 
-        y: landmarks[rIndex].y * CANVAS_SIZE.height 
-      };
-      
-      targetsRef.current = targetsRef.current.filter(target => {
-        const hitByRight = target.checkCollisionRight(rightHand.x, rightHand.y);
-        if (hitByRight) {
-          console.log('Right hand target hit!', { target, rightHand });
-          target.hit();
-          playHitSound();
-          setRightHandCanHit(false); // Right hand must return to non-punching state
-          return false;
-        }
-        return true;
-      });
+      ctx.restore();
     }
   };
 
-  // ===== Punch Text =====
-  const getPunchText = (punchData, punchStates) => {
-    const { lPunchState, rPunchState } = punchStates;
+  //===== Game Loop =====
+  useGameLoop(isCalibrated, processFrame);
 
-    if (!punchData.detected) return 'None';
-    if (lPunchState && rPunchState) return 'Both Arms!';
-    if (lPunchState) return 'Left Arm';
-    if (rPunchState) return 'Right Arm';
-    return 'None';
-  };
-
-  // ===== Main Effect =====
-  useEffect(() => {
-    if (!isCalibrated) return;
-
-    let stream = null;
-    let spawnInterval = null;
-    targetsRef.current = []; 
-
-    async function startCamera() {
-      try {
-        // Request camera access
-        stream = await navigator.mediaDevices.getUserMedia({ video: VIDEO_CONFIG });
-        
-        if (!videoRef.current) return;
-        
-        videoRef.current.srcObject = stream;
-
-        // Start video playback
-        try {
-          await videoRef.current.play();
-        } catch (playErr) {
-          console.warn('video.play() failed or is deferred:', playErr);
-        }
-
-        // Initialize pose landmarker
-        poseLandmarkRef.current = await initPoseLandmarker();
-
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        
-        const ctx = setupCanvas(videoRef.current, canvas);
-        const drawingUtils = new DrawingUtils(ctx);
-
-        // ===== Frame Processing Variables =====
-        let lastFrameTime = performance.now();
-        let actualFPS = 0;
-        let frameCount = 0;
-        let fpsUpdateTime = performance.now();
-
-        // Punch tracking
-        let lPunchCounter = 0;
-        let rPunchCounter = 0;
-        let lPrevPunch = false;
-        let rPrevPunch = false;
-        let lPrevPunchState = false;
-        let rPrevPunchState = false;
-
-        // Hand hit cooldown tracking - hands must return to non-punching state after a hit
-        let leftHandCanHit = true;
-        let rightHandCanHit = true;
-
-        // Landmark smoothing
-        let smoothedLandmarks = null;
-
-        // ===== Frame Processing Function =====
-        const processFrame = async () => {
-          if (!videoRef.current || !poseLandmarkRef.current) return;
-          if (videoRef.current.readyState < 2) return;
-
-          const startTimeMS = performance.now();
-          
-          // Calculate FPS
-          frameCount++;
-          const timeSinceLastUpdate = startTimeMS - fpsUpdateTime;
-          if (timeSinceLastUpdate >= 1000) {
-            actualFPS = Math.round((frameCount * 1000) / timeSinceLastUpdate);
-            frameCount = 0;
-            fpsUpdateTime = startTimeMS;
-          }
-          
-          // Detect pose
-          let results = null;
-          try {
-            results = await poseLandmarkRef.current.detectForVideo(videoRef.current, startTimeMS);
-          } catch (err) {
-            console.error('Pose detection failed:', err);
-            return;
-          }
-
-          // Draw miniview
-          drawMiniview(ctx, videoRef.current);
-
-          // Process landmarks if detected
-          if (results && results.landmarks[0]) {
-            smoothedLandmarks = smoothLandmarks(smoothedLandmarks, results.landmarks[0]);
-            
-            // Detect punches
-            const punchData = detectPunches(results.landmarks[0]);
-            
-            // Check if hands have returned to non-punching state and re-enable hitting
-            if (!punchData.leftArm && !leftHandCanHit) {
-              leftHandCanHit = true;
-              console.log('Left hand returned to non-punching state - can hit again');
-            }
-            if (!punchData.rightArm && !rightHandCanHit) {
-              rightHandCanHit = true;
-              console.log('Right hand returned to non-punching state - can hit again');
-            }
-            
-            // Determine punch states
-            const lPunchState = punchData.leftArm && lPrevPunch;
-            const rPunchState = punchData.rightArm && rPrevPunch;
-            const punchStates = { lPunchState, rPunchState };
-
-            // Draw landmarks and connections in miniview
-            drawLandmarksInMiniview(ctx, drawingUtils, smoothedLandmarks, punchStates);
-
-            // Draw full-size hand landmarks
-            ctx.save();
-            drawFullSizeHandLandmarks(ctx, drawingUtils, smoothedLandmarks, punchStates);
-
-            // Handle target collisions
-            const handStates = {
-              leftHandCanHit,
-              rightHandCanHit,
-              setLeftHandCanHit: (value) => { leftHandCanHit = value; },
-              setRightHandCanHit: (value) => { rightHandCanHit = value; }
-            };
-            handleCollisions(smoothedLandmarks, punchStates, handStates);
-
-            // Draw targets (mirrored)
-            drawTargets(ctx, canvas.width);
-
-            // Update punch counters
-            if (lPunchState && !lPrevPunchState) {
-              lPunchCounter++;
-              playPunchSound();
-            }
-            if (rPunchState && !rPrevPunchState) {
-              rPunchCounter++;
-              playPunchSound();
-            }
-
-            // Update previous states
-            lPrevPunchState = lPunchState;
-            rPrevPunchState = rPunchState;
-            lPrevPunch = punchData.leftArm;
-            rPrevPunch = punchData.rightArm;
-
-            // Draw UI
-            const punchText = getPunchText(punchData, punchStates);
-            drawUI(ctx, actualFPS, punchText, lPunchCounter, rPunchCounter);
-            
-            ctx.restore();
-          }
-        };
-
-        // ===== Render Loop =====
-        const render = async () => {
-          const now = performance.now();
-          const delta = now - lastFrameTime;
-
-          if (delta >= FRAME_TIME) {
-            lastFrameTime = now - (delta % FRAME_TIME);
-            await processFrame();
-          }
-
-          rafId.current = requestAnimationFrame(render);
-        };
-
-        render();
-
-        // Start spawning targets
-        spawnTarget();
-        spawnInterval = setInterval(() => {
-          if (targetsRef.current.length === 0) {
-            spawnTarget();
-          }
-        }, TARGET_SPAWN_INTERVAL);
-
-      } catch (err) {
-        console.error('Error accessing webcam:', err);
-        alert('Could not access webcam. Please allow camera permissions.');
-      }
-    }
-
-    startCamera();
-
-    // Cleanup
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
-      }
-      if (rafId.current) {
-        cancelAnimationFrame(rafId.current);
-      }
-      if (spawnInterval) {
-        clearInterval(spawnInterval);
-      }
-    };
-  }, [isCalibrated, targetType]);
-
-  // ===== Render =====
+  //===== Render =====
   return (
     <>
       {!isCalibrated ? (
