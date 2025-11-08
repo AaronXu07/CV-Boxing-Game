@@ -5,12 +5,12 @@ const punchState = {
     leftForwardStartTime: null,
     rightExtendedStartTime: null,
     rightForwardStartTime: null,
-    requiredDuration: 50 //in milliseconds
+    requiredDuration: 10 //in milliseconds
 };
 
 const punchInstant = {
     angle: 115,
-    hDistance: 0.13,
+    hDistance: 0.10,
     vDistance: 0.15
 };
 
@@ -89,9 +89,9 @@ export const detectPunches = (landmarks) => {
 
     // Check instant conditions
     const leftArmExtended = lAngle > punchInstant.angle; 
-    const leftArmForward = lHorizontalTop < punchInstant.hDistance && lHorizontalBottom < punchInstant.hDistance && lVerticalTop < punchInstant.vDistance && lVerticalBottom < punchInstant.vDistance;
-    const rightArmExtended = rAngle > punchInstant.angle; 
-    const rightArmForward = rHorizontalTop < punchInstant.hDistance && rHorizontalBottom < punchInstant.hDistance && rVerticalTop < punchInstant.vDistance && rVerticalBottom < punchInstant.vDistance;
+    let leftArmForward = lHorizontalTop < punchInstant.hDistance && lHorizontalBottom < punchInstant.hDistance && lVerticalTop < punchInstant.vDistance && lVerticalBottom < punchInstant.vDistance && landmarks[lArm[2]].z < -0.3;
+    const rightArmExtended = rAngle > punchInstant.angle;
+    let rightArmForward = rHorizontalTop < punchInstant.hDistance && rHorizontalBottom < punchInstant.hDistance && rVerticalTop < punchInstant.vDistance && rVerticalBottom < punchInstant.vDistance && landmarks[rArm[2]].z < -0.3;
 
     if(lAngle <= punchReturn.angle){
         punchReturn.leftReturned = true;
@@ -150,8 +150,13 @@ export const detectPunches = (landmarks) => {
     const lPunchExpired = lExtendedTooLong || lForwardTooLong;
 
     //const leftPunch = islInstantPunch && punchReturn.leftReturned && !lPunchExpired;
-    const leftPunch = islInstantPunch; 
-
+    let leftPunch; 
+    if(landmarks[lArm[2]].y < 0.3) {
+       leftPunch = islInstantPunch && landmarks[lArm[2]].z < 0; 
+    } else {
+       leftPunch = islInstantPunch && landmarks[lArm[2]].z < 0 && landmarks[lArm[1]].visibility > 0.5; 
+    }
+    
     if (lPunchExpired) {
         punchReturn.leftReturned = false;
     }
@@ -164,7 +169,13 @@ export const detectPunches = (landmarks) => {
     const rPunchExpired = rExtendedTooLong || rForwardTooLong;
 
     //const rightPunch = isrInstantPunch && punchReturn.rightReturned && !rPunchExpired;
-    const rightPunch = isrInstantPunch; 
+
+    let rightPunch; 
+    if(landmarks[rArm[2]].y < 0.3) {
+       rightPunch = isrInstantPunch && landmarks[rArm[2]].z < 0; 
+    } else {
+       rightPunch = isrInstantPunch && landmarks[rArm[2]].z < 0 && landmarks[rArm[1]].visibility > 0.5; 
+    }
 
     if (rPunchExpired) {
         punchReturn.rightReturned = false;
@@ -172,7 +183,10 @@ export const detectPunches = (landmarks) => {
 
     return {
         detected: leftPunch || rightPunch,
+        leftZ: landmarks[lArm[2]].z,
+        rightZ: landmarks[rArm[2]].z, 
         leftArm: leftPunch,
-        rightArm: rightPunch
+        rightArm: rightPunch,
+        leftArmForward: leftArmForward
     };
 }

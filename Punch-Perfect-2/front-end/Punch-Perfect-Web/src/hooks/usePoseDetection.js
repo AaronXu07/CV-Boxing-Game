@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { initPoseLandmarker } from '../mediapipe/poseLandmarker.js';
 import { SMOOTH_FACTOR } from '../utils/constants.js';
+import { VISIBILITY_THRESHOLD } from '../utils/constants.js';
 
 /**
  * Smooth landmarks to reduce jitter
@@ -10,12 +11,19 @@ const smoothLandmarks = (prevLandmarks, newLandmarks) => {
     return newLandmarks;
   }
 
-  return newLandmarks.map((newLm, i) => ({
-    x: SMOOTH_FACTOR * prevLandmarks[i].x + (1 - SMOOTH_FACTOR) * newLm.x,
-    y: SMOOTH_FACTOR * prevLandmarks[i].y + (1 - SMOOTH_FACTOR) * newLm.y,
-    z: SMOOTH_FACTOR * prevLandmarks[i].z + (1 - SMOOTH_FACTOR) * newLm.z,
-    visibility: SMOOTH_FACTOR * prevLandmarks[i].visibility + (1 - SMOOTH_FACTOR) * newLm.visibility
-  }));
+  return newLandmarks.map((newLm, i) => {
+
+    if(newLm.visibility < VISIBILITY_THRESHOLD && newLm.y > 0.5) {
+      return { ...prevLandmarks[i]}
+    } else {
+      return {
+        x: SMOOTH_FACTOR * prevLandmarks[i].x + (1 - SMOOTH_FACTOR) * newLm.x,
+        y: SMOOTH_FACTOR * prevLandmarks[i].y + (1 - SMOOTH_FACTOR) * newLm.y,
+        z: SMOOTH_FACTOR * prevLandmarks[i].z + (1 - SMOOTH_FACTOR) * newLm.z,
+        visibility: SMOOTH_FACTOR * prevLandmarks[i].visibility + (1 - SMOOTH_FACTOR) * newLm.visibility
+      }
+    }
+  });
 };
 
 /**

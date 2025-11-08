@@ -59,7 +59,7 @@ export const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchState
       ? landmark.visibility > VISIBILITY_THRESHOLD 
       : true;
 
-    if (!visible) return;
+    //if (!visible) return;
 
     let options = DRAWING_OPTIONS.landmark;
     if(lPunchState && isLeftHand){
@@ -103,7 +103,7 @@ export const drawTargets = (ctx, targets, canvasWidth) => {
 /**
  * Draw UI information (FPS, punch counters, etc.)
  */
-export const drawUI = (ctx, fps, punchText, lPunchCounter, rPunchCounter) => {
+export const drawUI = (ctx, fps, punchText, lPunchCounter, rPunchCounter, lz, rz, leftArmExtended) => {
   ctx.font = '50px Calibri';
   ctx.fillStyle = 'white';
   ctx.textAlign = 'left';
@@ -111,6 +111,9 @@ export const drawUI = (ctx, fps, punchText, lPunchCounter, rPunchCounter) => {
   ctx.fillText(`Punch: ${punchText}`, 30, 150);
   ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
   ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
+  ctx.fillText(`Left Index Z: ${lz}`, 30, 200);
+  ctx.fillText(`right Index Z: ${rz}`, 30, 250);
+  ctx.fillText(`leftArmExtended: ${leftArmExtended}`, 30, 300);
 };
 
 /**

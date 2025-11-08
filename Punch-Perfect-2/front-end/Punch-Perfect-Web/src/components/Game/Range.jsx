@@ -86,7 +86,7 @@ function Range(){
       drawTargets(ctx, targetsRef.current, canvas.width);
 
       const punchText = getPunchText(punchData, punchStates);
-      drawUI(ctx, fps, punchText, counters.left, counters.right);
+      drawUI(ctx, fps, punchText, counters.left, counters.right, punchData.leftZ, punchData.rightZ, punchData.leftArmForward);
       
       ctx.restore();
     }
