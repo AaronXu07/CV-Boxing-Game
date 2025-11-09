@@ -4,7 +4,7 @@ import { VIDEO_CONFIG } from '../utils/constants.js';
 /**
  * Custom hook for managing webcam access and stream
  */
-export const useWebcam = (isActive = true) => {
+export const useWebcam = (isActive = true, gameKey) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -43,7 +43,7 @@ export const useWebcam = (isActive = true) => {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isActive]);
+  }, [isActive, gameKey]);
 
   return { videoRef, streamRef };
 };

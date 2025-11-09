@@ -29,7 +29,7 @@ const smoothLandmarks = (prevLandmarks, newLandmarks) => {
 /**
  * Custom hook for pose detection
  */
-export const usePoseDetection = (isActive = true) => {
+export const usePoseDetection = (isActive = true, gameKey) => {
   const poseLandmarkerRef = useRef(null);
   const smoothedLandmarksRef = useRef(null);
 
@@ -56,7 +56,7 @@ export const usePoseDetection = (isActive = true) => {
       poseLandmarkerRef.current = null;
       smoothedLandmarksRef.current = null;
     };
-  }, [isActive]);
+  }, [isActive, gameKey]);
 
   /**
    * Detect pose from video frame

@@ -6,9 +6,10 @@ import { StaticTarget, FruitTarget } from '../components/Game/Targets.js';
 /**
  * Custom hook for managing targets and collision detection
  */
-export const useTargetManager = (targetType, isActive, playHitSound, playFruitSound) => {
+export const useTargetManager = (targetType, isActive, gameKey, playHitSound, playFruitSound) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
+  const scoreRef = useRef(0); 
 
   /**
    * Spawn a new target
@@ -53,9 +54,10 @@ export const useTargetManager = (targetType, isActive, playHitSound, playFruitSo
       targetsRef.current = targetsRef.current.filter(target => {
         const hitByLeft = target.checkCollisionLeft(leftHand.x, leftHand.y);
         if(hitByLeft){
+          scoreRef.current++; 
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
-          
+
           // Play appropriate sound based on target type
           if(targetType === 'fruit' && target.fruitType) {
             playFruitSound(target.fruitType.name);
@@ -80,6 +82,7 @@ export const useTargetManager = (targetType, isActive, playHitSound, playFruitSo
       targetsRef.current = targetsRef.current.filter(target => {
         const hitByRight = target.checkCollisionRight(rightHand.x, rightHand.y);
         if(hitByRight){
+          scoreRef.current++; 
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
           
@@ -98,6 +101,21 @@ export const useTargetManager = (targetType, isActive, playHitSound, playFruitSo
     }
   }, [targetType, playHitSound, playFruitSound]);
 
+  const handleMissedFruit = useCallback((livesRef) => {
+
+    targetsRef.current = targetsRef.current.filter(target => {
+
+        const onScreen = target.checkOnScreen();
+        if(!onScreen){
+          livesRef.current--; 
+          return false;
+        } else {
+          return true;
+        }
+          
+    });
+  }, [targetType, playHitSound, playFruitSound]);
+
   /**
    * Start spawning targets
    */
@@ -106,6 +124,7 @@ export const useTargetManager = (targetType, isActive, playHitSound, playFruitSo
 
     // Clear existing targets
     targetsRef.current = [];
+    scoreRef.current = 0; 
 
     // Spawn initial target
     spawnTarget();
@@ -123,11 +142,13 @@ export const useTargetManager = (targetType, isActive, playHitSound, playFruitSo
       }
       targetsRef.current = [];
     };
-  }, [isActive, spawnTarget]);
+  }, [isActive, spawnTarget, gameKey]);
 
   return{
     targetsRef,
     handleCollisions,
-    spawnTarget
+    spawnTarget, 
+    handleMissedFruit, 
+    scoreRef, 
   };
 };
