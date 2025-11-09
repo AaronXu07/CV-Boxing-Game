@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './Range.css'
 import { DrawingUtils } from '@mediapipe/tasks-vision' 
 import CamCalibration from './CamCalibration.jsx'
+import Score from './Score.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useSound } from '../../hooks/useSound.js'
 import { useWebcam } from '../../hooks/useWebcam.js'
@@ -75,7 +76,7 @@ function Range(){
     if(landmarks){
   
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
-
+      
       drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
 
       ctx.save();
@@ -95,35 +96,36 @@ function Range(){
   //===== Game Loop =====
   useGameLoop(isCalibrated, processFrame);
 
+  if(!isCalibrated) {
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+  }
+  
   //===== Render =====
   return (
     <>
-      {!isCalibrated ? (
-        <CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>
-      ) : (
-        <div className="app-root">
-          <h1>Punch Perfect — Range Mode</h1>
+      <div className="app-root">
+        <h1>Punch Perfect — Range Mode</h1>
 
-          <div className="outside-buttons">
-            <button className="back-button" onClick={back}>◄ Back to Menu</button>
-          </div> 
+        <div className="outside-buttons">
+          <button className="back-button" onClick={back}>◄ Back to Menu</button>
+        </div> 
 
-          <video 
-            id="webcam" 
-            ref={videoRef} 
-            autoPlay 
-            playsInline 
-            muted 
-            style={{ display: 'none' }} 
-          />
-          <canvas 
-            id="output" 
-            ref={canvasRef} 
-            width={CANVAS_SIZE.width} 
-            height={CANVAS_SIZE.height} 
-          />
-        </div>
-      )}
+        <video 
+          id="webcam" 
+          ref={videoRef} 
+          autoPlay 
+          playsInline 
+          muted 
+          style={{ display: 'none' }} 
+        />
+        <canvas 
+          id="output" 
+          ref={canvasRef} 
+          width={CANVAS_SIZE.width} 
+          height={CANVAS_SIZE.height} 
+        />
+      </div>
+      
     </>
   );
 }

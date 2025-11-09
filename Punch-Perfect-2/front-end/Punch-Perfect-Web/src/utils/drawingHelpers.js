@@ -103,17 +103,19 @@ export const drawTargets = (ctx, targets, canvasWidth) => {
 /**
  * Draw UI information (FPS, punch counters, etc.)
  */
-export const drawUI = (ctx, fps, punchText, lPunchCounter, rPunchCounter, lz, rz, leftArmExtended) => {
+export const drawUI = (ctx, fps, score, lives) => {
   ctx.font = '50px Calibri';
   ctx.fillStyle = 'white';
   ctx.textAlign = 'left';
   ctx.fillText(`FPS: ${fps}`, 30, 100);
-  ctx.fillText(`Punch: ${punchText}`, 30, 150);
-  ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
-  ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
-  ctx.fillText(`Left Index Z: ${lz}`, 30, 200);
-  ctx.fillText(`right Index Z: ${rz}`, 30, 250);
-  ctx.fillText(`leftArmExtended: ${leftArmExtended}`, 30, 300);
+  ctx.fillText(`Score: ${score}`, 1600, 100);
+  ctx.fillText(`Lives: ${lives}`, 1600, 150);
+  // ctx.fillText(`Punch: ${punchText}`, 30, 150);
+  // ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
+  // ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
+  // ctx.fillText(`Left Index Z: ${lz}`, 30, 200);
+  // ctx.fillText(`right Index Z: ${rz}`, 30, 250);
+  // ctx.fillText(`leftArmExtended: ${leftArmExtended}`, 30, 300);
 };
 
 /**
