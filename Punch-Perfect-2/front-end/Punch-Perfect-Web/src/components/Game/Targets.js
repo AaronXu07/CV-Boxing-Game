@@ -87,6 +87,14 @@ class BaseTarget{
         this.isHit = true;
         this.color = 'rgba(0, 251, 71, 0.5)';
     }
+
+    checkOnScreen(x, y) {
+        if(-this.radius/2 < this.x && this.x < this.canvasWidth+this.radius/2 && -this.radius/2 < this.y && this.y < this.canvasHeight+this.radius/2) {
+            return true;
+        } else {
+            return false; 
+        }
+    }
 }
 
 export class StaticTarget extends BaseTarget{
