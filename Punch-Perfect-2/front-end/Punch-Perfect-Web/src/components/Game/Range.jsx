@@ -17,7 +17,7 @@ import {
   drawLandmarksInMiniview,
   drawFullSizeHandLandmarks,
   drawTargets,
-  drawUI,
+  drawUIRange,
   getPunchText
 } from '../../utils/drawingHelpers.js'
 
@@ -28,6 +28,7 @@ function Range(){
   //===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
   const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
+  const [ gameKey, setGameKey ] = useState(0); 
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -37,7 +38,7 @@ function Range(){
   const {videoRef} = useWebcam(isCalibrated);
   const {detectPose} = usePoseDetection(isCalibrated);
   const {processPunches} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, playHitSound, null);
+  const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
 
   //Play success sound when calibration is completed
   useEffect(() => {
@@ -87,14 +88,14 @@ function Range(){
       drawTargets(ctx, targetsRef.current, canvas.width);
 
       const punchText = getPunchText(punchData, punchStates);
-      drawUI(ctx, fps, punchText, counters.left, counters.right, punchData.leftZ, punchData.rightZ, punchData.leftArmForward);
+      drawUIRange(ctx, fps, punchText, counters.left, counters.right);
       
       ctx.restore();
     }
   };
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated, processFrame);
+  useGameLoop(isCalibrated, gameKey, processFrame);
 
   if(!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
