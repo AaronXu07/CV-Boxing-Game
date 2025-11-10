@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import './Range.css'
 import { DrawingUtils } from '@mediapipe/tasks-vision' 
 import CamCalibration from './CamCalibration.jsx'
+import Score from './Score.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useSound } from '../../hooks/useSound.js'
 import { useWebcam } from '../../hooks/useWebcam.js'
@@ -23,8 +24,7 @@ const GAME_STATE = {
   WAITING: 'waiting',      
   READY: 'ready',          
   RESULT: 'result',        
-  TOO_EARLY: 'too_early',
-  FINAL: 'final'  // New final screen after 5 tests
+  TOO_EARLY: 'too_early'
 };
 
 const MAX_TESTS = 5; // Number of tests before showing final screen
@@ -41,6 +41,7 @@ function Reaction(){
   const [gameKey, setGameKey] = useState(0);
   const [reactionTimes, setReactionTimes] = useState([]); // Array to store all reaction times
   const [testCount, setTestCount] = useState(0); // Track number of completed tests
+  const [isGameOver, setIsGameOver] = useState(false);
   
   const { playPunchSound, playButtonSound, playSuccessSound, playHitSound } = useSound();
   
@@ -63,6 +64,7 @@ function Reaction(){
     setReactionTimes([]);
     setReactionTime(null);
     setGameState(GAME_STATE.INTRO);
+    setIsGameOver(false);
     hasPunchedRef.current = false;
     if (waitTimerRef.current) {
       clearTimeout(waitTimerRef.current);
@@ -170,7 +172,7 @@ function Reaction(){
         setTestCount(newTestCount);
         
         if (newTestCount >= MAX_TESTS) {
-          setGameState(GAME_STATE.FINAL);
+          setIsGameOver(true);
         } else {
           setGameState(GAME_STATE.RESULT);
         }
@@ -179,7 +181,7 @@ function Reaction(){
         
         setTimeout(() => {
           hasPunchedRef.current = false;
-        }, 1000);
+        }, 300);
       }
     }
     else if(gameState === GAME_STATE.RESULT){
@@ -191,22 +193,13 @@ function Reaction(){
         }, 100);
       }
     }
-    else if(gameState === GAME_STATE.FINAL){
-      if(!hasPunchedRef.current){
-        hasPunchedRef.current = true;
-        setTimeout(() => {
-          hasPunchedRef.current = false;
-          resetGame();
-        }, 100);
-      }
-    }
     else if(gameState === GAME_STATE.INTRO){
       if(!hasPunchedRef.current){
         hasPunchedRef.current = true;
         startWaitingPhase();
       }
     }
-  }, [gameState, requiredHand, playHitSound, startWaitingPhase, reactionTimes, testCount, resetGame]);
+  }, [gameState, requiredHand, playHitSound, startWaitingPhase, reactionTimes, testCount]);
   
 
   //===== Navigation =====
@@ -228,7 +221,6 @@ function Reaction(){
     let fontSize = 80;
     let showSubtext = false;
     let showIntroSubtext = false;
-    let showFinalSubtext = false;
 
     switch(gameState) {
       case GAME_STATE.WAITING:
@@ -251,14 +243,6 @@ function Reaction(){
         text = 'Reaction Time Test';
         fontSize = 100;
         showIntroSubtext = true;
-        break;
-      case GAME_STATE.FINAL:
-        const avgReactionTime = Math.round(
-          reactionTimes.reduce((sum, time) => sum + time, 0) / reactionTimes.length
-        );
-        text = `Average: ${avgReactionTime}ms`;
-        fontSize = 100;
-        showFinalSubtext = true;
         break;
     }
 
@@ -283,16 +267,6 @@ function Reaction(){
         ctx.fillText('Purple = Right Hand', canvas.width / 2, canvas.height / 2 + 145);
         ctx.font = '40px Arial';
         ctx.fillText('Punch anywhere to begin', canvas.width / 2, canvas.height / 2 + 220);
-      }
-      if(showFinalSubtext){
-        ctx.font = '50px Arial';
-        ctx.fillText('Test Complete!', canvas.width / 2, canvas.height / 2 - 150);
-        ctx.font = '40px Arial';
-        reactionTimes.forEach((time, index) => {
-          ctx.fillText(`Test ${index + 1}: ${time}ms`, canvas.width / 2, canvas.height / 2 + 100 + (index * 50));
-        });
-        ctx.font = '45px Arial';
-        ctx.fillText('Punch to restart', canvas.width / 2, canvas.height / 2 + 380);
       }
       
       ctx.restore();
@@ -320,8 +294,6 @@ function Reaction(){
         return '#4685c8ff';
       case GAME_STATE.INTRO:
         return '#4685c8ff';
-      case GAME_STATE.FINAL:
-        return '#2E8B57'; // Sea green for completion
       default:
         return 'black';
     }
@@ -329,7 +301,7 @@ function Reaction(){
 
   //===== Frame Processing =====
   const processFrame = async (fps, timestamp) => {
-    if(!videoRef.current || !canvasRef.current) return;
+    if(!videoRef.current || !canvasRef.current || isGameOver) return;
 
     const canvas = canvasRef.current;
     
@@ -370,7 +342,7 @@ function Reaction(){
   };
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
 
   //===== Cleanup =====
   useEffect(() => {
@@ -383,6 +355,25 @@ function Reaction(){
 
   if(!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+  }
+
+  if (isGameOver) {
+    const avgReactionTime = Math.round(
+      reactionTimes.reduce((sum, time) => sum + time, 0) / reactionTimes.length
+    );
+    
+    return (
+      <Score 
+        score={avgReactionTime}
+        resetTracking={resetTracking}
+        ctxRef={ctxRef}
+        drawingUtilsRef={drawingUtilsRef}
+        setGameKey={setGameKey} 
+        setIsGameOver={setIsGameOver} 
+        setIsCalibrated={setIsCalibrated}
+        customReset={resetGame}
+      />
+    );
   }
   
   //===== Render =====

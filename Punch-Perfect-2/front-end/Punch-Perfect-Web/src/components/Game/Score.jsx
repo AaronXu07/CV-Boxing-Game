@@ -10,7 +10,9 @@ function Score(
     drawingUtilsRef,
     setGameKey,
     setIsGameOver,
-    setIsCalibrated, 
+    setIsCalibrated,
+    setTimeRemaining,
+    customReset,
   }
 ) {
   const { playButtonSound } = useSound(); 
@@ -27,6 +29,16 @@ function Score(
     ctxRef.current.clearRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
     ctxRef.current = null;
     drawingUtilsRef.current = null;
+
+    // Reset timer if applicable
+    if (setTimeRemaining) {
+      setTimeRemaining(30);
+    }
+
+    // Call custom reset if provided (for reaction mode)
+    if (customReset) {
+      customReset();
+    }
 
     // Force remount by updating key
     setGameKey(prev => {
@@ -49,7 +61,7 @@ function Score(
   return (
     <div> 
       <h1>Game Over</h1>
-      <h1>{score}</h1>
+      <h1>{score}{customReset ? ' ms' : ''}</h1>
       <button onClick={navHome} type="button">Go Back Home</button>
       <button onClick={restart} type="button">Restart</button>
     </div>

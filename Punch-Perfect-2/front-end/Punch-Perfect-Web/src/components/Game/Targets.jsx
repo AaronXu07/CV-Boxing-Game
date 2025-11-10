@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import './Range.css'
 import { DrawingUtils } from '@mediapipe/tasks-vision' 
 import CamCalibration from './CamCalibration.jsx'
@@ -27,25 +27,53 @@ function Targets(){
 
   //===== State & Refs =====
   const [isCalibrated, setIsCalibrated] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(30);
   const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
   const [ gameKey, setGameKey ] = useState(0); 
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
+  const hasPlayedSuccessSoundRef = useRef(false);
+  const lastFlashTimeRef = useRef(null);
 
   //===== Custom Hooks =====
-  const {videoRef} = useWebcam(isCalibrated);
-  const {detectPose} = usePoseDetection(isCalibrated);
-  const {processPunches} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
+  const {videoRef} = useWebcam(isCalibrated, gameKey);
+  const {detectPose} = usePoseDetection(isCalibrated, gameKey);
+  const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
+  const {targetsRef, handleCollisions, scoreRef} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
 
-  //Play success sound when calibration is completed
   useEffect(() => {
-    if (isCalibrated) {
+    if (isCalibrated && !hasPlayedSuccessSoundRef.current) {
       playSuccessSound();
+      hasPlayedSuccessSoundRef.current = true;
+    }
+    
+    if (!isCalibrated) {
+      hasPlayedSuccessSoundRef.current = false;
     }
   }, [isCalibrated, playSuccessSound]);
+
+  //===== Timer Logic =====
+  useEffect(() => {
+    if (!isCalibrated || isGameOver) return;
+
+    const timerInterval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          setIsGameOver(true);
+          return 0;
+        }
+        if (prev <= 6) {
+          lastFlashTimeRef.current = Date.now();
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerInterval);
+  }, [isCalibrated, isGameOver]);
 
   //===== Navigation =====
   const back = () => {
@@ -54,12 +82,11 @@ function Targets(){
   };
 
   //===== Frame Processing =====
-  const processFrame = async (fps, timestamp) => {
-    if(!videoRef.current || !canvasRef.current) return;
+  const processFrame = useCallback(async (fps, timestamp) => {
+    if(!videoRef.current || !canvasRef.current || isGameOver) return;
 
     const canvas = canvasRef.current;
     
-    //Initialize canvas and drawing utils if needed
     if(!ctxRef.current){
       ctxRef.current = setupCanvas(videoRef.current, canvas);
       drawingUtilsRef.current = new DrawingUtils(ctxRef.current);
@@ -68,12 +95,13 @@ function Targets(){
     const ctx = ctxRef.current;
     const drawingUtils = drawingUtilsRef.current;
 
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     drawMiniview(ctx, videoRef.current);
 
-    //Detect pose
     const landmarks = await detectPose(videoRef.current, timestamp);
 
-    //Process landmarks if detected
     if(landmarks){
   
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
@@ -88,23 +116,58 @@ function Targets(){
       drawTargets(ctx, targetsRef.current, canvas.width);
 
       const punchText = getPunchText(punchData, punchStates);
-      drawUIRange(ctx, fps, punchText, counters.left, counters.right);
+      
+      ctx.font = '50px Calibri';
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'left';
+      ctx.fillText(`FPS: ${fps}`, 30, 100);
+      ctx.fillText(`Score: ${scoreRef.current}`, 1600, 100);
+      ctx.fillText(`Time: ${timeRemaining}s`, 1600, 150);
+      
+      if (timeRemaining <= 5 && timeRemaining > 0 && lastFlashTimeRef.current) {
+        const timeSinceFlash = Date.now() - lastFlashTimeRef.current;
+        const flashDuration = 500; // Flash lasts 500ms
+        
+        if (timeSinceFlash < flashDuration) {
+          const fadeProgress = timeSinceFlash / flashDuration;
+          const opacity = 1 - fadeProgress;
+          
+          ctx.strokeStyle = `rgba(255, 0, 0, ${opacity})`;
+          ctx.lineWidth = 20;
+          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        }
+      }
       
       ctx.restore();
     }
-  };
+  }, [isGameOver, timeRemaining]);
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
 
   if(!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+  }
+
+  if (isGameOver) {
+    return (
+      <Score 
+        score={scoreRef.current} 
+        resetTracking={resetTracking}
+        ctxRef={ctxRef}
+        drawingUtilsRef={drawingUtilsRef}
+        setGameKey={setGameKey} 
+        setIsGameOver={setIsGameOver} 
+        setIsCalibrated={setIsCalibrated}
+        setTimeRemaining={setTimeRemaining}
+      />
+    );
   }
   
   //===== Render =====
   return (
     <>
-      <div className="app-root">
+      <div key={gameKey} className="app-root">
         <h1>Punch Perfect — Targets Mode</h1>
 
         <div className="outside-buttons">
@@ -120,6 +183,7 @@ function Targets(){
           style={{ display: 'none' }} 
         />
         <canvas 
+          key={`canvas-${gameKey}`}
           id="output" 
           ref={canvasRef} 
           width={CANVAS_SIZE.width} 
