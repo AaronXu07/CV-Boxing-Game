@@ -9,7 +9,7 @@ import About from './components/About/About.jsx'
 import GameMenu from './components/GameMenu/GameMenu.jsx'
 import CamCalibration from './components/Game/CamCalibration.jsx'
 import Leaderboard from './components/Leaderboard/Leaderboard.jsx'
-
+import Reaction from './components/Game/Reaction.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
@@ -17,6 +17,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<Menu />} />
         <Route path="/gamemenu" element={<GameMenu />} />
         <Route path="/game" element={<Range />} />
+        <Route path="/reaction" element={<Reaction />} />
         <Route path="/fruitninja" element={<FruitNinja />} />
         <Route path="/about" element={<About />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
