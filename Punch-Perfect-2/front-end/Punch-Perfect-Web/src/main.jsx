@@ -10,14 +10,17 @@ import GameMenu from './components/GameMenu/GameMenu.jsx'
 import CamCalibration from './components/Game/CamCalibration.jsx'
 import Leaderboard from './components/Leaderboard/Leaderboard.jsx'
 import Reaction from './components/Game/Reaction.jsx'
+import Targets from './components/Game/Targets.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Menu />} />
         <Route path="/gamemenu" element={<GameMenu />} />
-        <Route path="/game" element={<Range />} />
+        <Route path="/range" element={<Range />} />
         <Route path="/reaction" element={<Reaction />} />
+        <Route path="/targets" element={<Targets />} />
         <Route path="/fruitninja" element={<FruitNinja />} />
         <Route path="/about" element={<About />} />
         <Route path="/leaderboard" element={<Leaderboard />} />

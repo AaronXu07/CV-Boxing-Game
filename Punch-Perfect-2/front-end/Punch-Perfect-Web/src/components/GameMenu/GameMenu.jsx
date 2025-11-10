@@ -6,9 +6,14 @@ function GameMenu() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
 
-  const startTargetMode = () => {
+  const startRangeMode = () => {
     playButtonSound();
-    setTimeout(() => navigate('/game'), 100);
+    setTimeout(() => navigate('/range'), 100);
+  };
+
+  const startTargetsMode = () => {
+    playButtonSound();
+    setTimeout(() => navigate('/targets'), 100);
   };
 
   const startReactionMode = () => {
@@ -35,8 +40,8 @@ function GameMenu() {
       </div>
 
       <div className="game-menu-buttons">
-        <button onClick={startTargetMode}>Range</button>
-        <button onClick={() => playButtonSound()}>Target Test</button>
+        <button onClick={startRangeMode}>Range</button>
+        <button onClick={startTargetsMode}>Target Test</button>
         <button onClick={startReactionMode}>Reaction Time Test</button>
         <button onClick={startFruitNinja}>Fruit Ninja</button>
       </div>
