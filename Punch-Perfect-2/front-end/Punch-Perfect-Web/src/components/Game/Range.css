@@ -1,13 +1,3 @@
-:root {
-  --bg: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-  --accent: #667eea;
-}
-
-html, body, #root {
-  height: 100%;
-  margin: 0;
-}
-
 /* Range Container */
 .app-root {
   min-height: 100vh;
@@ -16,26 +6,11 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 12px;
+  gap: 1rem;
   padding: 1.5rem;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-  background-attachment: fixed;
-  color: #fff;
-  font-family: 'Arial', sans-serif;
+  background-color: #000000;
+  color: #ffffff;
   position: relative;
-}
-
-/* Fixed background layer */
-.app-root::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-  z-index: -1;
 }
 
 .video-wrap {
@@ -43,7 +18,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 0.5rem;
 }
 
 /* Canvas Styling */
@@ -52,103 +27,97 @@ canvas#output {
   height: auto;
   max-width: 100%;
   max-height: 100%;
-  border: 4px solid var(--accent);
-  border-radius: 16px;
-  background: black;
+  border: 3px solid #e63946;
+  border-radius: 4px;
+  background: #000000;
   transform: scaleX(-1);
   display: block;
   object-fit: contain;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5);
 }
 
 /* Header */
 h1 {
-  margin-top: 10px;
+  margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   text-align: center;
   font-size: 2.5rem;
-  background: linear-gradient(45deg, #a8d5ff, #d4e9ff, #85c1ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 4px 8px rgba(133, 193, 255, 0.5);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   transform: none !important;
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }
 
 /* Back Button Container */
 .outside-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 30%;
-  margin: 0 auto;
+  gap: 1rem;
 }
 
 /* Back Button */
-.outside-buttons .back-button, .outside-buttons .target-button {
+.outside-buttons .back-button,
+.outside-buttons .target-button {
   position: absolute;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
   cursor: pointer;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  border-radius: 4px;
+  background-color: #0a0a0a;
+  border: 2px solid #222222;
+  transition: all 0.2s;
   z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .back-button {
-  top: 5%;
-  left: 2%;
+  top: 1.5rem;
+  left: 1.5rem;
 }
 
 .target-button {
-  top: 5%; 
-  left: 20%; 
+  top: 1.5rem;
+  left: 10rem;
 }
 
-
-
-.outside-buttons .back-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateX(-5px);
-}
-
+.outside-buttons .back-button:hover,
 .outside-buttons .target-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateX(-5px);
+  border-color: #e63946;
+  background-color: #000000;
+}
+
+.outside-buttons .back-button:active,
+.outside-buttons .target-button:active {
+  transform: translateY(1px);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
 
   .app-root {
     padding: 1rem;
-    gap: 8px;
+    gap: 0.75rem;
   }
 
   canvas#output {
-    border: 3px solid var(--accent);
-    border-radius: 12px;
+    border: 2px solid #e63946;
   }
 
-  .outside-buttons .back-button {
+  .back-button {
+    top: 1rem;
+    left: 1rem;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .target-button {
+    top: 1rem;
+    left: 7rem;
     font-size: 0.9rem;
     padding: 0.6rem 1.2rem;
   }

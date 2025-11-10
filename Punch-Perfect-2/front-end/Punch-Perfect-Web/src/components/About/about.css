@@ -2,92 +2,52 @@
 .about-container {
     min-height: 100vh;
     width: 100%;
-    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-    background-attachment: fixed;
+    background-color: #000000;
     color: #ffffff;
     padding: 2rem;
-    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-    font-family: 'Arial', sans-serif;
-}
-
-/* Fixed background layer */
-.about-container::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
-    z-index: -1;
 }
 
 /* Header */
 .about-container h1 {
     text-align: center;
-    padding-top: 5%;
+    padding-top: 3rem;
     font-size: 3rem;
-    margin: 0;
-    margin-bottom: 2rem;
-    background: linear-gradient(45deg, #a8d5ff, #d4e9ff, #85c1ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 4px 8px rgba(133, 193, 255, 0.5);
-}
-
-/* Back Button Container */
-.about-buttons {
-    padding-top: 20%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 30%;
-    margin: 0 auto;
+    margin-bottom: 3rem;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
 }
 
 /* Back Button */
 .about-buttons .back-button {
     position: absolute;
-    top: 5%;
-    left: 2%;
+    top: 2rem;
+    left: 2rem;
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
     cursor: pointer;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    border-radius: 4px;
+    background-color: #0a0a0a;
+    border: 2px solid #222222;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .about-buttons .back-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: translateX(-5px);
+    border-color: #e63946;
+    background-color: #000000;
 }
 
-.about-buttons button {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #ffffff;
-    cursor: pointer;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.about-buttons button:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.about-buttons .back-button:active {
+    transform: translateY(1px);
 }
 
 /* About Text Content */
@@ -95,30 +55,31 @@
     display: flex;
     flex-direction: column;
     max-width: 800px;
-    width: 70%;
-    margin: 0 auto;
+    width: 80%;
     margin-top: 2rem;
-    padding: 2rem;
+    padding: 2.5rem;
     font-size: 1.1rem;
     line-height: 1.8;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: #cccccc;
+    background-color: #0a0a0a;
+    border: 2px solid #222222;
+    border-radius: 4px;
 }
 
 .about-text p {
-    margin: 0;
-    text-align: justify;
+    margin: 0 0 1rem 0;
+}
+
+.about-text p:last-child {
+    margin-bottom: 0;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .about-container h1 {
-        font-size: 2rem;
-        padding-top: 10%;
+        font-size: 2.5rem;
+        padding-top: 2rem;
+        margin-bottom: 2rem;
     }
 
     .about-text {
@@ -130,5 +91,7 @@
     .about-buttons .back-button {
         font-size: 0.9rem;
         padding: 0.6rem 1.2rem;
+        top: 1rem;
+        left: 1rem;
     }
 }

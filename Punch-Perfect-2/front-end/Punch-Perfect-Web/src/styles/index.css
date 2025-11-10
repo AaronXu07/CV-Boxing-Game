@@ -1,11 +1,21 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+:root {
+  font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-weight: 500;
+
+  /* Color Scheme: Black, Reddish-Orange, White */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --accent-primary: #e63946;
+  --accent-hover: #ff4d5a;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-color: #222222;
+
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,13 +23,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color 0.2s;
 }
+
 a:hover {
-  color: #535bf2;
+  color: var(--accent-hover);
 }
 
 body {
@@ -29,10 +47,9 @@ body {
   align-items: stretch;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-primary);
 }
 
-/* Ensure the document and React root can expand to full viewport height
-   so components (like App) can size to 100% or use flex to fill space. */
 html, body, #root {
   height: 100%;
 }
@@ -44,42 +61,42 @@ html, body, #root {
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-  background: linear-gradient(45deg, #a8d5ff, #d4e9ff, #85c1ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.2s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+button:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-primary);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
 }

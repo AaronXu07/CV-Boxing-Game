@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useSound } from '../../hooks/useSound.js';
-import { CANVAS_SIZE } from '../../utils/constants.js'; 
+import { CANVAS_SIZE } from '../../utils/constants.js';
+import './score.css';
 
 function Score(
   { 
@@ -59,11 +60,22 @@ function Score(
   };
 
   return (
-    <div> 
-      <h1>Game Over</h1>
-      <h1>{score}{customReset ? ' ms' : ''}</h1>
-      <button onClick={navHome} type="button">Go Back Home</button>
-      <button onClick={restart} type="button">Restart</button>
+    <div className="score-container">
+      <div className="score-content">
+        <h1 className="score-title">Game Over</h1>
+        <div className="score-display">
+          <span className="score-value">{score}</span>
+          {customReset && <span className="score-unit">ms</span>}
+        </div>
+        <div className="score-buttons">
+          <button className="score-button restart-button" onClick={restart} type="button">
+            Restart
+          </button>
+          <button className="score-button home-button" onClick={navHome} type="button">
+            Go Back Home
+          </button>
+        </div>
+      </div>
     </div>
   ); 
 }
