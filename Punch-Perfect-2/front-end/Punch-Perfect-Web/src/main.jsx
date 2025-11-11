@@ -11,6 +11,8 @@ import CamCalibration from './components/Game/CamCalibration.jsx'
 import Leaderboard from './components/Leaderboard/Leaderboard.jsx'
 import Reaction from './components/Game/Reaction.jsx'
 import Targets from './components/Game/Targets.jsx'
+import Account from './components/Account/Account.jsx'
+import Auth from './components/Auth/Auth.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -24,6 +26,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/fruitninja" element={<FruitNinja />} />
         <Route path="/about" element={<About />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/auth" element={<Auth />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

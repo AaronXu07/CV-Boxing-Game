@@ -21,6 +21,11 @@ function Menu() {
     setTimeout(() => navigate('/leaderboard'), 100);
   }
 
+  const startAccount = () => {
+    playButtonSound();
+    setTimeout(() => navigate('/account'), 100);
+  }
+
   return (
     <div className="menu-container">
       <h1>Punch Perfect Menu</h1>
@@ -29,7 +34,7 @@ function Menu() {
         <button onClick={() => playButtonSound()}>Settings</button>
         <button onClick={startLeaderboard}>Leaderboard</button>
         <button onClick={startAbout}>About</button>
-        <button onClick={() => playButtonSound()}>Account</button>
+        <button onClick={startAccount}>Account</button>
       </div>
     </div>
   );
