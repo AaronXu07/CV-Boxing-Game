@@ -6,16 +6,16 @@ import { useSound } from '../../hooks/useSound.js'
 // Mock data - will be replaced with backend data later
 const mockData = {
   reactionTime: [
-    { rank: 1, username: 'SpeedDemon', score: '0.125s', date: '2025-11-01' },
-    { rank: 2, username: 'QuickFist', score: '0.138s', date: '2025-10-30' },
-    { rank: 3, username: 'ThunderPunch', score: '0.142s', date: '2025-10-29' },
-    { rank: 4, username: 'LightningJab', score: '0.156s', date: '2025-10-28' },
-    { rank: 5, username: 'FastHands', score: '0.163s', date: '2025-10-27' },
-    { rank: 6, username: 'BoxerPro', score: '0.171s', date: '2025-10-26' },
-    { rank: 7, username: 'PunchMaster', score: '0.185s', date: '2025-10-25' },
-    { rank: 8, username: 'IronFist', score: '0.192s', date: '2025-10-24' },
-    { rank: 9, username: 'SwiftStrike', score: '0.198s', date: '2025-10-23' },
-    { rank: 10, username: 'ChampionBoxer', score: '0.205s', date: '2025-10-22' },
+    { rank: 1, username: 'SpeedDemon', score: '512 ms', date: '2025-11-01' },
+    { rank: 2, username: 'QuickFist', score: '548 ms', date: '2025-10-30' },
+    { rank: 3, username: 'ThunderPunch', score: '573 ms', date: '2025-10-29' },
+    { rank: 4, username: 'LightningJab', score: '621 ms', date: '2025-10-28' },
+    { rank: 5, username: 'FastHands', score: '658 ms', date: '2025-10-27' },
+    { rank: 6, username: 'BoxerPro', score: '692 ms', date: '2025-10-26' },
+    { rank: 7, username: 'PunchMaster', score: '734 ms', date: '2025-10-25' },
+    { rank: 8, username: 'IronFist', score: '781 ms', date: '2025-10-24' },
+    { rank: 9, username: 'SwiftStrike', score: '823 ms', date: '2025-10-23' },
+    { rank: 10, username: 'ChampionBoxer', score: '897 ms', date: '2025-10-22' },
   ],
   targetTest: [
     { rank: 1, username: 'BullseyeKing', score: '2500', date: '2025-11-01' },

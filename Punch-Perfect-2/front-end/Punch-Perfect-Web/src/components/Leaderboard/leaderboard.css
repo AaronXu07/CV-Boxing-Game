@@ -127,13 +127,23 @@
 
 .leaderboard-table thead th {
   padding: 1rem;
-  text-align: left;
   font-size: 1rem;
   font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 2px solid #222222;
+}
+
+/* Ensure header alignment matches data cells */
+.leaderboard-table thead th.rank-column,
+.leaderboard-table thead th.score-column,
+.leaderboard-table thead th.date-column {
+  text-align: center;
+}
+
+.leaderboard-table thead th.username-column {
+  text-align: left;
 }
 
 .leaderboard-table tbody tr {
@@ -194,6 +204,7 @@
   width: 35%;
   font-weight: 500;
   color: #ffffff;
+  text-align: left;
 }
 
 .score-column {
