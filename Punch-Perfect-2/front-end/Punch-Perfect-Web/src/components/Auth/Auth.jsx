@@ -73,7 +73,7 @@ function Auth() {
 
   return (
     <div className="auth-container">
-      <button className="back-button" onClick={handleBack}>← Back</button>
+      <button className="back-button" onClick={handleBack}> ← Back</button>
 
       <div className="auth-content">
         <div className="auth-card">

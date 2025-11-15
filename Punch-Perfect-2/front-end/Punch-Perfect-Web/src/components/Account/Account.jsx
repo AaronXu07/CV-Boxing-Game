@@ -46,9 +46,7 @@ function Account() {
 
   return (
     <div className="account-container">
-      <button className="back-button" onClick={handleBack}>
-        ← Back
-      </button>
+      <button className="back-button" onClick={handleBack}> ← Back</button>
 
       <h1>Account</h1>
 

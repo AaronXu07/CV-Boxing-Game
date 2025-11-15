@@ -92,23 +92,24 @@ function GameMenu() {
       <h1>Select Gamemode</h1>
 
       <div className="about-buttons">
-        <button className="back-button" onClick={back}>◄ Back to Menu</button>
+        <button className="back-button" onClick={back}> ← Back</button>
       </div>
 
       <div className="game-cards-grid">
         {gameModes.map((mode) => (
-          <div
+          <button
             key={mode.id}
+            type="button"
             className="game-card"
             style={tiltStyle[mode.id] || {}}
             onMouseMove={(e) => handleMouseMove(e, mode.id)}
             onMouseLeave={() => handleMouseLeave(mode.id)}
             onClick={mode.onClick}
+            aria-label={mode.title}
           >
-            <div className="game-card-icon">{mode.icon}</div>
             <h2 className="game-card-title">{mode.title}</h2>
             <p className="game-card-description">{mode.description}</p>
-          </div>
+          </button>
         ))}
       </div>
     </div>

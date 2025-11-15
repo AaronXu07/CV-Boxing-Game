@@ -158,7 +158,7 @@ function FruitNinja(){
           <h1>Punch Perfect — Fruit Ninja Mode</h1>
 
           <div className="outside-buttons">
-            <button className="back-button" onClick={back}>◄ Back to Menu</button>
+            <button className="back-button" onClick={back}> ← Back</button>
           </div> 
 
           <video 

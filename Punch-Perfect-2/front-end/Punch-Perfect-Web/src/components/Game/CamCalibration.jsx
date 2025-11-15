@@ -19,7 +19,7 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
   
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/'), 100);
+    setTimeout(() => navigate('/gamemenu'), 100);
   };
 
   useEffect(() => {
@@ -184,9 +184,9 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
     <div className="app-root">
       <h1>Camera Calibration</h1>
 
-      <div className="outside-buttons">
-            <button className="back-button" onClick={back}>◄ Back to Menu</button>
-      </div>
+  <div className="outside-buttons">
+    <button className="back-button" onClick={back}> ← Back</button>
+  </div>
 
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
       <canvas id="output" ref={canvasRef} width={1920} height={1080} />

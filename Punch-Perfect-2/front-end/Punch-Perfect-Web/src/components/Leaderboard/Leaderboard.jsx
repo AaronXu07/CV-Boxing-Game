@@ -99,7 +99,7 @@ function Leaderboard() {
 
   return (
     <div className="leaderboard-container">
-      <button className="back-button" onClick={back}>◄ Back to Menu</button>
+      <button className="back-button" onClick={back}> ← Back</button>
       
       <div className="leaderboard-header">
         <h1>🏆 Leaderboard</h1>
