@@ -26,6 +26,11 @@ function Menu() {
     setTimeout(() => navigate('/account'), 100);
   }
 
+  const startSettings = () => {
+    playButtonSound();
+    setTimeout(() => navigate('/settings'), 100);
+  }
+
   return (
     <div className="menu-container">
       <button className="profile-icon-button" onClick={startAccount} aria-label="Account">
@@ -39,7 +44,7 @@ function Menu() {
       <div className="menu-buttons">
         <button className="start-button" onClick={startGame}>Start Game</button>
         <button onClick={startAbout}>Tutorial</button>
-        <button onClick={() => playButtonSound()}>Settings</button>
+        <button onClick={startSettings}>Settings</button>
         <button onClick={startLeaderboard}>Leaderboard</button>
         
       </div>
