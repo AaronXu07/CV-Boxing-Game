@@ -122,7 +122,7 @@ export class FruitTarget extends BaseTarget {
         this.fruitType = FRUIT_TYPES[Math.floor(Math.random() * FRUIT_TYPES.length)];
         
         // Physics properties
-        this.gravity = 0.7;
+        this.gravity = 0.6;
         this.initialVelocityY = -Math.random() * 15 - 20; // Random upward velocity
         this.velocityY = this.initialVelocityY;
         this.rotation = 0;

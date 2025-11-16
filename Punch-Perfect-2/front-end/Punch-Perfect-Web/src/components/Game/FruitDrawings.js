@@ -715,6 +715,76 @@ const drawCherry = (ctx, radius) => {
     ctx.fill();
 };
 
+// Bomb drawing function (hazard target)
+const drawBomb = (ctx, radius) => {
+    // Bomb body (matte black sphere)
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    const bodyGrad = ctx.createRadialGradient(-radius / 3, -radius / 3, 0, 0, 0, radius);
+    bodyGrad.addColorStop(0, '#3a3a3a');
+    bodyGrad.addColorStop(0.6, '#0f0f0f');
+    bodyGrad.addColorStop(1, '#000000');
+    ctx.fillStyle = bodyGrad;
+    ctx.fill();
+
+    // Subtle glossy highlight
+    ctx.beginPath();
+    ctx.arc(-radius / 3.5, -radius / 3.5, radius / 3.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fill();
+
+    // Metal cap / fuse holder
+    ctx.beginPath();
+    ctx.ellipse(0, -radius * 0.9, radius * 0.36, radius * 0.18, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#3b3b3b';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Fuse rope
+    ctx.save();
+    ctx.translate(0, -radius * 0.98);
+    ctx.rotate(-0.35);
+    ctx.strokeStyle = '#6b4f2b';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * (radius * 0.06), 0);
+        ctx.quadraticCurveTo(i * (radius * 0.06) + radius * 0.02, -radius * 0.08, (i + 1) * (radius * 0.06), 0);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // Spark at tip of fuse
+    const sparkX = Math.cos(-0.35) * radius * 1.12;
+    const sparkY = Math.sin(-0.35) * radius * 1.12;
+    const sparkRadius = radius * 0.18;
+    const sparkGrad = ctx.createRadialGradient(sparkX, sparkY, 0, sparkX, sparkY, sparkRadius);
+    sparkGrad.addColorStop(0, '#fff59d');
+    sparkGrad.addColorStop(0.4, '#ffb74d');
+    sparkGrad.addColorStop(1, 'rgba(255,87,34,0.2)');
+    ctx.beginPath();
+    ctx.arc(sparkX, sparkY, sparkRadius, 0, Math.PI * 2);
+    ctx.fillStyle = sparkGrad;
+    ctx.fill();
+
+    // Small ember particles
+    for (let i = 0; i < 6; i++) {
+        const a = -0.35 + (i - 3) * 0.14;
+        const d = radius * (1.05 + Math.random() * 0.25);
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * d, Math.sin(a) * d, 1 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,160,60,' + (0.5 * Math.random()) + ')';
+        ctx.fill();
+    }
+
+    // Subtle worn circular decal (very faint)
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.42, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.02)';
+    ctx.fill();
+};
 // Export array of all fruit types with their drawing functions
 export const FRUIT_TYPES = [
     { name: 'watermelon', draw: drawWatermelon },
@@ -733,5 +803,7 @@ export const FRUIT_TYPES = [
     { name: 'pear', draw: drawPear },
     { name: 'passionFruit', draw: drawPassionFruit },
     { name: 'peach', draw: drawPeach },
-    { name: 'cherry', draw: drawCherry }
+    { name: 'cherry', draw: drawCherry },
+    { name: 'bomb', draw: drawBomb }
 ];
+
