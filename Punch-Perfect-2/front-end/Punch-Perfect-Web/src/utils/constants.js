@@ -22,7 +22,7 @@ export const MINIVIEW_POSITION = {
 
 export const TARGET_FPS = 30;
 export const FRAME_TIME = 1000 / TARGET_FPS;
-export const SMOOTH_FACTOR = 0.38; //0 = no smoothing, 1 = very stable but laggy
+export const SMOOTH_FACTOR = 0.3; //0 = no smoothing, 1 = very stable but laggy
 export const VISIBILITY_THRESHOLD = 0.5;
 export const TARGET_SPAWN_INTERVAL = 100; //Check every 100ms
 
