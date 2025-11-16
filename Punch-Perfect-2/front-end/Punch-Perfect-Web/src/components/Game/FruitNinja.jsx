@@ -100,7 +100,7 @@ function FruitNinja(){
 
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
-      handleCollisions(landmarks, punchStates, handStates);
+      handleCollisions(landmarks, punchStates, handStates, setIsGameOver);
       handleMissedFruit(livesRef); 
       drawTargets(ctx, targetsRef.current, canvas.width);
 
@@ -158,7 +158,7 @@ function FruitNinja(){
           <h1>Punch Perfect — Fruit Ninja Mode</h1>
 
           <div className="outside-buttons">
-            <button className="back-button" onClick={back}> ← Back</button>
+            <button className="back-button" onClick={back}>◄ Back to Menu</button>
           </div> 
 
           <video 

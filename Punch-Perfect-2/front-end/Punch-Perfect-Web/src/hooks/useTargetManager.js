@@ -33,7 +33,7 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
   /**
    * Handle collision detection
    */
-  const handleCollisions = useCallback((landmarks, punchStates, handStates) => {
+  const handleCollisions = useCallback((landmarks, punchStates, handStates, setIsGameOver) => {
     const {lPunchState, rPunchState} = punchStates;
     const {leftHandCanHit, rightHandCanHit, setLeftHandCanHit, setRightHandCanHit} = handStates;
 
@@ -60,6 +60,9 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
 
           // Play appropriate sound based on target type
           if(targetType === 'fruit' && target.fruitType) {
+            if(target.fruitType.name === 'bomb') {
+              setIsGameOver(true);
+            }
             playFruitSound(target.fruitType.name);
           } else {
             playHitSound();
@@ -88,6 +91,9 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
           
           // Play appropriate sound based on target type
           if(targetType === 'fruit' && target.fruitType) {
+            if(target.fruitType.name === 'bomb') {
+              setIsGameOver(true);
+            }
             playFruitSound(target.fruitType.name);
           } else {
             playHitSound();
@@ -107,7 +113,9 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
 
         const onScreen = target.checkOnScreen();
         if(!onScreen){
-          livesRef.current--; 
+          if(target.fruitType.name !== 'bomb') {
+            livesRef.current--;
+          }
           return false;
         } else {
           return true;
@@ -122,23 +130,33 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
   useEffect(() => {
     if (!isActive) return;
 
-    // Clear existing targets
     targetsRef.current = [];
-    scoreRef.current = 0; 
+    scoreRef.current = 0;
 
-    // Spawn initial target
-    spawnTarget();
+    let cancelled = false;
+    spawnIntervalRef.current = null;           // use the existing ref
+    const MIN_DELAY = 400;
 
-    // Set up spawn interval
-    spawnIntervalRef.current = setInterval(() => {
-      if(targetsRef.current.length === 0){
+    const computeDelay = () => Math.max(MIN_DELAY, TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
+
+    const scheduleNext = () => {
+      if (cancelled) return;
+      const delay = computeDelay();
+      spawnIntervalRef.current = setTimeout(() => {
+        if (cancelled) return;
         spawnTarget();
-      }
-    }, TARGET_SPAWN_INTERVAL);
+        scheduleNext();
+      }, delay);
+    };
+
+    spawnTarget();
+    scheduleNext();
 
     return () => {
-      if(spawnIntervalRef.current){
-        clearInterval(spawnIntervalRef.current);
+      cancelled = true;
+      if (spawnIntervalRef.current) {
+        clearTimeout(spawnIntervalRef.current);
+        spawnIntervalRef.current = null;
       }
       targetsRef.current = [];
     };
