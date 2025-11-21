@@ -373,7 +373,7 @@ function Reaction(){
   }, []);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Reaction Test"/>)
   }
 
   if (isGameOver) {

@@ -146,7 +146,7 @@ function Targets(){
   useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Target Mode"/>)
   }
 
   if (isGameOver) {

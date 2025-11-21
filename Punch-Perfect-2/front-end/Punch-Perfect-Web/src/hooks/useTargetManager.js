@@ -199,23 +199,25 @@ export const useTargetManager = (
     scoreRef.current = 0;
     bombFuseSoundPlayedRef.current = false;
 
-    let cancelled = false;
-    spawnIntervalRef.current = null;           // use the existing ref
-    const MIN_DELAY = targetType === 'fruit' ? 3000 : 400; // 3 second delay for fruit waves
+    if (targetType === 'fruit') {
+      // Dynamic spawn scheduling for fruit mode
+      let cancelled = false;
+      spawnIntervalRef.current = null;
+      const MIN_DELAY = 3000; // 3 second delay for fruit waves
 
       const computeDelay = () => Math.max(MIN_DELAY, FRUIT_TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
 
-    const scheduleNext = () => {
-      if (cancelled) return;
-      if (pendingGameOverRef?.current) return; // Don't spawn if game over is pending
-      const delay = computeDelay();
-      spawnIntervalRef.current = setTimeout(() => {
+      const scheduleNext = () => {
         if (cancelled) return;
-        if (pendingGameOverRef?.current) return; // Double check before spawning
-        spawnTarget();
-        scheduleNext();
-      }, delay);
-    };
+        if (pendingGameOverRef?.current) return; // Don't spawn if game over is pending
+        const delay = computeDelay();
+        spawnIntervalRef.current = setTimeout(() => {
+          if (cancelled) return;
+          if (pendingGameOverRef?.current) return; // Double check before spawning
+          spawnTarget();
+          scheduleNext();
+        }, delay);
+      };
 
       spawnTarget();
       scheduleNext();
@@ -229,25 +231,23 @@ export const useTargetManager = (
         targetsRef.current = [];
       };
     } else {
-      // Spawn initial target
+      // Fixed interval spawning for target mode
       spawnTarget();
 
-      // Set up spawn interval
       spawnIntervalRef.current = setInterval(() => {
-        if(targetsRef.current.length === 0){
+        if (targetsRef.current.length === 0) {
           spawnTarget();
         }
       }, TARGET_SPAWN_INTERVAL);
 
       return () => {
-        if(spawnIntervalRef.current){
+        if (spawnIntervalRef.current) {
           clearInterval(spawnIntervalRef.current);
         }
         targetsRef.current = [];
       };
     }
-   
-  }, [isActive, spawnTarget, gameKey]);
+  }, [isActive, spawnTarget, gameKey, targetType, pendingGameOverRef]);
 
   return{
     targetsRef,

@@ -242,7 +242,7 @@ function FruitNinja(){
   }, [isGameOver, stopBombFuseSound]);
 
   if (!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Fruit Ninja"/>)
   }
 
   if (isGameOver) {
@@ -266,7 +266,6 @@ function FruitNinja(){
 
           <div className="outside-buttons">
             <button className="back-button" onClick={back}>◄ Back to Menu</button>
-            <button className="back-button" onClick={enterFullScreen}>Enter Full Screen</button>
           </div> 
 
           <video 
