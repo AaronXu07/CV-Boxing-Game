@@ -6,29 +6,56 @@ import { StaticTarget, FruitTarget } from '../components/Game/Targets.js';
 /**
  * Custom hook for managing targets and collision detection
  */
-export const useTargetManager = (targetType, isActive, gameKey, playHitSound, playFruitSound) => {
+export const useTargetManager = (
+  targetType, 
+  isActive, 
+  gameKey, 
+  playHitSound, 
+  playFruitSound, 
+  onFruitDropped, 
+  onBombExplode,
+  playLaunchFruitSound,
+  playLaunchBombSound,
+  playBombFuseSound,
+  stopBombFuseSound,
+  pendingGameOverRef
+) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
-  const scoreRef = useRef(0); 
+  const scoreRef = useRef(0);
+  const bombFuseSoundPlayedRef = useRef(false); 
 
   /**
-   * Spawn a new target
+   * Spawn a new target (for fruit mode, randomly spawns 1-3 targets)
    */
   const spawnTarget = useCallback(() => {
-    let newTarget;
-    
     if(targetType === 'fruit'){
-      newTarget = new FruitTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
-      console.log("new fruit created");
+      // Randomly spawn 1-3 fruits/bombs at once
+      const numTargets = Math.floor(Math.random() * 3) + 1; // 1-3 targets
+      const newTargets = [];
+      
+      for (let i = 0; i < numTargets; i++) {
+        const newTarget = new FruitTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
+        newTargets.push(newTarget);
+        
+        // Play appropriate launch sound
+        if (newTarget.fruitType.name === 'bomb' && playLaunchBombSound) {
+          playLaunchBombSound();
+        } else if (playLaunchFruitSound) {
+          playLaunchFruitSound();
+        }
+      }
+      
+      targetsRef.current = [...targetsRef.current, ...newTargets];
+      console.log(`Spawned ${numTargets} fruits/bombs`);
     } 
     else if(targetType === 'target'){
-      newTarget = new StaticTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
+      const newTarget = new StaticTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
+      if(newTarget){
+        targetsRef.current = [...targetsRef.current, newTarget];
+      }
     }
-    
-    if(newTarget){
-      targetsRef.current = [...targetsRef.current, newTarget];
-    }
-  }, [targetType]);
+  }, [targetType, playLaunchFruitSound, playLaunchBombSound]);
 
   /**
    * Handle collision detection
@@ -42,6 +69,19 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
       targetsRef.current = targetsRef.current.filter(target => {
         return target.update();
       });
+      
+      // Check if there's a bomb on screen and play fuse sound
+      const hasBomb = targetsRef.current.some(target => target.fruitType?.name === 'bomb');
+      if (hasBomb && !bombFuseSoundPlayedRef.current && playBombFuseSound) {
+        playBombFuseSound();
+        bombFuseSoundPlayedRef.current = true;
+      } else if (!hasBomb && bombFuseSoundPlayedRef.current) {
+        // Stop the bomb fuse sound when bomb leaves screen
+        if (stopBombFuseSound) {
+          stopBombFuseSound();
+        }
+        bombFuseSoundPlayedRef.current = false;
+      }
     }
     
     // Check left hand collision
@@ -61,7 +101,14 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
           // Play appropriate sound based on target type
           if(targetType === 'fruit' && target.fruitType) {
             if(target.fruitType.name === 'bomb') {
-              setIsGameOver(true);
+              // Don't call setIsGameOver here - let animation complete
+              if (stopBombFuseSound) {
+                stopBombFuseSound();
+              }
+              bombFuseSoundPlayedRef.current = false; // Reset for next game
+              if (onBombExplode) {
+                onBombExplode({ x: target.x, y: target.y });
+              }
             }
             playFruitSound(target.fruitType.name);
           } else {
@@ -92,7 +139,14 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
           // Play appropriate sound based on target type
           if(targetType === 'fruit' && target.fruitType) {
             if(target.fruitType.name === 'bomb') {
-              setIsGameOver(true);
+              // Don't call setIsGameOver here - let animation complete
+              if (stopBombFuseSound) {
+                stopBombFuseSound();
+              }
+              bombFuseSoundPlayedRef.current = false; // Reset for next game
+              if (onBombExplode) {
+                onBombExplode({ x: target.x, y: target.y });
+              }
             }
             playFruitSound(target.fruitType.name);
           } else {
@@ -105,16 +159,27 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
         return true;
       });
     }
-  }, [targetType, playHitSound, playFruitSound]);
+  }, [targetType, playHitSound, playFruitSound, onBombExplode, playBombFuseSound, stopBombFuseSound]);
 
-  const handleMissedFruit = useCallback((livesRef) => {
+  const handleMissedFruit = useCallback((livesRef, lostLivesRef) => {
 
     targetsRef.current = targetsRef.current.filter(target => {
 
         const onScreen = target.checkOnScreen();
         if(!onScreen){
           if(target.fruitType.name !== 'bomb') {
+            // Track which life was lost
+            const lifeIndex = 3 - livesRef.current;
+            if (!lostLivesRef.current.includes(lifeIndex)) {
+              lostLivesRef.current = [...lostLivesRef.current, lifeIndex];
+            }
+            
             livesRef.current--;
+            
+            // Trigger dropped fruit animation
+            if (onFruitDropped) {
+              onFruitDropped(target.fruitType, { x: target.x, y: target.y });
+            }
           }
           return false;
         } else {
@@ -122,7 +187,7 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
         }
           
     });
-  }, [targetType, playHitSound, playFruitSound]);
+  }, [targetType, playHitSound, playFruitSound, onFruitDropped]);
 
   /**
    * Start spawning targets
@@ -132,23 +197,25 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
 
     targetsRef.current = [];
     scoreRef.current = 0;
+    bombFuseSoundPlayedRef.current = false;
 
-    if(targetType === 'fruit') {
-      let cancelled = false;
-      spawnIntervalRef.current = null;           // use the existing ref
-      const MIN_DELAY = 400;
+    let cancelled = false;
+    spawnIntervalRef.current = null;           // use the existing ref
+    const MIN_DELAY = targetType === 'fruit' ? 3000 : 400; // 3 second delay for fruit waves
 
       const computeDelay = () => Math.max(MIN_DELAY, FRUIT_TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
 
-      const scheduleNext = () => {
+    const scheduleNext = () => {
+      if (cancelled) return;
+      if (pendingGameOverRef?.current) return; // Don't spawn if game over is pending
+      const delay = computeDelay();
+      spawnIntervalRef.current = setTimeout(() => {
         if (cancelled) return;
-        const delay = computeDelay();
-        spawnIntervalRef.current = setTimeout(() => {
-          if (cancelled) return;
-          spawnTarget();
-          scheduleNext();
-        }, delay);
-      };
+        if (pendingGameOverRef?.current) return; // Double check before spawning
+        spawnTarget();
+        scheduleNext();
+      }, delay);
+    };
 
       spawnTarget();
       scheduleNext();

@@ -787,23 +787,23 @@ const drawBomb = (ctx, radius) => {
 };
 // Export array of all fruit types with their drawing functions
 export const FRUIT_TYPES = [
-    { name: 'watermelon', draw: drawWatermelon },
-    { name: 'mango', draw: drawMango },
-    { name: 'pineapple', draw: drawPineapple },
-    { name: 'coconut', draw: drawCoconut },
-    { name: 'strawberry', draw: drawStrawberry },
-    { name: 'greenApple', draw: drawGreenApple },
-    { name: 'redApple', draw: drawRedApple },
-    { name: 'kiwi', draw: drawKiwi },
-    { name: 'banana', draw: drawBanana },
-    { name: 'lemon', draw: drawLemon },
-    { name: 'lime', draw: drawLime },
-    { name: 'orange', draw: drawOrange },
-    { name: 'plum', draw: drawPlum },
-    { name: 'pear', draw: drawPear },
-    { name: 'passionFruit', draw: drawPassionFruit },
-    { name: 'peach', draw: drawPeach },
-    { name: 'cherry', draw: drawCherry },
-    { name: 'bomb', draw: drawBomb }
+    { name: 'watermelon', draw: drawWatermelon, color: '#0D8B3A' },
+    { name: 'mango', draw: drawMango, color: '#FFA500' },
+    { name: 'pineapple', draw: drawPineapple, color: '#FFD700' },
+    { name: 'coconut', draw: drawCoconut, color: '#8B4513' },
+    { name: 'strawberry', draw: drawStrawberry, color: '#FF1744' },
+    { name: 'greenApple', draw: drawGreenApple, color: '#7CB342' },
+    { name: 'redApple', draw: drawRedApple, color: '#E53935' },
+    { name: 'kiwi', draw: drawKiwi, color: '#8D6E63' },
+    { name: 'banana', draw: drawBanana, color: '#FFEB3B' },
+    { name: 'lemon', draw: drawLemon, color: '#FFF176' },
+    { name: 'lime', draw: drawLime, color: '#9CCC65' },
+    { name: 'orange', draw: drawOrange, color: '#FF6F00' },
+    { name: 'plum', draw: drawPlum, color: '#6A1B9A' },
+    { name: 'pear', draw: drawPear, color: '#C0CA33' },
+    { name: 'passionFruit', draw: drawPassionFruit, color: '#7B1FA2' },
+    { name: 'peach', draw: drawPeach, color: '#FFB74D' },
+    { name: 'cherry', draw: drawCherry, color: '#D32F2F' },
+    { name: 'bomb', draw: drawBomb, color: '#212121' }
 ];
 

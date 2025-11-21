@@ -7,6 +7,12 @@ import targetHit4 from '../assets/sounds/target-hits/punchtarget4.mp3';
 import targetHit5 from '../assets/sounds/target-hits/punchtarget5.mp3';
 import successSoundFile from '../assets/sounds/success.mp3';
 import buttonSoundFile from '../assets/sounds/button.mp3';
+import bombFuseSoundFile from '../assets/sounds/bombfuse.wav';
+import gameOverSoundFile from '../assets/sounds/gameover.wav';
+import launchBombSoundFile from '../assets/sounds/launchbomb.wav';
+import launchFruitSoundFile from '../assets/sounds/launchfruit.wav';
+import bombExplodeSoundFile from '../assets/sounds/bombexplode.wav';
+import loseLifeSoundFile from '../assets/sounds/loselife.mp3';
 
 // Fruit hit sounds
 import appleSoundFile from '../assets/sounds/fruit-hits/apple.wav';
@@ -48,11 +54,23 @@ export const useSound = () => {
   const fruitSoundRefs = useRef({});
   const successSoundRef = useRef(null);
   const buttonSoundRef = useRef(null);
+  const bombFuseSoundRef = useRef(null);
+  const gameOverSoundRef = useRef(null);
+  const launchBombSoundRef = useRef(null);
+  const launchFruitSoundRef = useRef(null);
+  const bombExplodeSoundRef = useRef(null);
+  const loseLifeSoundRef = useRef(null);
 
   useEffect(() => {
     punchSoundRef.current = new Audio(punchSoundFile);
     successSoundRef.current = new Audio(successSoundFile);
     buttonSoundRef.current = new Audio(buttonSoundFile);
+    bombFuseSoundRef.current = new Audio(bombFuseSoundFile);
+    gameOverSoundRef.current = new Audio(gameOverSoundFile);
+    launchBombSoundRef.current = new Audio(launchBombSoundFile);
+    launchFruitSoundRef.current = new Audio(launchFruitSoundFile);
+    bombExplodeSoundRef.current = new Audio(bombExplodeSoundFile);
+    loseLifeSoundRef.current = new Audio(loseLifeSoundFile);
     
     hitSoundRefs.current = targetHitSounds.map(sound => {
       const audio = new Audio(sound);
@@ -70,11 +88,24 @@ export const useSound = () => {
     punchSoundRef.current.volume = 0.1;
     successSoundRef.current.volume = 0.6;
     buttonSoundRef.current.volume = 0.4;
+    bombFuseSoundRef.current.volume = 0.5;
+    bombFuseSoundRef.current.loop = true; // Make bomb fuse loop
+    gameOverSoundRef.current.volume = 0.7;
+    launchBombSoundRef.current.volume = 0.4;
+    launchFruitSoundRef.current.volume = 0.3;
+    bombExplodeSoundRef.current.volume = 0.8;
+    loseLifeSoundRef.current.volume = 0.6;
 
     const preloadSounds = () => {
       punchSoundRef.current.load();
       successSoundRef.current.load();
       buttonSoundRef.current.load();
+      bombFuseSoundRef.current.load();
+      gameOverSoundRef.current.load();
+      launchBombSoundRef.current.load();
+      launchFruitSoundRef.current.load();
+      bombExplodeSoundRef.current.load();
+      loseLifeSoundRef.current.load();
       hitSoundRefs.current.forEach(audio => audio.load());
       Object.values(fruitSoundRefs.current).forEach(audio => audio.load());
     };
@@ -93,6 +124,30 @@ export const useSound = () => {
       if (buttonSoundRef.current) {
         buttonSoundRef.current.pause();
         buttonSoundRef.current = null;
+      }
+      if (bombFuseSoundRef.current) {
+        bombFuseSoundRef.current.pause();
+        bombFuseSoundRef.current = null;
+      }
+      if (gameOverSoundRef.current) {
+        gameOverSoundRef.current.pause();
+        gameOverSoundRef.current = null;
+      }
+      if (launchBombSoundRef.current) {
+        launchBombSoundRef.current.pause();
+        launchBombSoundRef.current = null;
+      }
+      if (launchFruitSoundRef.current) {
+        launchFruitSoundRef.current.pause();
+        launchFruitSoundRef.current = null;
+      }
+      if (bombExplodeSoundRef.current) {
+        bombExplodeSoundRef.current.pause();
+        bombExplodeSoundRef.current = null;
+      }
+      if (loseLifeSoundRef.current) {
+        loseLifeSoundRef.current.pause();
+        loseLifeSoundRef.current = null;
       }
       hitSoundRefs.current.forEach(audio => {
         if (audio) {
@@ -154,11 +209,74 @@ export const useSound = () => {
     }
   };
 
+  const playBombFuseSound = () => {
+    if (bombFuseSoundRef.current) {
+      bombFuseSoundRef.current.currentTime = 0;
+      bombFuseSoundRef.current.play();
+      console.log('bomb fuse sound played');
+    }
+  };
+
+  const stopBombFuseSound = () => {
+    if (bombFuseSoundRef.current) {
+      bombFuseSoundRef.current.pause();
+      bombFuseSoundRef.current.currentTime = 0;
+      console.log('bomb fuse sound stopped');
+    }
+  };
+
+  const playGameOverSound = () => {
+    if (gameOverSoundRef.current) {
+      gameOverSoundRef.current.currentTime = 0;
+      gameOverSoundRef.current.play();
+      console.log('game over sound played');
+    }
+  };
+
+  const playLaunchBombSound = () => {
+    if (launchBombSoundRef.current) {
+      launchBombSoundRef.current.currentTime = 0;
+      launchBombSoundRef.current.play();
+      console.log('launch bomb sound played');
+    }
+  };
+
+  const playLaunchFruitSound = () => {
+    if (launchFruitSoundRef.current) {
+      launchFruitSoundRef.current.currentTime = 0;
+      launchFruitSoundRef.current.play();
+      console.log('launch fruit sound played');
+    }
+  };
+
+  const playBombExplodeSound = () => {
+    if (bombExplodeSoundRef.current) {
+      bombExplodeSoundRef.current.currentTime = 0;
+      bombExplodeSoundRef.current.play();
+      console.log('bomb explode sound played');
+    }
+  };
+
+  const playLoseLifeSound = () => {
+    if (loseLifeSoundRef.current) {
+      loseLifeSoundRef.current.currentTime = 0;
+      loseLifeSoundRef.current.play();
+      console.log('lose life sound played');
+    }
+  };
+
   return {
     playPunchSound,
     playHitSound,
     playSuccessSound,
     playButtonSound,
-    playFruitSound
+    playFruitSound,
+    playBombFuseSound,
+    stopBombFuseSound,
+    playGameOverSound,
+    playLaunchBombSound,
+    playLaunchFruitSound,
+    playBombExplodeSound,
+    playLoseLifeSound
   };
 };

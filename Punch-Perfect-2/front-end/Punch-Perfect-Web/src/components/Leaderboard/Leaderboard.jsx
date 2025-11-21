@@ -102,7 +102,7 @@ function Leaderboard() {
       <button className="back-button" onClick={back}> ← Back</button>
       
       <div className="leaderboard-header">
-        <h1>🏆 Leaderboard</h1>
+        <h1>Leaderboard</h1>
       </div>
 
       {/* Tab Navigation */}

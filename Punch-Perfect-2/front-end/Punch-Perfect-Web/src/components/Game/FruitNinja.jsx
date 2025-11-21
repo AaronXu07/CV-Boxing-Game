@@ -18,6 +18,8 @@ import {
   drawFullSizeHandLandmarks,
   drawTargets,
   drawUI,
+  drawLivesUI,
+  drawLossAnimation,
   getPunchText
 } from '../../utils/drawingHelpers.js'
 
@@ -29,19 +31,48 @@ function FruitNinja(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false); 
   const [gameKey, setGameKey] = useState(0); 
-  const { playPunchSound, playButtonSound, playSuccessSound, playFruitSound } = useSound();
+  const { 
+    playPunchSound, 
+    playButtonSound, 
+    playSuccessSound, 
+    playFruitSound,
+    playBombFuseSound,
+    stopBombFuseSound,
+    playGameOverSound,
+    playLaunchBombSound,
+    playLaunchFruitSound,
+    playBombExplodeSound,
+    playLoseLifeSound
+  } = useSound();
   
   const canvasRef = useRef(null);
   const containerRef = useRef(null); 
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
-  const livesRef = useRef(3); 
+  const livesRef = useRef(3);
+  const lostLivesRef = useRef([]); // Track which lives have been lost
+  const lossAnimationRef = useRef(null); // Current loss animation state
+  const animationFrameRef = useRef(0); // Frame counter for animations
+  const pendingGameOverRef = useRef(false); // Track if game over is pending animation completion 
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions, scoreRef, handleMissedFruit} = useTargetManager('fruit', isCalibrated, gameKey, null, playFruitSound);
+  const {targetsRef, handleCollisions, scoreRef, handleMissedFruit} = useTargetManager(
+    'fruit', 
+    isCalibrated, 
+    gameKey, 
+    null, 
+    playFruitSound,
+    (fruitType, position) => triggerLossAnimation('dropped', fruitType, position),
+    (position) => triggerLossAnimation('bomb', null, position),
+    playLaunchFruitSound,
+    playLaunchBombSound,
+    playBombFuseSound,
+    stopBombFuseSound,
+    pendingGameOverRef
+  );
 
   //Play success sound when calibration is completed
   useEffect(() => {
@@ -55,6 +86,49 @@ function FruitNinja(){
     playButtonSound();
     setTimeout(() => navigate('/gamemenu'), 100);
   };
+
+  //===== Loss Animation =====
+  const triggerLossAnimation = useCallback((type, fruitType, position) => {
+    const duration = type === 'bomb' ? 60 : 30; // frames
+    
+    lossAnimationRef.current = {
+      type, // 'dropped' or 'bomb'
+      fruitType,
+      position,
+      startFrame: animationFrameRef.current,
+      duration
+    };
+
+    // Play appropriate sound
+    if (type === 'bomb') {
+      playBombExplodeSound();
+      pendingGameOverRef.current = true;
+      
+      // Bomb explosion is 60 frames (~1000ms at 60fps)
+      // Play game over sound near the end
+      setTimeout(() => {
+        playGameOverSound();
+      }, 800);
+      
+      // Set actual game over after animation completes
+      setTimeout(() => {
+        setIsGameOver(true);
+      }, 1100); // 60 frames + small buffer
+    } else if (type === 'dropped') {
+
+      playLoseLifeSound();
+      
+      if (livesRef.current === 0) {
+        pendingGameOverRef.current = true;
+        
+        // Wait for dropped fruit animation to complete
+        setTimeout(() => {
+          playGameOverSound();
+          setIsGameOver(true);
+        }, 600); // 30 frame drop animation + buffer
+      }
+    }
+  }, [playBombExplodeSound, playGameOverSound, playLoseLifeSound]);
 
   //===== Frame Processing =====
   const processFrame = useCallback(async (fps, timestamp) => {
@@ -102,16 +176,34 @@ function FruitNinja(){
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
       handleCollisions(landmarks, punchStates, handStates, setIsGameOver);
-      handleMissedFruit(livesRef); 
+      handleMissedFruit(livesRef, lostLivesRef); 
       drawTargets(ctx, targetsRef.current, canvas.width);
 
-      if (livesRef.current == 0) {
-        setIsGameOver(true);  
-        livesRef.current = 3; 
+      // Don't check for game over here if animation is pending
+      if (livesRef.current === 0 && !pendingGameOverRef.current) {
+        // Trigger last life lost animation
+        const lastLifeIndex = 2; // Third life (0-indexed)
+        if (!lostLivesRef.current.includes(lastLifeIndex)) {
+          lostLivesRef.current = [...lostLivesRef.current, lastLifeIndex];
+          // Animation will be triggered by handleMissedFruit
+        }
       }
 
       const punchText = getPunchText(punchData, punchStates);
-      drawUI(ctx, fps, scoreRef.current, livesRef.current);
+      
+      // Draw loss animation if active
+      if (lossAnimationRef.current) {
+        animationFrameRef.current++;
+        const elapsed = animationFrameRef.current - lossAnimationRef.current.startFrame;
+        
+        if (elapsed >= lossAnimationRef.current.duration) {
+          lossAnimationRef.current = null;
+        } else {
+          drawLossAnimation(ctx, lossAnimationRef.current, elapsed);
+        }
+      }
+      
+      drawLivesUI(ctx, fps, scoreRef.current, livesRef.current, lostLivesRef.current);
       
       ctx.restore();
       console.log('Frame completed with landmarks');
@@ -133,7 +225,21 @@ function FruitNinja(){
   }, [isCalibrated, isGameOver, gameKey]);
 
   // Move game loop after all hooks and state declarations
+  // Keep the loop running during animations (pendingGameOver doesn't stop it anymore)
   useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
+
+  // Reset state when showing game over screen
+  useEffect(() => {
+    if (isGameOver) {
+      livesRef.current = 3;
+      lostLivesRef.current = [];
+      lossAnimationRef.current = null;
+      pendingGameOverRef.current = false;
+      animationFrameRef.current = 0;
+      // Stop bomb fuse sound if it's playing
+      stopBombFuseSound();
+    }
+  }, [isGameOver, stopBombFuseSound]);
 
   if (!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)

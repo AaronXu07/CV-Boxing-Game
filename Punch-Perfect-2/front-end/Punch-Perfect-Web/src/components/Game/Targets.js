@@ -123,7 +123,7 @@ export class FruitTarget extends BaseTarget {
         
         // Physics properties
         this.gravity = 0.6;
-        this.initialVelocityY = -Math.random() * 15 - 20; // Random upward velocity
+        this.initialVelocityY = -Math.random() * 12 - 22; // Moderate upward velocity
         this.velocityY = this.initialVelocityY;
         this.rotation = 0;
         this.rotationSpeed = (Math.random() - 0.5) * 0.1;
