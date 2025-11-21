@@ -42,6 +42,7 @@ function Reaction(){
   const [reactionTimes, setReactionTimes] = useState([]); // Array to store all reaction times
   const [testCount, setTestCount] = useState(0); // Track number of completed tests
   const [isGameOver, setIsGameOver] = useState(false);
+  const [isPaused, setIsPaused] = useState(false); 
   
   const { playPunchSound, playButtonSound, playSuccessSound, playHitSound } = useSound();
   
@@ -106,6 +107,24 @@ function Reaction(){
       }
     }
   }, [isCalibrated, playSuccessSound]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        isPausedRef.current = !isPausedRef.current;
+        setIsPaused(isPausedRef.current);
+        playButtonSound();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound]);
+
+  const resume = () => {
+    playButtonSound(); 
+    isPausedRef.current = false; 
+    setIsPaused(false); 
+  }
 
   useEffect(() => {
     if(gameKey > 0){
@@ -354,7 +373,7 @@ function Reaction(){
   }, []);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Reaction Test"/>)
   }
 
   if (isGameOver) {
@@ -380,7 +399,7 @@ function Reaction(){
   return (
     <>
       <div key={gameKey} className="app-root">
-        <h1>Punch Perfect — Reaction Mode</h1>
+        <h1>Reaction Time</h1>
 
         <div className="outside-buttons">
           <button className="back-button" onClick={back}> ← Back</button>

@@ -20,19 +20,28 @@ import {
   drawUIRange,
   getPunchText
 } from '../../utils/drawingHelpers.js'
+import { useGameContext } from '../../context/GameContext'
+import { toggleFullScreen } from '../../utils/functions.js'
 
 //==================== COMPONENT ====================
 function Range(){
   const navigate = useNavigate();
 
   //===== State & Refs =====
-  const [isCalibrated, setIsCalibrated] = useState(false);
+
+  const { isMiniviewEnabled, toggleMiniview, 
+          isFullScreen, setIsFullScreen,  
+          gameKey} = useGameContext();
+  const [isCalibrated, setIsCalibrated] = useState(false); 
+  const [isPaused, setIsPaused] = useState(false); 
   const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
-  const [ gameKey, setGameKey ] = useState(0); 
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
+  const containerRef = useRef(null); 
+  const isPausedRef = useRef(false); 
+  const lastFrameRef = useRef(false); 
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated);
@@ -40,12 +49,39 @@ function Range(){
   const {processPunches} = usePunchTracking(playPunchSound);
   const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        isPausedRef.current = !isPausedRef.current;
+        setIsPaused(isPausedRef.current);
+        playButtonSound();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound]);
+
+  const resume = () => {
+    playButtonSound(); 
+    isPausedRef.current = false; 
+    setIsPaused(false); 
+  }
+
   //Play success sound when calibration is completed
   useEffect(() => {
     if (isCalibrated) {
       playSuccessSound();
     }
   }, [isCalibrated, playSuccessSound]);
+
+  useEffect(() => {
+    const handler = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   //===== Navigation =====
   const back = () => {
@@ -57,6 +93,13 @@ function Range(){
   const processFrame = async (fps, timestamp) => {
     if(!videoRef.current || !canvasRef.current) return;
 
+    if(isPausedRef.current) {
+      if(lastFrameRef.current) {
+        const ctx = canvasRef.current.getContext('2d'); 
+        ctx.putImageData(lastFrameRef.current, 0, 0); 
+      }
+      return; 
+    }
     const canvas = canvasRef.current;
     
     //Initialize canvas and drawing utils if needed
@@ -68,7 +111,13 @@ function Range(){
     const ctx = ctxRef.current;
     const drawingUtils = drawingUtilsRef.current;
 
-    drawMiniview(ctx, videoRef.current);
+    if(isMiniviewEnabled) {
+      drawMiniview(ctx, videoRef.current);
+    } else {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
+    }
+    
 
     //Detect pose
     const landmarks = await detectPose(videoRef.current, timestamp);
@@ -78,7 +127,8 @@ function Range(){
   
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
       
-      drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      
+      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
 
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
@@ -92,24 +142,37 @@ function Range(){
       
       ctx.restore();
     }
+
+    lastFrameRef = ctxRef.current; 
   };
 
   //===== Game Loop =====
   useGameLoop(isCalibrated, gameKey, processFrame);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated}/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="The Range"/>)
   }
   
   //===== Render =====
   return (
     <>
-      <div className="app-root">
-        <h1>Punch Perfect — Range Mode</h1>
+      <div ref={containerRef} className="app-root">
 
-        <div className="outside-buttons">
-          <button className="back-button" onClick={back}> ← Back</button>
-        </div> 
+        {isPaused && 
+        <div className="center-button-container">
+            <h1>PAUSED</h1>
+            <h2>The Range</h2>
+            <div className="pause-buttons">
+              <button onClick={resume}>Resume</button>
+              <button onClick={back}>Back to Menu</button>
+              <button
+                onClick={toggleMiniview}
+                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
+              >
+                Toggle Camera
+              </button>
+            </div>
+        </div>}
 
         <video 
           id="webcam" 
@@ -122,6 +185,7 @@ function Range(){
         <canvas 
           id="output" 
           ref={canvasRef} 
+          className={isPaused ? 'blurred' : ''}
           width={CANVAS_SIZE.width} 
           height={CANVAS_SIZE.height} 
         />

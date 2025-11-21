@@ -91,7 +91,7 @@ function GameMenu() {
     <div className="game-menu-container">
       <h1>Select Gamemode</h1>
 
-      <div className="about-buttons">
+      <div className="outside-buttons">
         <button className="back-button" onClick={back}> ← Back</button>
       </div>
 

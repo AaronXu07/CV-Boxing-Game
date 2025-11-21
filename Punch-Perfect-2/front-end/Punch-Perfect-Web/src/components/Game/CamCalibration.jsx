@@ -1,18 +1,24 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './Range.css'
 import { initPoseLandmarker } from '../../mediapipe/poseLandmarker'
 import { DrawingUtils, PoseLandmarker} from '@mediapipe/tasks-vision' 
 import { selectedLandmarks, selectedConnections, lIndex, rIndex } from '../../mediapipe/landmarks.js'
 import { drawBox, checkBox } from '../../mediapipe/calibration.js'
 import { useSound } from '../../hooks/useSound.js'
-
+import { useGameContext } from '../../context/GameContext.jsx'
 import { useNavigate } from 'react-router-dom'
+import { toggleFullScreen } from '../../utils/functions.js'
 
-function CamCalibration({isCalibrated, setIsCalibrated}) {
+function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
-  let rafId = useRef(null)
+  const containerRef = useRef(null); 
+  let rafId = useRef(null); 
+
+  const [ gameStarted, setGameStarted ] = useState(false); 
+
+  const { isFullScreen, setIsFullScreen } = useGameContext(); 
 
   const navigate = useNavigate();
   const { playButtonSound, playSuccessSound } = useSound();
@@ -21,6 +27,15 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
     playButtonSound();
     setTimeout(() => navigate('/gamemenu'), 100);
   };
+
+  useEffect(() => {
+    const handler = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   useEffect(() => {
     let stream = null
@@ -79,6 +94,7 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
 
           const processFrame = async () => {
             if (!videoRef.current || !poseLandmarkRef.current) return
+            if (!gameStarted) return
             if (videoRef.current.readyState >= 2) {
               const startTimeMS = performance.now()
               
@@ -178,16 +194,25 @@ function CamCalibration({isCalibrated, setIsCalibrated}) {
       }
       if (rafId.current) cancelAnimationFrame(rafId.current)
     }
-  }, [])
+  }, [gameStarted])
 
   return (
-    <div className="app-root">
-      <h1>Camera Calibration</h1>
+    <div ref={containerRef} className="app-root">
 
-  <div className="outside-buttons">
-    <button className="back-button" onClick={back}> ← Back</button>
-  </div>
-
+      {gameStarted &&
+      <div className="outside-buttons">
+        <div className="button-container">
+          <button onClick={back}> ← Back</button>
+        </div>
+      </div>
+      }
+      
+      {!gameStarted && 
+      <div className="center-button-container">
+          <h1>{gameMode}</h1>
+          <button className="start-button" onClick={() => (setGameStarted(true))}>Start</button>
+      </div>}
+      
       <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
       <canvas id="output" ref={canvasRef} width={1920} height={1080} />
     </div>
