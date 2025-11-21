@@ -14,23 +14,26 @@ import Targets from './components/Game/Targets.jsx'
 import Account from './components/Account/Account.jsx'
 import Auth from './components/Auth/Auth.jsx'
 import Settings from './components/Settings/Settings.jsx'
+import { GameProvider } from './context/GameContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Menu />} />
-        <Route path="/gamemenu" element={<GameMenu />} />
-        <Route path="/range" element={<Range />} />
-        <Route path="/reaction" element={<Reaction />} />
-        <Route path="/targets" element={<Targets />} />
-        <Route path="/fruitninja" element={<FruitNinja />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
+      <GameProvider>
+        <Routes>
+          <Route path="/" element={<Menu />} />
+          <Route path="/gamemenu" element={<GameMenu />} />
+          <Route path="/range" element={<Range />} />
+          <Route path="/reaction" element={<Reaction />} />
+          <Route path="/targets" element={<Targets />} />
+          <Route path="/fruitninja" element={<FruitNinja />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+      </GameProvider>
     </BrowserRouter>
   </StrictMode>,
 )

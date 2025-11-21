@@ -1,28 +1,32 @@
 /* Range Container */
 .app-root {
+  position: relative;          /* for absolute buttons */
   min-height: 100vh;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  display: flex;               /* enable flex layout */
+  flex-direction: column;      /* header/buttons on top, video below */
+  align-items: center;         /* center children horizontally */
+  justify-content:center; 
   gap: 1rem;
   padding: 1.5rem;
   background-color: #000000;
   color: #ffffff;
-  position: relative;
 }
 
 .video-wrap {
-  flex: 1 1 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;         /* center vertically */
+  justify-content: center;     /* center horizontally */
+  width: 100%;      
+  min-height: 100vh;           
   padding: 0.5rem;
+  box-sizing: border-box;
 }
 
 /* Canvas Styling */
 canvas#output {
+  display: block;              /* remove inline-gap issues */
+  margin: 0 auto;              /* safe fallback centering */
   width: auto;
   height: auto;
   max-width: 100%;
@@ -31,8 +35,11 @@ canvas#output {
   border-radius: 4px;
   background: #000000;
   transform: scaleX(-1);
-  display: block;
-  object-fit: contain;
+  transition: filter 0.3 ease; 
+}
+
+canvas#output.blurred {
+  filter: blur(10px);
 }
 
 /* Header */
@@ -48,77 +55,77 @@ h1 {
   transform: none !important;
 }
 
-/* Back Button Container */
 .outside-buttons {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
   display: flex;
   gap: 1rem;
+  align-items: center;
+  z-index: 20;
 }
 
-/* Back Button */
-.outside-buttons .back-button,
-.outside-buttons .target-button {
-  position: absolute;
-  padding: 0.75rem 1.5rem;
+.button-container {
+  position: fixed;
+  display:flex; 
+  gap:10px; 
+  top: 2rem;
+  left: 2rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #ffffff;
   cursor: pointer;
-  border-radius: 4px;
-  background-color: #0a0a0a;
-  border: 2px solid #222222;
   transition: all 0.2s;
-  z-index: 10;
+  z-index: 100;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.back-button {
-  top: 1.5rem;
-  left: 1.5rem;
-}
-
-.target-button {
-  top: 1.5rem;
-  left: 10rem;
-}
-
-.outside-buttons .back-button:hover,
-.outside-buttons .target-button:hover {
+.outside-buttons > button:hover {
   border-color: #e63946;
-  background-color: #000000;
+  background-color: #000;
 }
 
-.outside-buttons .back-button:active,
-.outside-buttons .target-button:active {
+.outside-buttons > button:active {
   transform: translateY(1px);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 2rem;
-  }
-
-  .app-root {
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-
-  canvas#output {
-    border: 2px solid #e63946;
-  }
-
-  .back-button {
-    top: 1rem;
-    left: 1rem;
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
-  }
-
-  .target-button {
-    top: 1rem;
-    left: 7rem;
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
-  }
+.center-button-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display:flex; 
+  align-items:center; 
+  flex-direction:column; 
+  z-index: 20;
+  gap:40px; 
 }
+
+.center-button-container > div {
+  display:flex; 
+  gap:30px; 
+}
+
+.center-button-container .start-button,
+.center-button-container > div > button  {
+  width: 150px; 
+  height: 150px; 
+  border-radius: 50%; 
+  padding:0px; 
+  border: 3px solid #e63946;
+  font-size:2rem; 
+}
+
+.center-button-container > h1 {
+  font-size:5rem; 
+}
+
+.center-button-container .start-button:hover,
+.center-button-container > div > button:hover {
+  transform:scale(1.25); 
+  border: 5px solid #e63946;
+}
+
+
+
+

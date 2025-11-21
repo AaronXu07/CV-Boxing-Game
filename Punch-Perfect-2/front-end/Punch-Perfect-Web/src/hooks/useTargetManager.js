@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { CANVAS_SIZE, TARGET_SPAWN_INTERVAL } from '../utils/constants.js';
+import { CANVAS_SIZE, TARGET_SPAWN_INTERVAL, FRUIT_TARGET_SPAWN_INTERVAL } from '../utils/constants.js';
 import { lIndex, rIndex } from '../mediapipe/landmarks.js';
 import { StaticTarget, FruitTarget } from '../components/Game/Targets.js';
 
@@ -133,33 +133,53 @@ export const useTargetManager = (targetType, isActive, gameKey, playHitSound, pl
     targetsRef.current = [];
     scoreRef.current = 0;
 
-    let cancelled = false;
-    spawnIntervalRef.current = null;           // use the existing ref
-    const MIN_DELAY = 400;
+    if(targetType === 'fruit') {
+      let cancelled = false;
+      spawnIntervalRef.current = null;           // use the existing ref
+      const MIN_DELAY = 400;
 
-    const computeDelay = () => Math.max(MIN_DELAY, TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
+      const computeDelay = () => Math.max(MIN_DELAY, FRUIT_TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
 
-    const scheduleNext = () => {
-      if (cancelled) return;
-      const delay = computeDelay();
-      spawnIntervalRef.current = setTimeout(() => {
+      const scheduleNext = () => {
         if (cancelled) return;
-        spawnTarget();
-        scheduleNext();
-      }, delay);
-    };
+        const delay = computeDelay();
+        spawnIntervalRef.current = setTimeout(() => {
+          if (cancelled) return;
+          spawnTarget();
+          scheduleNext();
+        }, delay);
+      };
 
-    spawnTarget();
-    scheduleNext();
+      spawnTarget();
+      scheduleNext();
 
-    return () => {
-      cancelled = true;
-      if (spawnIntervalRef.current) {
-        clearTimeout(spawnIntervalRef.current);
-        spawnIntervalRef.current = null;
-      }
-      targetsRef.current = [];
-    };
+      return () => {
+        cancelled = true;
+        if (spawnIntervalRef.current) {
+          clearTimeout(spawnIntervalRef.current);
+          spawnIntervalRef.current = null;
+        }
+        targetsRef.current = [];
+      };
+    } else {
+      // Spawn initial target
+      spawnTarget();
+
+      // Set up spawn interval
+      spawnIntervalRef.current = setInterval(() => {
+        if(targetsRef.current.length === 0){
+          spawnTarget();
+        }
+      }, TARGET_SPAWN_INTERVAL);
+
+      return () => {
+        if(spawnIntervalRef.current){
+          clearInterval(spawnIntervalRef.current);
+        }
+        targetsRef.current = [];
+      };
+    }
+   
   }, [isActive, spawnTarget, gameKey]);
 
   return{

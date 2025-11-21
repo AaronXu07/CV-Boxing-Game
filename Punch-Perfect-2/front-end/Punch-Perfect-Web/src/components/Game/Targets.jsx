@@ -168,7 +168,7 @@ function Targets(){
   return (
     <>
       <div key={gameKey} className="app-root">
-        <h1>Punch Perfect — Targets Mode</h1>
+        <h1>Timed Targets</h1>
 
         <div className="outside-buttons">
           <button className="back-button" onClick={back}> ← Back</button>

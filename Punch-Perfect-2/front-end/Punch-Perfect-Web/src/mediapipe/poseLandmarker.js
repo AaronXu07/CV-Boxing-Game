@@ -15,7 +15,7 @@ export async function initPoseLandmarker() {
     },
     runningMode: 'VIDEO',
     numPoses: 1,
-    minPoseDetectionConfidence: 0.95,
+    minPoseDetectionConfidence: 0.85,
     minPosePresenceConfidence: 0.5,
     minTrackingConfidence: 0.5,
     outputSegmentationMasks: false,

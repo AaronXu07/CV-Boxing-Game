@@ -32,6 +32,7 @@ function FruitNinja(){
   const { playPunchSound, playButtonSound, playSuccessSound, playFruitSound } = useSound();
   
   const canvasRef = useRef(null);
+  const containerRef = useRef(null); 
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
   const livesRef = useRef(3); 
@@ -154,11 +155,12 @@ function FruitNinja(){
   //===== Render =====
   return (
     <>
-        <div key={gameKey} className="app-root">
-          <h1>Punch Perfect — Fruit Ninja Mode</h1>
+        <div ref={containerRef} key={gameKey} className="app-root">
+          <h1>Fruit Ninja</h1>
 
           <div className="outside-buttons">
             <button className="back-button" onClick={back}>◄ Back to Menu</button>
+            <button className="back-button" onClick={enterFullScreen}>Enter Full Screen</button>
           </div> 
 
           <video 
