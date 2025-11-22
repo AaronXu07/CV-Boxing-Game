@@ -10,6 +10,7 @@ import { usePoseDetection } from '../../hooks/usePoseDetection.js'
 import { usePunchTracking } from '../../hooks/usePunchTracking.js'
 import { useTargetManager } from '../../hooks/useTargetManager.js'
 import { useGameLoop } from '../../hooks/useGameLoop.js'
+import { useGameContext } from '../../context/GameContext.jsx'
 import { CANVAS_SIZE } from '../../utils/constants.js'
 import {
   setupCanvas,
@@ -27,10 +28,13 @@ import {
 function FruitNinja(){
   const navigate = useNavigate();
 
+
   //===== State & Refs =====
+  const { isMiniviewEnabled, toggleMiniview, 
+            isFullScreen, setIsFullScreen,  
+            gameKey, setGameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false); 
-  const [gameKey, setGameKey] = useState(0); 
   const { 
     playPunchSound, 
     playButtonSound, 
@@ -54,6 +58,20 @@ function FruitNinja(){
   const lossAnimationRef = useRef(null); // Current loss animation state
   const animationFrameRef = useRef(0); // Frame counter for animations
   const pendingGameOverRef = useRef(false); // Track if game over is pending animation completion 
+  const isPausedRef = useRef(false); 
+  const lastFrameRef = useRef(null); 
+  const poseInFlightRef = useRef(false);
+  const frameCountRef = useRef(0);
+  const lastTsRef = useRef(0);
+  const DEBUG_THROTTLE = 60; // log every 60 frames
+  const debugLog = (...msg) => {
+    if (frameCountRef.current % DEBUG_THROTTLE === 0) {
+      console.log('[FruitNinja]', ...msg);
+    }
+  };
+
+  const [isPaused, setIsPaused] = useState(false); 
+
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated, gameKey);
@@ -71,8 +89,27 @@ function FruitNinja(){
     playLaunchBombSound,
     playBombFuseSound,
     stopBombFuseSound,
-    pendingGameOverRef
+    pendingGameOverRef,
+    isPausedRef
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        isPausedRef.current = !isPausedRef.current;
+        setIsPaused(isPausedRef.current);
+        playButtonSound();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound]);
+
+  const resume = () => {
+    playButtonSound(); 
+    isPausedRef.current = false; 
+    setIsPaused(false); 
+  }
 
   //Play success sound when calibration is completed
   useEffect(() => {
@@ -103,6 +140,9 @@ function FruitNinja(){
     if (type === 'bomb') {
       playBombExplodeSound();
       pendingGameOverRef.current = true;
+      targetsRef.current = [];
+      isPausedRef.current = false; 
+      setIsPaused(false); 
       
       // Bomb explosion is 60 frames (~1000ms at 60fps)
       // Play game over sound near the end
@@ -120,6 +160,9 @@ function FruitNinja(){
       
       if (livesRef.current === 0) {
         pendingGameOverRef.current = true;
+        targetsRef.current = [];
+        isPausedRef.current = false; 
+        setIsPaused(false); 
         
         // Wait for dropped fruit animation to complete
         setTimeout(() => {
@@ -131,87 +174,89 @@ function FruitNinja(){
   }, [playBombExplodeSound, playGameOverSound, playLoseLifeSound]);
 
   //===== Frame Processing =====
-  const processFrame = useCallback(async (fps, timestamp) => {
-    if(!videoRef.current || !canvasRef.current || isGameOver) {
-      console.log('Skipping frame:', { 
-        hasVideo: !!videoRef.current, 
-        hasCanvas: !!canvasRef.current,
-        isGameOver 
-      });
+  const processFrame = async (fps, timestamp) => {
+    if (!videoRef.current || !canvasRef.current || isGameOver) return;
+
+    frameCountRef.current++;
+    const delta = timestamp - lastTsRef.current;
+    lastTsRef.current = timestamp;
+    if (delta > 120) debugLog('Long frame delta', delta);
+
+    // If paused, redraw stored frame only
+    if (isPausedRef.current) {
+      if (lastFrameRef.current) {
+        const pausedCtx = canvasRef.current.getContext('2d');
+        pausedCtx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
+    }
+
+    // Ensure video is producing frames
+    if (videoRef.current.readyState < 2) {
+      debugLog('Video not ready', videoRef.current.readyState);
       return;
     }
 
     const canvas = canvasRef.current;
-    
-    //Initialize canvas and drawing utils if needed
-    if(!ctxRef.current){
-      console.log('Initializing canvas and drawing utils...');
+    // Initialize or reinitialize if canvas node changed
+    if (!ctxRef.current || ctxRef.current.canvas !== canvas) {
       ctxRef.current = setupCanvas(videoRef.current, canvas);
       drawingUtilsRef.current = new DrawingUtils(ctxRef.current);
-      console.log('Canvas initialized:', !!ctxRef.current);
-      console.log('Drawing utils initialized:', !!drawingUtilsRef.current);
+      debugLog('Context (re)initialized');
     }
 
     const ctx = ctxRef.current;
     const drawingUtils = drawingUtilsRef.current;
 
-    // Clear canvas before drawing
-    ctx.fillStyle = "black";
+    // Clear background
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    console.log('Canvas cleared');
 
-    console.log('Drawing miniview...');
-    drawMiniview(ctx, videoRef.current);
+    if (isMiniviewEnabled) {
+      drawMiniview(ctx, videoRef.current);
+    }
 
-    //Detect pose
-    console.log('Detecting pose...');
-    const landmarks = await detectPose(videoRef.current, timestamp);
-    console.log('Landmarks detected:', !!landmarks);
+    let landmarks = await detectPose(videoRef.current, timestamp);
 
-    //Process landmarks if detected
-    if(landmarks){
-      const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
-      drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
-
+    if (landmarks) {
+      const { punchData, punchStates, handStates } = processPunches(landmarks);
+      if (isMiniviewEnabled) {
+        drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      }
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
       handleCollisions(landmarks, punchStates, handStates, setIsGameOver);
-      handleMissedFruit(livesRef, lostLivesRef); 
+      handleMissedFruit(livesRef, lostLivesRef);
       drawTargets(ctx, targetsRef.current, canvas.width);
 
-      // Don't check for game over here if animation is pending
-      if (livesRef.current === 0 && !pendingGameOverRef.current) {
-        // Trigger last life lost animation
-        const lastLifeIndex = 2; // Third life (0-indexed)
-        if (!lostLivesRef.current.includes(lastLifeIndex)) {
-          lostLivesRef.current = [...lostLivesRef.current, lastLifeIndex];
-          // Animation will be triggered by handleMissedFruit
-        }
-      }
-
-      const punchText = getPunchText(punchData, punchStates);
-      
-      // Draw loss animation if active
+      // Loss animation update
       if (lossAnimationRef.current) {
         animationFrameRef.current++;
         const elapsed = animationFrameRef.current - lossAnimationRef.current.startFrame;
-        
         if (elapsed >= lossAnimationRef.current.duration) {
           lossAnimationRef.current = null;
         } else {
           drawLossAnimation(ctx, lossAnimationRef.current, elapsed);
         }
       }
-      
+
       drawLivesUI(ctx, fps, scoreRef.current, livesRef.current, lostLivesRef.current);
-      
       ctx.restore();
-      console.log('Frame completed with landmarks');
     } else {
-      console.log('No landmarks detected');
+      debugLog('No landmarks');
     }
-    console.log('Frame processing complete');
-  }, []);
+  }; 
+
+  // Capture a static frame ONLY when entering pause (avoid per-frame getImageData cost)
+  useEffect(() => {
+    if (isPaused && ctxRef.current && canvasRef.current) {
+      try {
+        lastFrameRef.current = ctxRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+      } catch (e) {
+        debugLog('Pause capture failed', e.message);
+      }
+    }
+  }, [isPaused]);
 
   //===== Game Loop =====
   useEffect(() => {
@@ -261,12 +306,22 @@ function FruitNinja(){
   //===== Render =====
   return (
     <>
-        <div ref={containerRef} key={gameKey} className="app-root">
-          <h1>Fruit Ninja</h1>
-
-          <div className="outside-buttons">
-            <button className="back-button" onClick={back}>◄ Back to Menu</button>
-          </div> 
+        <div ref={containerRef} className="app-root">
+          {isPaused && 
+          <div className="center-button-container">
+              <h1>PAUSED</h1>
+              <h2>Fruit Ninja</h2>
+              <div className="pause-buttons">
+                <button onClick={resume}>Resume</button>
+                <button onClick={back}>Back to Menu</button>
+                <button
+                  onClick={toggleMiniview}
+                  style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
+                >
+                  Toggle Camera
+                </button>
+              </div>
+          </div>}
 
           <video 
             id="webcam" 
@@ -277,9 +332,9 @@ function FruitNinja(){
             style={{ display: 'none' }} 
           />
           <canvas 
-            key={`canvas-${gameKey}`}
             id="output" 
             ref={canvasRef} 
+            className = {isPaused ? 'blurred' : ''}
             width={CANVAS_SIZE.width} 
             height={CANVAS_SIZE.height} 
           />

@@ -199,22 +199,23 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
   return (
     <div ref={containerRef} className="app-root">
 
-      {gameStarted &&
-      <div className="outside-buttons">
-        <div className="button-container">
-          <button onClick={back}> ← Back</button>
-        </div>
+       <div className="video-wrap">
+          {gameStarted && (
+            <div className="outside-buttons">
+              <button onClick={back}> ← Back</button>
+            </div>
+          )}
+
+          <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
+          <canvas id="output" ref={canvasRef} width={1920} height={1080} />
       </div>
-      }
-      
+
       {!gameStarted && 
-      <div className="center-button-container">
-          <h1>{gameMode}</h1>
-          <button className="start-button" onClick={() => (setGameStarted(true))}>Start</button>
-      </div>}
-      
-      <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
-      <canvas id="output" ref={canvasRef} width={1920} height={1080} />
+        <div className="center-button-container">
+            <h1>{gameMode}</h1>
+            <button className="start-button" onClick={() => (setGameStarted(true))}>Start</button>
+        </div>
+      }
     </div>
   )
 }

@@ -18,7 +18,8 @@ export const useTargetManager = (
   playLaunchBombSound,
   playBombFuseSound,
   stopBombFuseSound,
-  pendingGameOverRef
+  pendingGameOverRef,
+  isPausedRef
 ) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
@@ -29,6 +30,7 @@ export const useTargetManager = (
    * Spawn a new target (for fruit mode, randomly spawns 1-3 targets)
    */
   const spawnTarget = useCallback(() => {
+
     if(targetType === 'fruit'){
       // Randomly spawn 1-3 fruits/bombs at once
       const numTargets = Math.floor(Math.random() * 3) + 1; // 1-3 targets
@@ -61,6 +63,7 @@ export const useTargetManager = (
    * Handle collision detection
    */
   const handleCollisions = useCallback((landmarks, punchStates, handStates, setIsGameOver) => {
+
     const {lPunchState, rPunchState} = punchStates;
     const {leftHandCanHit, rightHandCanHit, setLeftHandCanHit, setRightHandCanHit} = handStates;
 
@@ -195,10 +198,6 @@ export const useTargetManager = (
   useEffect(() => {
     if (!isActive) return;
 
-    targetsRef.current = [];
-    scoreRef.current = 0;
-    bombFuseSoundPlayedRef.current = false;
-
     if (targetType === 'fruit') {
       // Dynamic spawn scheduling for fruit mode
       let cancelled = false;
@@ -213,8 +212,9 @@ export const useTargetManager = (
         const delay = computeDelay();
         spawnIntervalRef.current = setTimeout(() => {
           if (cancelled) return;
+          if (!isPausedRef.current) spawnTarget();
           if (pendingGameOverRef?.current) return; // Double check before spawning
-          spawnTarget();
+          
           scheduleNext();
         }, delay);
       };
@@ -228,7 +228,10 @@ export const useTargetManager = (
           clearTimeout(spawnIntervalRef.current);
           spawnIntervalRef.current = null;
         }
-        targetsRef.current = [];
+        if(!isPausedRef.current) {
+           scoreRef.current = 0; 
+           targetsRef.current = [];
+        }
       };
     } else {
       // Fixed interval spawning for target mode
@@ -244,10 +247,15 @@ export const useTargetManager = (
         if (spawnIntervalRef.current) {
           clearInterval(spawnIntervalRef.current);
         }
+        scoreRef.current = 0; 
         targetsRef.current = [];
       };
     }
-  }, [isActive, spawnTarget, gameKey, targetType, pendingGameOverRef]);
+  }, [isActive, gameKey, targetType, pendingGameOverRef]);
+
+  useEffect(() => {
+    console.log("Effect re-ran");
+  }, [isActive, gameKey, targetType, pendingGameOverRef]);
 
   return{
     targetsRef,
