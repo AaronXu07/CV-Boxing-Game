@@ -11,6 +11,7 @@ import { usePunchTracking } from '../../hooks/usePunchTracking.js'
 import { useTargetManager } from '../../hooks/useTargetManager.js'
 import { useGameLoop } from '../../hooks/useGameLoop.js'
 import { useGameContext } from '../../context/GameContext.jsx'
+import { usePause } from '../../hooks/usePause.js'
 import { CANVAS_SIZE } from '../../utils/constants.js'
 import {
   setupCanvas,
@@ -60,8 +61,30 @@ function FruitNinja(){
   const lossAnimationRef = useRef(null); // Current loss animation state
   const animationFrameRef = useRef(0); // Frame counter for animations
   const pendingGameOverRef = useRef(false); // Track if game over is pending animation completion 
-  const isPausedRef = useRef(false); 
-  const lastFrameRef = useRef(null); 
+  // Pause handled via reusable hook
+  const {
+    isPaused,
+    isResuming,
+    resumeCountdown,
+    pause: pauseHook,
+    resume: resumeHook,
+    isPausedRef,
+    lastFrameRef
+  } = usePause({
+    countdownSeconds: 3,
+    enableCountdown: true,
+    onToggle: (paused) => {
+      playButtonSound();
+      if (paused) {
+        stopBombFuseSound();
+      } else {
+        if (targetsRef.current.some(t => t.fruitType?.name === 'bomb')) {
+          playBombFuseSound();
+        }
+      }
+    },
+    allowPause: () => !isGameOver
+  });
   const poseInFlightRef = useRef(false);
   const frameCountRef = useRef(0);
   const lastTsRef = useRef(0);
@@ -72,13 +95,18 @@ function FruitNinja(){
     }
   };
 
-  const [isPaused, setIsPaused] = useState(false); 
+  // Local isPaused state replaced by hook
 
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
+  const isResumingRef = useRef(false);
+  useEffect(() => { isResumingRef.current = isResuming; }, [isResuming]);
+  // Track initial startup countdown (first time after calibration)
+  const initialCountdownStartedRef = useRef(false);
+
   const {targetsRef, handleCollisions, scoreRef, handleMissedFruit, comboPopupsRef, clearSpawnInterval} = useTargetManager(
     'fruit', 
     isCalibrated, 
@@ -93,39 +121,18 @@ function FruitNinja(){
     stopBombFuseSound,
     pendingGameOverRef,
     isPausedRef,
-    playComboSound
+    playComboSound,
+    isResumingRef
   );
 
   
 
-  const resume = () => {
-    playButtonSound(); 
-    isPausedRef.current = false; 
-    setIsPaused(false);
-    
-    // Check if there's a bomb on screen and resume fuse sound
-    const hasBomb = targetsRef.current.some(target => target.fruitType?.name === 'bomb');
-    if (hasBomb) {
-      playBombFuseSound();
-    }
-  }
-
-  const pause = () => {
-    isPausedRef.current = !isPausedRef.current;
-    setIsPaused(isPausedRef.current);
-    playButtonSound();
-
-    // Stop bomb fuse sound when pausing
-    if (isPausedRef.current) {
-      stopBombFuseSound();
-    }
-  }
+  const pause = () => pauseHook(canvasRef, ctxRef);
+  const resume = () => resumeHook(canvasRef, ctxRef);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        pause(); 
-      }
+      if (e.key === 'Escape') pause();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -161,8 +168,8 @@ function FruitNinja(){
       playBombExplodeSound();
       pendingGameOverRef.current = true;
       targetsRef.current = [];
-      isPausedRef.current = false; 
-      setIsPaused(false);
+      // Force immediate unpause (skip countdown for explosion animation)
+      isPausedRef.current = false;
       clearSpawnInterval(); // Stop spawning immediately 
       
       // Bomb explosion is 60 frames (~1000ms at 60fps)
@@ -182,8 +189,7 @@ function FruitNinja(){
       if (livesRef.current === 0) {
         pendingGameOverRef.current = true;
         targetsRef.current = [];
-        isPausedRef.current = false; 
-        setIsPaused(false);
+        isPausedRef.current = false;
         clearSpawnInterval(); // Stop spawning immediately 
         
         // Wait for dropped fruit animation to complete
@@ -296,7 +302,19 @@ function FruitNinja(){
 
   // Move game loop after all hooks and state declarations
   // Keep the loop running during animations (pendingGameOver doesn't stop it anymore)
-  useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Initial 3s countdown before first game start after calibration
+  useEffect(() => {
+    if (isCalibrated && !isGameOver && !initialCountdownStartedRef.current) {
+      // Initiate paused state then resume countdown once
+      initialCountdownStartedRef.current = true;
+      // Enter pause visually (capture frame) then trigger countdown
+      pauseHook(canvasRef, ctxRef);
+      // Start countdown (resume from pause)
+      resumeHook(canvasRef, ctxRef);
+    }
+  }, [isCalibrated, isGameOver, pauseHook, resumeHook]);
 
   // Reset state when showing game over screen
   useEffect(() => {
@@ -335,21 +353,35 @@ function FruitNinja(){
           <button className="menu-button" onClick={pause}>
             <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
           </button>
-          {isPaused && 
-          <div className="center-button-container">
-              <h1>PAUSED</h1>
-              <h2>Fruit Ninja</h2>
-              <div className="pause-buttons">
-                <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
-                <button onClick={back}>Back to Menu</button>
-                <button
-                  onClick={() => { playButtonSound(); toggleMiniview(); }}
-                  style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
-                >
-                  Toggle Camera
-                </button>
-              </div>
-          </div>}
+          {(isPaused || isResuming) && (
+            <div className="center-button-container">
+              {isResuming ? (
+                <>
+                  <h1>GET READY</h1>
+                  <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
+                  <h1>{resumeCountdown}</h1>
+                  <div className="pause-buttons">
+                    <button onClick={pause}>Cancel</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1>PAUSED</h1>
+                  <h2>Fruit Ninja</h2>
+                  <div className="pause-buttons">
+                    <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
+                    <button onClick={back}>Back to Menu</button>
+                    <button
+                      onClick={() => { playButtonSound(); toggleMiniview(); }}
+                      style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
+                    >
+                      Toggle Camera
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <video 
             id="webcam" 

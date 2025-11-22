@@ -9,6 +9,7 @@ import { useWebcam } from '../../hooks/useWebcam.js'
 import { usePoseDetection } from '../../hooks/usePoseDetection.js'
 import { usePunchTracking } from '../../hooks/usePunchTracking.js'
 import { useTargetManager } from '../../hooks/useTargetManager.js'
+import { usePause } from '../../hooks/usePause.js'
 import { useGameLoop } from '../../hooks/useGameLoop.js'
 import { CANVAS_SIZE } from '../../utils/constants.js'
 import {
@@ -33,39 +34,42 @@ function Range(){
           isFullScreen, setIsFullScreen,  
           gameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false); 
-  const [isPaused, setIsPaused] = useState(false); 
+  // Pause handled by usePause hook now
   const { playPunchSound, playHitSound, playButtonSound } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
   const containerRef = useRef(null); 
-  const isPausedRef = useRef(false); 
-  const lastFrameRef = useRef(false); 
+  // Replace local pause state with reusable hook
+  const { 
+    isPaused, 
+    isResuming, 
+    resumeCountdown, 
+    pause: pauseHook, 
+    resume: resumeHook, 
+    isPausedRef, 
+    lastFrameRef 
+  } = usePause({
+    countdownSeconds: 3,
+    enableCountdown: true,
+    onToggle: (paused) => playButtonSound(),
+    allowPause: () => true
+  });
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated);
   const {detectPose} = usePoseDetection(isCalibrated);
   const {processPunches} = usePunchTracking(playPunchSound);
   const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
+  const initialCountdownStartedRef = useRef(false);
 
-  const pause = () => {
-    isPausedRef.current = !isPausedRef.current;
-    setIsPaused(isPausedRef.current);
-    playButtonSound();
-  }
-
-  const resume = () => {
-    playButtonSound(); 
-    isPausedRef.current = false; 
-    setIsPaused(false); 
-  }
+  const pause = () => pauseHook(canvasRef, ctxRef);
+  const resume = () => resumeHook(canvasRef, ctxRef);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        pause(); 
-      }
+      if (e.key === 'Escape') pause();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -95,14 +99,23 @@ function Range(){
 
   //===== Frame Processing =====
   const processFrame = async (fps, timestamp) => {
-    if(!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current) return;
 
-    if(isPausedRef.current) {
-      if(lastFrameRef.current) {
-        const ctx = canvasRef.current.getContext('2d'); 
-        ctx.putImageData(lastFrameRef.current, 0, 0); 
+    // Fully paused (not counting down): show frozen frame
+    if (isPausedRef.current && !isResuming) {
+      if (lastFrameRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.putImageData(lastFrameRef.current, 0, 0);
       }
-      return; 
+      return;
+    }
+    // During countdown we intentionally do NOT advance game; keep frame static
+    if (isResuming) {
+      if (lastFrameRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
     }
     const canvas = canvasRef.current;
     
@@ -147,11 +160,20 @@ function Range(){
       ctx.restore();
     }
 
-    lastFrameRef = ctxRef.current; 
+    // Do not capture frame each render; only on pause
   };
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Initial countdown at calibration completion before practice begins
+  useEffect(() => {
+    if (isCalibrated && !initialCountdownStartedRef.current) {
+      initialCountdownStartedRef.current = true;
+      pauseHook(canvasRef, ctxRef);
+      resumeHook(canvasRef, ctxRef);
+    }
+  }, [isCalibrated, pauseHook, resumeHook]);
 
   if(!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="The Range"/>)
@@ -164,21 +186,35 @@ function Range(){
         <button className="menu-button" onClick={pause}>
           <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
         </button>
-        {isPaused && 
-        <div className="center-button-container">
-            <h1>PAUSED</h1>
-            <h2>The Range</h2>
-            <div className="pause-buttons">
-              <button onClick={resume}>Resume</button>
-              <button onClick={back}>Back to Menu</button>
-              <button
-                onClick={() => { playButtonSound(); toggleMiniview(); }}
-                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
-              >
-                Toggle Camera
-              </button>
-            </div>
-        </div>}
+        {(isPaused || isResuming) && (
+          <div className="center-button-container">
+            {isResuming ? (
+              <>
+                <h1>GET READY</h1>
+                <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
+                <h1>{resumeCountdown}</h1>
+                <div className="pause-buttons">
+                  <button onClick={pause}>Cancel</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h1>PAUSED</h1>
+                <h2>The Range</h2>
+                <div className="pause-buttons">
+                  <button onClick={resume}>Resume</button>
+                  <button onClick={back}>Back to Menu</button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMiniview(); }}
+                    style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
+                  >
+                    Toggle Camera
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <video 
           id="webcam" 
