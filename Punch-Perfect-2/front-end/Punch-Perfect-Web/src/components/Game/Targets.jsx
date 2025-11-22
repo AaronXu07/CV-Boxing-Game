@@ -17,8 +17,7 @@ import {
   drawLandmarksInMiniview,
   drawFullSizeHandLandmarks,
   drawTargets,
-  drawUIRange,
-  getPunchText
+  drawUITargetTest
 } from '../../utils/drawingHelpers.js'
 
 //==================== COMPONENT ====================
@@ -29,7 +28,7 @@ function Targets(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
-  const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound } = useSound();
   const [ gameKey, setGameKey ] = useState(0); 
   
   const canvasRef = useRef(null);
@@ -46,14 +45,13 @@ function Targets(){
 
   useEffect(() => {
     if (isCalibrated && !hasPlayedSuccessSoundRef.current) {
-      playSuccessSound();
       hasPlayedSuccessSoundRef.current = true;
     }
     
     if (!isCalibrated) {
       hasPlayedSuccessSoundRef.current = false;
     }
-  }, [isCalibrated, playSuccessSound]);
+  }, [isCalibrated]);
 
   //===== Timer Logic =====
   useEffect(() => {
@@ -115,14 +113,7 @@ function Targets(){
 
       drawTargets(ctx, targetsRef.current, canvas.width);
 
-      const punchText = getPunchText(punchData, punchStates);
-      
-      ctx.font = '50px Calibri';
-      ctx.fillStyle = 'white';
-      ctx.textAlign = 'left';
-      ctx.fillText(`FPS: ${fps}`, 30, 100);
-      ctx.fillText(`Score: ${scoreRef.current}`, 1600, 100);
-      ctx.fillText(`Time: ${timeRemaining}s`, 1600, 150);
+      drawUITargetTest(ctx, scoreRef.current, timeRemaining, canvas);
       
       if (timeRemaining <= 5 && timeRemaining > 0 && lastFlashTimeRef.current) {
         const timeSinceFlash = Date.now() - lastFlashTimeRef.current;

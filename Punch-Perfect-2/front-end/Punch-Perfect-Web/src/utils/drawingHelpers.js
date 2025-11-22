@@ -104,12 +104,29 @@ export const drawTargets = (ctx, targets, canvasWidth) => {
  * Draw UI information (FPS, punch counters, etc.)
  */
 export const drawUI = (ctx, fps, score, lives) => {
-  ctx.font = '50px Calibri';
   ctx.fillStyle = 'white';
   ctx.textAlign = 'left';
-  ctx.fillText(`FPS: ${fps}`, 30, 100);
-  ctx.fillText(`Score: ${score}`, 1600, 100);
-  ctx.fillText(`Lives: ${lives}`, 1600, 150);
+  
+  // FPS label and value
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.fillText('FPS: ', 30, 100);
+  ctx.font = '50px Orbitron, monospace';
+  const fpsLabelWidth = ctx.measureText('FPS: ').width;
+  ctx.fillText(`${fps}`, 30 + fpsLabelWidth, 100);
+  
+  // Score label and value
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.fillText('Score: ', 1600, 100);
+  ctx.font = '50px Orbitron, monospace';
+  const scoreLabelWidth = ctx.measureText('Score: ').width;
+  ctx.fillText(`${score}`, 1600 + scoreLabelWidth, 100);
+  
+  // Lives label and value
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.fillText('Lives: ', 1600, 150);
+  ctx.font = '50px Orbitron, monospace';
+  const livesLabelWidth = ctx.measureText('Lives: ').width;
+  ctx.fillText(`${lives}`, 1600 + livesLabelWidth, 150);
   // ctx.fillText(`Punch: ${punchText}`, 30, 150);
   // ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
   // ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
@@ -121,18 +138,40 @@ export const drawUI = (ctx, fps, score, lives) => {
 /**
  * Draw UI with visual life indicators (red X's)
  */
-export const drawLivesUI = (ctx, fps, score, lives, lostLives) => {
-  ctx.font = '50px Calibri';
+export const drawLivesUI = (ctx, fps, score, lives, lostLives, canvas) => {
   ctx.fillStyle = 'white';
-  ctx.textAlign = 'left';
-  ctx.fillText(`FPS: ${fps}`, 30, 100);
-  ctx.fillText(`Score: ${score}`, 1600, 100);
   
-  // Draw lives as red X's in top right
-  const startX = 1600;
-  const startY = 180;
-  const spacing = 80;
-  const xSize = 60;
+  // Score - centered at top with label
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.lineWidth = 4;
+  
+  ctx.font = 'bold 60px Rajdhani, sans-serif';
+  const scoreLabel = 'SCORE: ';
+  const scoreLabelWidth = ctx.measureText(scoreLabel).width;
+  
+  ctx.font = 'bold 80px Orbitron, monospace';
+  const scoreValue = `${score}`;
+  const scoreValueWidth = ctx.measureText(scoreValue).width;
+  const scoreTotalWidth = scoreLabelWidth + scoreValueWidth;
+  
+  // Draw score label
+  ctx.font = 'bold 60px Rajdhani, sans-serif';
+  ctx.strokeText(scoreLabel, canvas.width/2 - scoreTotalWidth/2 + scoreLabelWidth/2, 90);
+  ctx.fillText(scoreLabel, canvas.width/2 - scoreTotalWidth/2 + scoreLabelWidth/2, 90);
+  
+  // Draw score value
+  ctx.font = 'bold 80px Orbitron, monospace';
+  ctx.strokeText(scoreValue, canvas.width/2 - scoreTotalWidth/2 + scoreLabelWidth + scoreValueWidth/2, 90);
+  ctx.fillText(scoreValue, canvas.width/2 - scoreTotalWidth/2 + scoreLabelWidth + scoreValueWidth/2, 90);
+  
+  // Draw lives centered at top below score with better spacing and visuals
+  const heartSize = 70;
+  const spacing = 100;
+  const totalWidth = (3 - 1) * spacing;
+  const startX = (canvas.width / 2) - (totalWidth / 2);
+  const startY = 160;
   
   const lostLifePositions = [];
   
@@ -141,26 +180,57 @@ export const drawLivesUI = (ctx, fps, score, lives, lostLives) => {
     const y = startY;
     
     if (lostLives.includes(i)) {
-      lostLifePositions.push({ x, y, size: xSize });
+      lostLifePositions.push({ x, y, size: heartSize });
       
-      // Draw red X for lost life
-      ctx.strokeStyle = '#e63946';
-      ctx.lineWidth = 8;
+      // Draw red X for lost life with shadow effect
+      ctx.save();
+      
+      // Shadow
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.lineWidth = 12;
       ctx.lineCap = 'round';
       
       ctx.beginPath();
-      ctx.moveTo(x - xSize/2, y - xSize/2);
-      ctx.lineTo(x + xSize/2, y + xSize/2);
+      ctx.moveTo(x - heartSize/2 + 3, y - heartSize/2 + 3);
+      ctx.lineTo(x + heartSize/2 + 3, y + heartSize/2 + 3);
       ctx.stroke();
       
       ctx.beginPath();
-      ctx.moveTo(x + xSize/2, y - xSize/2);
-      ctx.lineTo(x - xSize/2, y + xSize/2);
+      ctx.moveTo(x + heartSize/2 + 3, y - heartSize/2 + 3);
+      ctx.lineTo(x - heartSize/2 + 3, y + heartSize/2 + 3);
       ctx.stroke();
+      
+      // Main X
+      ctx.strokeStyle = '#e63946';
+      ctx.lineWidth = 10;
+      
+      ctx.beginPath();
+      ctx.moveTo(x - heartSize/2, y - heartSize/2);
+      ctx.lineTo(x + heartSize/2, y + heartSize/2);
+      ctx.stroke();
+      
+      ctx.beginPath();
+      ctx.moveTo(x + heartSize/2, y - heartSize/2);
+      ctx.lineTo(x - heartSize/2, y + heartSize/2);
+      ctx.stroke();
+      
+      ctx.restore();
     } else {
-      // Draw heart outline for remaining life
-      ctx.fillStyle = '#e63946';
-      drawHeart(ctx, x, y, xSize);
+      // Draw heart with glow effect for remaining life
+      ctx.save();
+      
+      // Glow effect
+      ctx.shadowColor = '#e63946';
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = '#ff4d5a';
+      drawHeart(ctx, x, y, heartSize);
+      
+      // Inner highlight
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ff6b75';
+      drawHeart(ctx, x, y, heartSize * 0.6);
+      
+      ctx.restore();
     }
   }
   
@@ -438,13 +508,34 @@ export const drawEnlargedCenterX = (ctx, elapsedFrames, canvasWidth, canvasHeigh
 };
 
 export const drawUIRange = (ctx, fps, punchText, lPunchCounter, rPunchCounter) => {
-  ctx.font = '50px Calibri';
   ctx.fillStyle = 'white';
   ctx.textAlign = 'left';
-  ctx.fillText(`FPS: ${fps}`, 30, 100);
-  ctx.fillText(`Punch: ${punchText}`, 30, 150);
-  ctx.fillText(`L Punches: ${lPunchCounter}`, 1600, 100);
-  ctx.fillText(`R Punches: ${rPunchCounter}`, 1600, 150);
+  
+  // FPS label and value
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.fillText('FPS: ', 30, 100);
+  ctx.font = '50px Orbitron, monospace';
+  const fpsLabelWidth = ctx.measureText('FPS: ').width;
+  ctx.fillText(`${fps}`, 30 + fpsLabelWidth - 10, 100);
+  
+  // Punch text (just Rajdhani since it's text like "Left Arm")
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.fillText(`Punch: ${punchText}`, 30, 180);
+  
+  // L Punches label and value (right side)
+  ctx.textAlign = 'right';
+  ctx.font = '50px Orbitron, monospace';
+  ctx.fillText(`${lPunchCounter}`, 1890, 100);
+  ctx.font = '50px Rajdhani, sans-serif';
+  const lPunchValueWidth = ctx.measureText(`${lPunchCounter}`).width;
+  ctx.fillText('L Punches: ', 1890 - lPunchValueWidth - 20, 100);
+  
+  // R Punches label and value (right side)
+  ctx.font = '50px Orbitron, monospace';
+  ctx.fillText(`${rPunchCounter}`, 1890, 180);
+  ctx.font = '50px Rajdhani, sans-serif';
+  const rPunchValueWidth = ctx.measureText(`${rPunchCounter}`).width;
+  ctx.fillText('R Punches: ', 1890 - rPunchValueWidth - 20, 180);
   // ctx.fillText(`Left Index Z: ${lz}`, 30, 200);
   // ctx.fillText(`right Index Z: ${rz}`, 30, 250);
   // ctx.fillText(`leftArmExtended: ${leftArmExtended}`, 30, 300);
@@ -461,4 +552,112 @@ export const getPunchText = (punchData, punchStates) => {
   if (lPunchState) return 'Left Arm';
   if (rPunchState) return 'Right Arm';
   return 'None';
+};
+
+/**
+ * Update and draw combo popups
+ * Popups fade out over 2 seconds and float upward
+ */
+export const drawComboPopups = (ctx, comboPopupsRef) => {
+  const now = Date.now();
+  const POPUP_DURATION = 2000; // 2 seconds
+  
+  // Update and filter popups
+  comboPopupsRef.current = comboPopupsRef.current.filter(popup => {
+    const elapsed = now - popup.createdAt;
+    
+    if (elapsed > POPUP_DURATION) {
+      return false; // Remove old popups
+    }
+    
+    // Update opacity and position
+    popup.opacity = 1 - (elapsed / POPUP_DURATION);
+    popup.y -= 1; // Float upward
+    
+    // Draw the popup
+    ctx.save();
+    ctx.globalAlpha = popup.opacity;
+    
+    ctx.fillStyle = '#ff4d5a';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.textAlign = 'center';
+    
+    // Draw "COMBO" label in Rajdhani
+    ctx.font = 'bold 56px Rajdhani, sans-serif';
+    const comboLabel = 'COMBO ';
+    const comboLabelWidth = ctx.measureText(comboLabel).width;
+    
+    // Draw combo number in Orbitron
+    ctx.font = 'bold 72px Orbitron, monospace';
+    const comboNumber = `${popup.combo}`;
+    const comboNumberWidth = ctx.measureText(comboNumber).width;
+    const totalWidth = comboLabelWidth + comboNumberWidth;
+    
+    // Draw label
+    ctx.font = 'bold 56px Rajdhani, sans-serif';
+    ctx.strokeText(comboLabel, popup.x - totalWidth/2 + comboLabelWidth/2, popup.y);
+    ctx.fillText(comboLabel, popup.x - totalWidth/2 + comboLabelWidth/2, popup.y);
+    
+    // Draw number
+    ctx.font = 'bold 72px Orbitron, monospace';
+    ctx.strokeText(comboNumber, popup.x - totalWidth/2 + comboLabelWidth + comboNumberWidth/2, popup.y);
+    ctx.fillText(comboNumber, popup.x - totalWidth/2 + comboLabelWidth + comboNumberWidth/2, popup.y);
+    
+    // Draw "+X" bonus text below (all numbers, use Orbitron)
+    ctx.font = 'bold 56px Orbitron, monospace';
+    ctx.fillStyle = '#ffff00';
+    const bonusText = `+${popup.bonus}`;
+    ctx.strokeText(bonusText, popup.x, popup.y + 65);
+    ctx.fillText(bonusText, popup.x, popup.y + 65);
+    
+    ctx.restore();
+    
+    return true; // Keep this popup
+  });
+};
+
+/**
+ * Draw UI for target test mode (centered score and timer)
+ */
+export const drawUITargetTest = (ctx, score, timeRemaining, canvas) => {
+  ctx.save();
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.lineWidth = 4;
+  
+  // Timer - top left
+  ctx.textAlign = 'left';
+  ctx.font = '50px Rajdhani, sans-serif';
+  ctx.strokeText('TIME: ', 30, 80);
+  ctx.fillText('TIME: ', 30, 80);
+  
+  ctx.font = '50px Orbitron, monospace';
+  const timerLabelWidth = ctx.measureText('TIME: ').width;
+  ctx.strokeText(`${timeRemaining}s`, 30 + timerLabelWidth, 80);
+  ctx.fillText(`${timeRemaining}s`, 30 + timerLabelWidth, 80);
+  
+  // Score - centered at top with label
+  ctx.textAlign = 'center';
+  
+  ctx.font = 'bold 60px Rajdhani, sans-serif';
+  const scoreLabel = 'SCORE: ';
+  const scoreLabelWidth = ctx.measureText(scoreLabel).width;
+  
+  ctx.font = 'bold 70px Orbitron, monospace';
+  const scoreValue = `${score}`;
+  const scoreValueWidth = ctx.measureText(scoreValue).width;
+  const totalWidth = scoreLabelWidth + scoreValueWidth;
+  
+  // Draw score label
+  ctx.font = 'bold 60px Rajdhani, sans-serif';
+  ctx.strokeText(scoreLabel, canvas.width/2 - totalWidth/2 + scoreLabelWidth/2, 90);
+  ctx.fillText(scoreLabel, canvas.width/2 - totalWidth/2 + scoreLabelWidth/2, 90);
+  
+  // Draw score value
+  ctx.font = 'bold 70px Orbitron, monospace';
+  ctx.strokeText(scoreValue, canvas.width/2 - totalWidth/2 + scoreLabelWidth + scoreValueWidth/2, 90);
+  ctx.fillText(scoreValue, canvas.width/2 - totalWidth/2 + scoreLabelWidth + scoreValueWidth/2, 90);
+  
+  ctx.restore();
 };

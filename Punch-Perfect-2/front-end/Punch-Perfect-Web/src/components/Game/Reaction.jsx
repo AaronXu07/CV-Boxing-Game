@@ -44,7 +44,7 @@ function Reaction(){
   const [isGameOver, setIsGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false); 
   
-  const { playPunchSound, playButtonSound, playSuccessSound, playHitSound } = useSound();
+  const { playPunchSound, playButtonSound, playHitSound } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -99,14 +99,13 @@ function Reaction(){
   useEffect(() => {
     if (isCalibrated && !hasStartedRef.current) {
       hasStartedRef.current = true;
-      playSuccessSound();
       setGameState(GAME_STATE.INTRO);
       if (waitTimerRef.current) {
         clearTimeout(waitTimerRef.current);
         waitTimerRef.current = null;
       }
     }
-  }, [isCalibrated, playSuccessSound]);
+  }, [isCalibrated]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -271,34 +270,35 @@ function Reaction(){
       ctx.scale(-1, 1);
       
       ctx.fillStyle = textColor;
-      ctx.font = `bold ${fontSize}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      
+      // Main text - use Rajdhani for words, Orbitron for numbers
+      if(gameState === GAME_STATE.RESULT) {
+        // Reaction time number uses Orbitron
+        ctx.font = `bold ${fontSize}px Orbitron, monospace`;
+      } else {
+        // Text uses Rajdhani
+        ctx.font = `bold ${fontSize}px Rajdhani, sans-serif`;
+      }
       ctx.fillText(text, canvas.width / 2, canvas.height / 2 - (showSubtext ? 50 : 0));
       
       if(showSubtext){
-        ctx.font = '40px Arial';
+        ctx.font = '45px Rajdhani, sans-serif';
         ctx.fillText('Punch to keep going.', canvas.width / 2, canvas.height / 2 + 50);
       }
       if(showIntroSubtext){
-        ctx.font = '45px Arial';
+        ctx.font = '50px Rajdhani, sans-serif';
         ctx.fillText('Orange = Left Hand', canvas.width / 2, canvas.height / 2 + 80);
         ctx.fillText('Purple = Right Hand', canvas.width / 2, canvas.height / 2 + 145);
-        ctx.font = '40px Arial';
+        ctx.font = '45px Rajdhani, sans-serif';
         ctx.fillText('Punch anywhere to begin', canvas.width / 2, canvas.height / 2 + 220);
       }
       
       ctx.restore();
     }
 
-    ctx.save();
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    ctx.font = '30px Calibri';
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'left';
-    ctx.fillText(`FPS: ${fps}`, 30, 100);
-    ctx.restore();
+    // FPS counter removed for cleaner UI
   };
 
   const getBackgroundColor = () => {

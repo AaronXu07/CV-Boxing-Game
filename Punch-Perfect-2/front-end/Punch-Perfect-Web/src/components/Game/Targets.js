@@ -139,12 +139,12 @@ export class FruitTarget extends BaseTarget {
     // Override collision methods - fruits can be hit by EITHER hand
     checkCollisionRight(x, y){
         const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2);
-        return distance < this.radius + 30;
+        return distance < this.radius + 75;
     }
     
     checkCollisionLeft(x, y){
         const distance = Math.sqrt((x-this.x) ** 2 + (y-this.y) ** 2);
-        return distance < this.radius + 30;
+        return distance < this.radius + 75;
     }
     
     draw(ctx){

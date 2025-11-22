@@ -19,17 +19,23 @@ export const useTargetManager = (
   playBombFuseSound,
   stopBombFuseSound,
   pendingGameOverRef,
-  isPausedRef
+  isPausedRef,
+  playComboSound
 ) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
   const scoreRef = useRef(0);
-  const bombFuseSoundPlayedRef = useRef(false); 
+  const bombFuseSoundPlayedRef = useRef(false);
+  const comboCountRef = useRef(0);
+  const consecutiveHitsRef = useRef(0);
+  const comboPopupsRef = useRef([]); // Track combo popups: [{combo, bonus, x, y, opacity, createdAt}] 
 
   /**
    * Spawn a new target (for fruit mode, randomly spawns 1-3 targets)
    */
   const spawnTarget = useCallback(() => {
+    // Don't spawn if game is over
+    if (pendingGameOverRef?.current) return;
 
     if(targetType === 'fruit'){
       // Randomly spawn 1-3 fruits/bombs at once
@@ -40,11 +46,13 @@ export const useTargetManager = (
         const newTarget = new FruitTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
         newTargets.push(newTarget);
         
-        // Play appropriate launch sound
-        if (newTarget.fruitType.name === 'bomb' && playLaunchBombSound) {
-          playLaunchBombSound();
-        } else if (playLaunchFruitSound) {
-          playLaunchFruitSound();
+        // Play appropriate launch sound only if game is not over
+        if (!pendingGameOverRef?.current) {
+          if (newTarget.fruitType.name === 'bomb' && playLaunchBombSound) {
+            playLaunchBombSound();
+          } else if (playLaunchFruitSound) {
+            playLaunchFruitSound();
+          }
         }
       }
       
@@ -57,7 +65,7 @@ export const useTargetManager = (
         targetsRef.current = [...targetsRef.current, newTarget];
       }
     }
-  }, [targetType, playLaunchFruitSound, playLaunchBombSound]);
+  }, [targetType, playLaunchFruitSound, playLaunchBombSound, pendingGameOverRef]);
 
   /**
    * Handle collision detection
@@ -73,17 +81,23 @@ export const useTargetManager = (
         return target.update();
       });
       
-      // Check if there's a bomb on screen and play fuse sound
+      // Check if there's a bomb on screen and play fuse sound (only if not paused)
       const hasBomb = targetsRef.current.some(target => target.fruitType?.name === 'bomb');
-      if (hasBomb && !bombFuseSoundPlayedRef.current && playBombFuseSound) {
+      const isPaused = isPausedRef?.current || false;
+      
+      if (hasBomb && !bombFuseSoundPlayedRef.current && playBombFuseSound && !isPaused) {
         playBombFuseSound();
         bombFuseSoundPlayedRef.current = true;
-      } else if (!hasBomb && bombFuseSoundPlayedRef.current) {
-        // Stop the bomb fuse sound when bomb leaves screen
+      } else if ((!hasBomb || isPaused) && bombFuseSoundPlayedRef.current) {
+        // Stop the bomb fuse sound when bomb leaves screen or game is paused
         if (stopBombFuseSound) {
           stopBombFuseSound();
         }
         bombFuseSoundPlayedRef.current = false;
+      } else if (hasBomb && !isPaused && !bombFuseSoundPlayedRef.current && playBombFuseSound) {
+        // Resume bomb fuse sound when unpausing if bomb is still on screen
+        playBombFuseSound();
+        bombFuseSoundPlayedRef.current = true;
       }
     }
     
@@ -94,10 +108,12 @@ export const useTargetManager = (
         y: landmarks[lIndex].y * CANVAS_SIZE.height 
       };
       
+      let hitSomething = false;
       targetsRef.current = targetsRef.current.filter(target => {
         const hitByLeft = target.checkCollisionLeft(leftHand.x, leftHand.y);
         if(hitByLeft){
-          scoreRef.current++; 
+          hitSomething = true;
+          scoreRef.current += 1; 
           console.log('Left hand target hit!', { target, leftHand });
           target.hit();
 
@@ -112,6 +128,34 @@ export const useTargetManager = (
               if (onBombExplode) {
                 onBombExplode({ x: target.x, y: target.y });
               }
+              // Reset combo on bomb hit
+              consecutiveHitsRef.current = 0;
+              comboCountRef.current = 0;
+            } else {
+              // Only increment combo for actual fruits (not bombs)
+              consecutiveHitsRef.current++;
+              if (consecutiveHitsRef.current >= 3) {
+                comboCountRef.current = consecutiveHitsRef.current;
+                const comboBonus = comboCountRef.current;
+                scoreRef.current += comboBonus; // Add bonus score equal to combo number
+                
+                // Create combo popup in safe zone (avoid edges)
+                const popupX = 200 + Math.random() * (CANVAS_SIZE.width - 400);
+                const popupY = 150 + Math.random() * (CANVAS_SIZE.height - 400);
+                comboPopupsRef.current.push({
+                  combo: comboCountRef.current,
+                  bonus: comboBonus,
+                  x: popupX,
+                  y: popupY,
+                  opacity: 1,
+                  createdAt: Date.now()
+                });
+                
+                if (playComboSound) {
+                  playComboSound(comboCountRef.current);
+                }
+                console.log(`Combo: ${comboCountRef.current}, Bonus: +${comboBonus}`);
+              }
             }
             playFruitSound(target.fruitType.name);
           } else {
@@ -123,6 +167,16 @@ export const useTargetManager = (
         }
         return true;
       });
+      
+      // If punch didn't hit anything, reset combo
+      if (!hitSomething && targetType === 'fruit') {
+        if (consecutiveHitsRef.current > 0) {
+          console.log('Missed punch - combo reset');
+        }
+        consecutiveHitsRef.current = 0;
+        comboCountRef.current = 0;
+        setLeftHandCanHit(false);
+      }
     }
     
     // Check right hand collision
@@ -132,10 +186,12 @@ export const useTargetManager = (
         y: landmarks[rIndex].y * CANVAS_SIZE.height 
       };
       
+      let hitSomething = false;
       targetsRef.current = targetsRef.current.filter(target => {
         const hitByRight = target.checkCollisionRight(rightHand.x, rightHand.y);
         if(hitByRight){
-          scoreRef.current++; 
+          hitSomething = true;
+          scoreRef.current += 1; 
           console.log('Right hand target hit!', { target, rightHand });
           target.hit();
           
@@ -150,6 +206,34 @@ export const useTargetManager = (
               if (onBombExplode) {
                 onBombExplode({ x: target.x, y: target.y });
               }
+              // Reset combo on bomb hit
+              consecutiveHitsRef.current = 0;
+              comboCountRef.current = 0;
+            } else {
+              // Only increment combo for actual fruits (not bombs)
+              consecutiveHitsRef.current++;
+              if (consecutiveHitsRef.current >= 3) {
+                comboCountRef.current = consecutiveHitsRef.current;
+                const comboBonus = comboCountRef.current;
+                scoreRef.current += comboBonus; // Add bonus score equal to combo number
+                
+                // Create combo popup in safe zone (avoid edges)
+                const popupX = 200 + Math.random() * (CANVAS_SIZE.width - 400);
+                const popupY = 150 + Math.random() * (CANVAS_SIZE.height - 400);
+                comboPopupsRef.current.push({
+                  combo: comboCountRef.current,
+                  bonus: comboBonus,
+                  x: popupX,
+                  y: popupY,
+                  opacity: 1,
+                  createdAt: Date.now()
+                });
+                
+                if (playComboSound) {
+                  playComboSound(comboCountRef.current);
+                }
+                console.log(`Combo: ${comboCountRef.current}, Bonus: +${comboBonus}`);
+              }
             }
             playFruitSound(target.fruitType.name);
           } else {
@@ -161,6 +245,16 @@ export const useTargetManager = (
         }
         return true;
       });
+      
+      // If punch didn't hit anything, reset combo
+      if (!hitSomething && targetType === 'fruit') {
+        if (consecutiveHitsRef.current > 0) {
+          console.log('Missed punch - combo reset');
+        }
+        consecutiveHitsRef.current = 0;
+        comboCountRef.current = 0;
+        setRightHandCanHit(false);
+      }
     }
   }, [targetType, playHitSound, playFruitSound, onBombExplode, playBombFuseSound, stopBombFuseSound]);
 
@@ -178,6 +272,13 @@ export const useTargetManager = (
             }
             
             livesRef.current--;
+            
+            // Reset combo when fruit is dropped
+            if (consecutiveHitsRef.current > 0) {
+              console.log('Fruit dropped - combo reset');
+            }
+            consecutiveHitsRef.current = 0;
+            comboCountRef.current = 0;
             
             // Trigger dropped fruit animation
             if (onFruitDropped) {
@@ -257,11 +358,21 @@ export const useTargetManager = (
     console.log("Effect re-ran");
   }, [isActive, gameKey, targetType, pendingGameOverRef]);
 
+  const clearSpawnInterval = useCallback(() => {
+    if (spawnIntervalRef.current) {
+      clearTimeout(spawnIntervalRef.current);
+      clearInterval(spawnIntervalRef.current);
+      spawnIntervalRef.current = null;
+    }
+  }, []);
+
   return{
     targetsRef,
     handleCollisions,
     spawnTarget, 
     handleMissedFruit, 
-    scoreRef, 
+    scoreRef,
+    comboPopupsRef,
+    clearSpawnInterval,
   };
 };

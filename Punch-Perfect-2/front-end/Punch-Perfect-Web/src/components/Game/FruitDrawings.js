@@ -717,6 +717,17 @@ const drawCherry = (ctx, radius) => {
 
 // Bomb drawing function (hazard target)
 const drawBomb = (ctx, radius) => {
+    // Outer glow to make bomb visible on black background
+    ctx.save();
+    ctx.shadowColor = '#ff4444';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ff3333';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    ctx.restore();
+    
     // Bomb body (matte black sphere)
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -757,8 +768,12 @@ const drawBomb = (ctx, radius) => {
     ctx.restore();
 
     // Spark at tip of fuse
-    const sparkX = Math.cos(-0.35) * radius * 1.12;
-    const sparkY = Math.sin(-0.35) * radius * 1.12;
+    ctx.save();
+    ctx.translate(0, -radius * 0.98);
+    ctx.rotate(-0.35);
+    
+    const sparkX = radius * 0.36;
+    const sparkY = 0;
     const sparkRadius = radius * 0.18;
     const sparkGrad = ctx.createRadialGradient(sparkX, sparkY, 0, sparkX, sparkY, sparkRadius);
     sparkGrad.addColorStop(0, '#fff59d');
@@ -771,13 +786,15 @@ const drawBomb = (ctx, radius) => {
 
     // Small ember particles
     for (let i = 0; i < 6; i++) {
-        const a = -0.35 + (i - 3) * 0.14;
-        const d = radius * (1.05 + Math.random() * 0.25);
+        const angle = (i - 3) * 0.14;
+        const distance = radius * (0.4 + Math.random() * 0.15);
         ctx.beginPath();
-        ctx.arc(Math.cos(a) * d, Math.sin(a) * d, 1 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.arc(sparkX + Math.cos(angle) * distance, sparkY + Math.sin(angle) * distance, 1 + Math.random() * 2, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,160,60,' + (0.5 * Math.random()) + ')';
         ctx.fill();
     }
+    
+    ctx.restore();
 
     // Subtle worn circular decal (very faint)
     ctx.beginPath();

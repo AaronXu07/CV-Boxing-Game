@@ -21,7 +21,8 @@ import {
   drawUI,
   drawLivesUI,
   drawLossAnimation,
-  getPunchText
+  getPunchText,
+  drawComboPopups
 } from '../../utils/drawingHelpers.js'
 
 //==================== COMPONENT ====================
@@ -46,7 +47,8 @@ function FruitNinja(){
     playLaunchBombSound,
     playLaunchFruitSound,
     playBombExplodeSound,
-    playLoseLifeSound
+    playLoseLifeSound,
+    playComboSound
   } = useSound();
   
   const canvasRef = useRef(null);
@@ -77,7 +79,7 @@ function FruitNinja(){
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions, scoreRef, handleMissedFruit} = useTargetManager(
+  const {targetsRef, handleCollisions, scoreRef, handleMissedFruit, comboPopupsRef, clearSpawnInterval} = useTargetManager(
     'fruit', 
     isCalibrated, 
     gameKey, 
@@ -90,7 +92,8 @@ function FruitNinja(){
     playBombFuseSound,
     stopBombFuseSound,
     pendingGameOverRef,
-    isPausedRef
+    isPausedRef,
+    playComboSound
   );
 
   useEffect(() => {
@@ -99,24 +102,35 @@ function FruitNinja(){
         isPausedRef.current = !isPausedRef.current;
         setIsPaused(isPausedRef.current);
         playButtonSound();
+        
+        // Stop bomb fuse sound when pausing
+        if (isPausedRef.current) {
+          stopBombFuseSound();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playButtonSound]);
+  }, [playButtonSound, stopBombFuseSound]);
 
   const resume = () => {
     playButtonSound(); 
     isPausedRef.current = false; 
-    setIsPaused(false); 
+    setIsPaused(false);
+    
+    // Check if there's a bomb on screen and resume fuse sound
+    const hasBomb = targetsRef.current.some(target => target.fruitType?.name === 'bomb');
+    if (hasBomb) {
+      playBombFuseSound();
+    }
   }
 
-  //Play success sound when calibration is completed
+  //Calibration completed
   useEffect(() => {
     if (isCalibrated) {
-      playSuccessSound();
+      // Success sound now plays in CamCalibration component
     }
-  }, [isCalibrated, playSuccessSound]);
+  }, [isCalibrated]);
 
   //===== Navigation =====
   const back = () => {
@@ -142,7 +156,8 @@ function FruitNinja(){
       pendingGameOverRef.current = true;
       targetsRef.current = [];
       isPausedRef.current = false; 
-      setIsPaused(false); 
+      setIsPaused(false);
+      clearSpawnInterval(); // Stop spawning immediately 
       
       // Bomb explosion is 60 frames (~1000ms at 60fps)
       // Play game over sound near the end
@@ -162,7 +177,8 @@ function FruitNinja(){
         pendingGameOverRef.current = true;
         targetsRef.current = [];
         isPausedRef.current = false; 
-        setIsPaused(false); 
+        setIsPaused(false);
+        clearSpawnInterval(); // Stop spawning immediately 
         
         // Wait for dropped fruit animation to complete
         setTimeout(() => {
@@ -240,7 +256,10 @@ function FruitNinja(){
         }
       }
 
-      drawLivesUI(ctx, fps, scoreRef.current, livesRef.current, lostLivesRef.current);
+      // Draw combo popups
+      drawComboPopups(ctx, comboPopupsRef);
+
+      const lostLifePositions = drawLivesUI(ctx, fps, scoreRef.current, livesRef.current, lostLivesRef.current, canvas);
       ctx.restore();
     } else {
       debugLog('No landmarks');
@@ -312,10 +331,10 @@ function FruitNinja(){
               <h1>PAUSED</h1>
               <h2>Fruit Ninja</h2>
               <div className="pause-buttons">
-                <button onClick={resume}>Resume</button>
+                <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
                 <button onClick={back}>Back to Menu</button>
                 <button
-                  onClick={toggleMiniview}
+                  onClick={() => { playButtonSound(); toggleMiniview(); }}
                   style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
                 >
                   Toggle Camera

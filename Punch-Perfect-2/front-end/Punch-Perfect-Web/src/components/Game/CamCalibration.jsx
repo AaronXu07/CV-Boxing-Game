@@ -119,10 +119,10 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
 
               if(within && !hasPlayedSuccessSound) {
                 hasPlayedSuccessSound = true;
-                setTimeout(() => setIsCalibrated(true), 100);
+                playSuccessSound();
+                setTimeout(() => setIsCalibrated(true), 800);
               }
-              
-
+            
               const connectorDrawingOptions = {
                 color: '#0059ffff',
                 lineWidth: 10,
@@ -155,11 +155,17 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
               // Flip horizontally
               ctx.scale(-1, 1);
 
-              // Draw text
-              ctx.font = '50px Calibri';
+              // Draw FPS label and value
               ctx.fillStyle = 'white';
               ctx.textAlign = 'left';
-              ctx.fillText(`FPS: ${actualFPS}`, 30, 100); 
+              
+              ctx.font = '50px Rajdhani, sans-serif';
+              ctx.fillText('FPS: ', 30, 100);
+              
+              ctx.font = '50px Orbitron, monospace';
+              const fpsLabelWidth = ctx.measureText('FPS: ').width;
+              ctx.fillText(`${actualFPS}`, 30 + fpsLabelWidth, 100);
+              
               ctx.restore();
             }
           }
@@ -198,16 +204,15 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
 
   return (
     <div ref={containerRef} className="app-root">
+      {gameStarted && (
+        <div className="outside-buttons">
+          <button onClick={back}> ← Back</button>
+        </div>
+      )}
 
-       <div className="video-wrap">
-          {gameStarted && (
-            <div className="outside-buttons">
-              <button onClick={back}> ← Back</button>
-            </div>
-          )}
-
-          <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
-          <canvas id="output" ref={canvasRef} width={1920} height={1080} />
+      <div className="video-wrap">
+        <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />
+        <canvas id="output" ref={canvasRef} width={1920} height={1080} />
       </div>
 
       {!gameStarted && 

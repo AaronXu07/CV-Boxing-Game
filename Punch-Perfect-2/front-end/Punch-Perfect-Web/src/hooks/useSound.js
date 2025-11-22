@@ -14,6 +14,27 @@ import launchFruitSoundFile from '../assets/sounds/launchfruit.wav';
 import bombExplodeSoundFile from '../assets/sounds/bombexplode.wav';
 import loseLifeSoundFile from '../assets/sounds/loselife.mp3';
 
+// Combo sounds
+import combo1SoundFile from '../assets/sounds/combo/Combo1.wav';
+import combo2SoundFile from '../assets/sounds/combo/Combo2.wav';
+import combo3SoundFile from '../assets/sounds/combo/Combo3.wav';
+import combo4SoundFile from '../assets/sounds/combo/Combo4.wav';
+import combo5SoundFile from '../assets/sounds/combo/Combo5.wav';
+import combo6SoundFile from '../assets/sounds/combo/Combo6.wav';
+import combo7SoundFile from '../assets/sounds/combo/Combo7.wav';
+import combo8SoundFile from '../assets/sounds/combo/Combo8.wav';
+
+const comboSounds = [
+  combo1SoundFile,
+  combo2SoundFile,
+  combo3SoundFile,
+  combo4SoundFile,
+  combo5SoundFile,
+  combo6SoundFile,
+  combo7SoundFile,
+  combo8SoundFile
+];
+
 // Fruit hit sounds
 import appleSoundFile from '../assets/sounds/fruit-hits/apple.wav';
 import bananaSoundFile from '../assets/sounds/fruit-hits/banana.wav';
@@ -60,6 +81,7 @@ export const useSound = () => {
   const launchFruitSoundRef = useRef(null);
   const bombExplodeSoundRef = useRef(null);
   const loseLifeSoundRef = useRef(null);
+  const comboSoundRefs = useRef([]);
 
   useEffect(() => {
     punchSoundRef.current = new Audio(punchSoundFile);
@@ -85,6 +107,13 @@ export const useSound = () => {
       fruitSoundRefs.current[fruitName] = audio;
     });
 
+    // Load combo sounds
+    comboSoundRefs.current = comboSounds.map(sound => {
+      const audio = new Audio(sound);
+      audio.volume = 0.7;
+      return audio;
+    });
+
     punchSoundRef.current.volume = 0.1;
     successSoundRef.current.volume = 0.6;
     buttonSoundRef.current.volume = 0.4;
@@ -108,6 +137,7 @@ export const useSound = () => {
       loseLifeSoundRef.current.load();
       hitSoundRefs.current.forEach(audio => audio.load());
       Object.values(fruitSoundRefs.current).forEach(audio => audio.load());
+      comboSoundRefs.current.forEach(audio => audio.load());
     };
 
     preloadSounds();
@@ -162,6 +192,13 @@ export const useSound = () => {
         }
       });
       fruitSoundRefs.current = {};
+      
+      comboSoundRefs.current.forEach(audio => {
+        if (audio) {
+          audio.pause();
+        }
+      });
+      comboSoundRefs.current = [];
     };
   }, []); 
 
@@ -265,6 +302,18 @@ export const useSound = () => {
     }
   };
 
+  const playComboSound = (comboCount) => {
+    // Combo starts at 3, so combo 3 = sound 0 (Combo1)
+    // combo 4 = sound 1 (Combo2), etc.
+    // For combos > 10, keep playing Combo8
+    const soundIndex = Math.min(comboCount - 3, comboSoundRefs.current.length - 1);
+    if (soundIndex >= 0 && soundIndex < comboSoundRefs.current.length) {
+      comboSoundRefs.current[soundIndex].currentTime = 0;
+      comboSoundRefs.current[soundIndex].play();
+      console.log(`combo sound played: Combo${soundIndex + 1} (combo count: ${comboCount})`);
+    }
+  };
+
   return {
     playPunchSound,
     playHitSound,
@@ -277,6 +326,7 @@ export const useSound = () => {
     playLaunchBombSound,
     playLaunchFruitSound,
     playBombExplodeSound,
-    playLoseLifeSound
+    playLoseLifeSound,
+    playComboSound
   };
 };

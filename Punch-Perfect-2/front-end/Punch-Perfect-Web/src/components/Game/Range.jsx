@@ -34,7 +34,7 @@ function Range(){
           gameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false); 
   const [isPaused, setIsPaused] = useState(false); 
-  const { playPunchSound, playHitSound, playButtonSound, playSuccessSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -67,12 +67,12 @@ function Range(){
     setIsPaused(false); 
   }
 
-  //Play success sound when calibration is completed
+  //Calibration completed
   useEffect(() => {
     if (isCalibrated) {
-      playSuccessSound();
+      // Success sound now plays in CamCalibration component
     }
-  }, [isCalibrated, playSuccessSound]);
+  }, [isCalibrated]);
 
   useEffect(() => {
     const handler = () => {
@@ -166,7 +166,7 @@ function Range(){
               <button onClick={resume}>Resume</button>
               <button onClick={back}>Back to Menu</button>
               <button
-                onClick={toggleMiniview}
+                onClick={() => { playButtonSound(); toggleMiniview(); }}
                 style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
               >
                 Toggle Camera

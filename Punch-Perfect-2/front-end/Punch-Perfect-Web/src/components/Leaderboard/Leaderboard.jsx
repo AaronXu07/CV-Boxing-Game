@@ -148,10 +148,7 @@ function Leaderboard() {
                   className={`leaderboard-row ${entry.rank <= 3 ? `rank-${entry.rank}` : ''}`}
                 >
                   <td className="rank-column">
-                    {entry.rank === 1 && '🥇'}
-                    {entry.rank === 2 && '🥈'}
-                    {entry.rank === 3 && '🥉'}
-                    {entry.rank > 3 && `${entry.rank}`}
+                    {entry.rank}
                   </td>
                   <td className="username-column">{entry.username}</td>
                   <td className="score-column">{entry.score}</td>
