@@ -96,22 +96,7 @@ function FruitNinja(){
     playComboSound
   );
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        isPausedRef.current = !isPausedRef.current;
-        setIsPaused(isPausedRef.current);
-        playButtonSound();
-        
-        // Stop bomb fuse sound when pausing
-        if (isPausedRef.current) {
-          stopBombFuseSound();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playButtonSound, stopBombFuseSound]);
+  
 
   const resume = () => {
     playButtonSound(); 
@@ -124,6 +109,27 @@ function FruitNinja(){
       playBombFuseSound();
     }
   }
+
+  const pause = () => {
+    isPausedRef.current = !isPausedRef.current;
+    setIsPaused(isPausedRef.current);
+    playButtonSound();
+
+    // Stop bomb fuse sound when pausing
+    if (isPausedRef.current) {
+      stopBombFuseSound();
+    }
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        pause(); 
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound, stopBombFuseSound]);
 
   //Calibration completed
   useEffect(() => {
@@ -326,6 +332,9 @@ function FruitNinja(){
   return (
     <>
         <div ref={containerRef} className="app-root">
+          <button className="menu-button" onClick={pause}>
+            <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
+          </button>
           {isPaused && 
           <div className="center-button-container">
               <h1>PAUSED</h1>

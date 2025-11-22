@@ -10,6 +10,7 @@ import { usePoseDetection } from '../../hooks/usePoseDetection.js'
 import { usePunchTracking } from '../../hooks/usePunchTracking.js'
 import { useGameLoop } from '../../hooks/useGameLoop.js'
 import { CANVAS_SIZE, MINIVIEW_POSITION, MINIVIEW_SIZE } from '../../utils/constants.js'
+import { useGameContext } from '../../context/GameContext.jsx'
 import {
   setupCanvas,
   drawMiniview,
@@ -38,7 +39,6 @@ function Reaction(){
   const [gameState, setGameState] = useState(GAME_STATE.INTRO);
   const [requiredHand, setRequiredHand] = useState(null); // 'left' or 'right'
   const [reactionTime, setReactionTime] = useState(null);
-  const [gameKey, setGameKey] = useState(0);
   const [reactionTimes, setReactionTimes] = useState([]); // Array to store all reaction times
   const [testCount, setTestCount] = useState(0); // Track number of completed tests
   const [isGameOver, setIsGameOver] = useState(false);
@@ -53,12 +53,16 @@ function Reaction(){
   const startTimeRef = useRef(null);
   const hasPunchedRef = useRef(false);
   const hasStartedRef = useRef(false);
+  const lastFrameRef = useRef(null); 
+  const isPausedRef = useRef(false); 
 
   //===== Custom Hooks =====
+  const { isMiniviewEnabled, toggleMiniview, 
+          gameKey, setGameKey} = useGameContext();
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
-
+  
   //===== Game Logic =====
   const resetGame = useCallback(() => {
     setTestCount(0);
@@ -107,23 +111,29 @@ function Reaction(){
     }
   }, [isCalibrated]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        isPausedRef.current = !isPausedRef.current;
-        setIsPaused(isPausedRef.current);
-        playButtonSound();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playButtonSound]);
+  
 
   const resume = () => {
     playButtonSound(); 
     isPausedRef.current = false; 
     setIsPaused(false); 
   }
+
+  const pause = () => {
+    isPausedRef.current = !isPausedRef.current;
+    setIsPaused(isPausedRef.current);
+    playButtonSound();
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && gameState != GAME_STATE.READY && gameState != GAME_STATE.WAITING) {
+        pause(); 
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound, gameState]);
 
   useEffect(() => {
     if(gameKey > 0){
@@ -322,6 +332,14 @@ function Reaction(){
   const processFrame = async (fps, timestamp) => {
     if(!videoRef.current || !canvasRef.current || isGameOver) return;
 
+    if (isPausedRef.current) {
+      if (lastFrameRef.current) {
+        const pausedCtx = canvasRef.current.getContext('2d');
+        pausedCtx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
+    }
+
     const canvas = canvasRef.current;
     
     if(!ctxRef.current){
@@ -335,20 +353,23 @@ function Reaction(){
     ctx.fillStyle = getBackgroundColor();
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    ctx.drawImage(
-      videoRef.current, 
-      MINIVIEW_POSITION.x, 
-      MINIVIEW_POSITION.y, 
-      MINIVIEW_SIZE.width, 
-      MINIVIEW_SIZE.height
-    );
+    if(isMiniviewEnabled) {
+      ctx.drawImage(
+        videoRef.current, 
+        MINIVIEW_POSITION.x, 
+        MINIVIEW_POSITION.y, 
+        MINIVIEW_SIZE.width, 
+        MINIVIEW_SIZE.height
+      );
+    }
+    
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
     if(landmarks){
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
   
-      drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
 
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
@@ -398,12 +419,25 @@ function Reaction(){
   //===== Render =====
   return (
     <>
-      <div key={gameKey} className="app-root">
-        <h1>Reaction Time</h1>
-
-        <div className="outside-buttons">
-          <button className="back-button" onClick={back}> ← Back</button>
-        </div> 
+     <div key={gameKey} className="app-root">
+        <button className="menu-button" onClick={pause}>
+          <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
+        </button>
+        {isPaused && 
+        <div className="center-button-container">
+            <h1>PAUSED</h1>
+            <h2>Reaction Mode</h2>
+            <div className="pause-buttons">
+              <button onClick={resume}>Resume</button>
+              <button onClick={back}>Back to Menu</button>
+              <button
+                onClick={() => { playButtonSound(); toggleMiniview(); }}
+                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
+              >
+                Toggle Camera
+              </button>
+            </div>
+        </div>}
 
         <video 
           id="webcam" 
@@ -414,9 +448,9 @@ function Reaction(){
           style={{ display: 'none' }} 
         />
         <canvas 
-          key={`canvas-${gameKey}`}
           id="output" 
           ref={canvasRef} 
+          className={isPaused ? 'blurred' : ''}
           width={CANVAS_SIZE.width} 
           height={CANVAS_SIZE.height} 
         />

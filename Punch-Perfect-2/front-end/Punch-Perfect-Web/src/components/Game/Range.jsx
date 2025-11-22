@@ -49,23 +49,27 @@ function Range(){
   const {processPunches} = usePunchTracking(playPunchSound);
   const {targetsRef, handleCollisions} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        isPausedRef.current = !isPausedRef.current;
-        setIsPaused(isPausedRef.current);
-        playButtonSound();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playButtonSound]);
+  const pause = () => {
+    isPausedRef.current = !isPausedRef.current;
+    setIsPaused(isPausedRef.current);
+    playButtonSound();
+  }
 
   const resume = () => {
     playButtonSound(); 
     isPausedRef.current = false; 
     setIsPaused(false); 
   }
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        pause(); 
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound]);
 
   //Calibration completed
   useEffect(() => {
@@ -157,7 +161,9 @@ function Range(){
   return (
     <>
       <div ref={containerRef} className="app-root">
-
+        <button className="menu-button" onClick={pause}>
+          <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
+        </button>
         {isPaused && 
         <div className="center-button-container">
             <h1>PAUSED</h1>

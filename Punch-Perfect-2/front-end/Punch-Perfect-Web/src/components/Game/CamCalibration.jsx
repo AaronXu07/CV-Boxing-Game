@@ -204,11 +204,11 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
 
   return (
     <div ref={containerRef} className="app-root">
-      {gameStarted && (
-        <div className="outside-buttons">
-          <button onClick={back}> ← Back</button>
-        </div>
-      )}
+      
+      <div className="outside-buttons">
+        <button onClick={back}> ← Back</button>
+      </div>
+
 
       <div className="video-wrap">
         <video id="webcam" ref={videoRef} autoPlay playsInline muted style={{ display: 'none' }} />

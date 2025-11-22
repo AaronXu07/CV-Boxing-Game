@@ -19,6 +19,7 @@ import {
   drawTargets,
   drawUITargetTest
 } from '../../utils/drawingHelpers.js'
+import { useGameContext } from '../../context/GameContext.jsx'
 
 //==================== COMPONENT ====================
 function Targets(){
@@ -29,19 +30,45 @@ function Targets(){
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const { playPunchSound, playHitSound, playButtonSound } = useSound();
-  const [ gameKey, setGameKey ] = useState(0); 
+  const [ isPaused, setIsPaused ] = useState(false); 
+  const { isMiniviewEnabled, toggleMiniview, 
+          gameKey, setGameKey} = useGameContext();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const drawingUtilsRef = useRef(null);
   const hasPlayedSuccessSoundRef = useRef(false);
   const lastFlashTimeRef = useRef(null);
+  const isPausedRef = useRef(false); 
+  const lastFrameRef = useRef(null); 
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
   const {targetsRef, handleCollisions, scoreRef} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
+
+  const resume = () => {
+    playButtonSound(); 
+    isPausedRef.current = false; 
+    setIsPaused(false); 
+  }
+
+  const pause = () => {
+    isPausedRef.current = !isPausedRef.current;
+    setIsPaused(isPausedRef.current);
+    playButtonSound();
+  }
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        pause(); 
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playButtonSound]);
 
   useEffect(() => {
     if (isCalibrated && !hasPlayedSuccessSoundRef.current) {
@@ -66,12 +93,17 @@ function Targets(){
         if (prev <= 6) {
           lastFlashTimeRef.current = Date.now();
         }
-        return prev - 1;
+        if(!isPausedRef.current) {
+          return prev - 1;
+        } else {
+          return prev; 
+        }
+        
       });
     }, 1000);
 
     return () => clearInterval(timerInterval);
-  }, [isCalibrated, isGameOver]);
+  }, [isCalibrated, isGameOver, isPaused]);
 
   //===== Navigation =====
   const back = () => {
@@ -82,6 +114,14 @@ function Targets(){
   //===== Frame Processing =====
   const processFrame = useCallback(async (fps, timestamp) => {
     if(!videoRef.current || !canvasRef.current || isGameOver) return;
+
+    if (isPausedRef.current) {
+      if (lastFrameRef.current) {
+        const pausedCtx = canvasRef.current.getContext('2d');
+        pausedCtx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
+    }
 
     const canvas = canvasRef.current;
     
@@ -96,7 +136,7 @@ function Targets(){
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawMiniview(ctx, videoRef.current);
+    isMiniviewEnabled && drawMiniview(ctx, videoRef.current);
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
@@ -104,7 +144,7 @@ function Targets(){
   
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
       
-      drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
 
       ctx.save();
       drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
@@ -133,6 +173,17 @@ function Targets(){
     }
   }, [isGameOver, timeRemaining]);
 
+  // Capture a static frame ONLY when entering pause (avoid per-frame getImageData cost)
+  useEffect(() => {
+    if (isPaused && ctxRef.current && canvasRef.current) {
+      try {
+        lastFrameRef.current = ctxRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+      } catch (e) {
+        debugLog('Pause capture failed', e.message);
+      }
+    }
+  }, [isPaused]);
+
   //===== Game Loop =====
   useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
 
@@ -159,11 +210,24 @@ function Targets(){
   return (
     <>
       <div key={gameKey} className="app-root">
-        <h1>Timed Targets</h1>
-
-        <div className="outside-buttons">
-          <button className="back-button" onClick={back}> ← Back</button>
-        </div> 
+        <button className="menu-button" onClick={pause}>
+          <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
+        </button>
+        {isPaused && 
+        <div className="center-button-container">
+            <h1>PAUSED</h1>
+            <h2>Timed Targets</h2>
+            <div className="pause-buttons">
+              <button onClick={resume}>Resume</button>
+              <button onClick={back}>Back to Menu</button>
+              <button
+                onClick={() => { playButtonSound(); toggleMiniview(); }}
+                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
+              >
+                Toggle Camera
+              </button>
+            </div>
+        </div>}
 
         <video 
           id="webcam" 
@@ -174,9 +238,9 @@ function Targets(){
           style={{ display: 'none' }} 
         />
         <canvas 
-          key={`canvas-${gameKey}`}
           id="output" 
           ref={canvasRef} 
+          className={isPaused ? 'blurred' : ''}
           width={CANVAS_SIZE.width} 
           height={CANVAS_SIZE.height} 
         />
