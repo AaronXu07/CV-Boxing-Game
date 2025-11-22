@@ -20,7 +20,8 @@ export const useTargetManager = (
   stopBombFuseSound,
   pendingGameOverRef,
   isPausedRef,
-  playComboSound
+  playComboSound,
+  isResumingRef // optional ref tracking countdown resume phase
 ) => {
   const targetsRef = useRef([]);
   const spawnIntervalRef = useRef(null);
@@ -84,17 +85,18 @@ export const useTargetManager = (
       // Check if there's a bomb on screen and play fuse sound (only if not paused)
       const hasBomb = targetsRef.current.some(target => target.fruitType?.name === 'bomb');
       const isPaused = isPausedRef?.current || false;
+      const isResuming = isResumingRef?.current || false;
       
-      if (hasBomb && !bombFuseSoundPlayedRef.current && playBombFuseSound && !isPaused) {
+      if (hasBomb && !bombFuseSoundPlayedRef.current && playBombFuseSound && !isPaused && !isResuming) {
         playBombFuseSound();
         bombFuseSoundPlayedRef.current = true;
-      } else if ((!hasBomb || isPaused) && bombFuseSoundPlayedRef.current) {
+      } else if ((!hasBomb || isPaused || isResuming) && bombFuseSoundPlayedRef.current) {
         // Stop the bomb fuse sound when bomb leaves screen or game is paused
         if (stopBombFuseSound) {
           stopBombFuseSound();
         }
         bombFuseSoundPlayedRef.current = false;
-      } else if (hasBomb && !isPaused && !bombFuseSoundPlayedRef.current && playBombFuseSound) {
+      } else if (hasBomb && !isPaused && !isResuming && !bombFuseSoundPlayedRef.current && playBombFuseSound) {
         // Resume bomb fuse sound when unpausing if bomb is still on screen
         playBombFuseSound();
         bombFuseSoundPlayedRef.current = true;
@@ -313,14 +315,19 @@ export const useTargetManager = (
         const delay = computeDelay();
         spawnIntervalRef.current = setTimeout(() => {
           if (cancelled) return;
-          if (!isPausedRef.current) spawnTarget();
+          const paused = isPausedRef?.current || false;
+          const resuming = isResumingRef?.current || false;
+          if (!paused && !resuming) spawnTarget();
           if (pendingGameOverRef?.current) return; // Double check before spawning
           
           scheduleNext();
         }, delay);
       };
 
-      spawnTarget();
+      // Initial spawn only if not paused/resuming
+      if (!(isPausedRef?.current || isResumingRef?.current)) {
+        spawnTarget();
+      }
       scheduleNext();
 
       return () => {
@@ -336,10 +343,14 @@ export const useTargetManager = (
       };
     } else {
       // Fixed interval spawning for target mode
-      spawnTarget();
+      if (!(isPausedRef?.current || isResumingRef?.current)) {
+        spawnTarget();
+      }
 
       spawnIntervalRef.current = setInterval(() => {
-        if (targetsRef.current.length === 0) {
+        const paused = isPausedRef?.current || false;
+        const resuming = isResumingRef?.current || false;
+        if (!paused && !resuming && targetsRef.current.length === 0) {
           spawnTarget();
         }
       }, TARGET_SPAWN_INTERVAL);

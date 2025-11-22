@@ -20,6 +20,7 @@ import {
   drawUITargetTest
 } from '../../utils/drawingHelpers.js'
 import { useGameContext } from '../../context/GameContext.jsx'
+import { usePause } from '../../hooks/usePause.js'
 
 //==================== COMPONENT ====================
 function Targets(){
@@ -30,7 +31,7 @@ function Targets(){
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
   const { playPunchSound, playHitSound, playButtonSound } = useSound();
-  const [ isPaused, setIsPaused ] = useState(false); 
+  // Pause handled by reusable hook
   const { isMiniviewEnabled, toggleMiniview, 
           gameKey, setGameKey} = useGameContext();
   
@@ -39,33 +40,35 @@ function Targets(){
   const drawingUtilsRef = useRef(null);
   const hasPlayedSuccessSoundRef = useRef(false);
   const lastFlashTimeRef = useRef(null);
-  const isPausedRef = useRef(false); 
-  const lastFrameRef = useRef(null); 
+  const {
+    isPaused,
+    isResuming,
+    resumeCountdown,
+    pause: pauseHook,
+    resume: resumeHook,
+    isPausedRef,
+    lastFrameRef
+  } = usePause({
+    countdownSeconds: 3,
+    enableCountdown: true,
+    onToggle: () => playButtonSound(),
+    allowPause: () => !isGameOver
+  });
 
   //===== Custom Hooks =====
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
-  const {targetsRef, handleCollisions, scoreRef} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null);
+  const isResumingRef = useRef(false);
+  useEffect(() => { isResumingRef.current = isResuming; }, [isResuming]);
+  const initialCountdownStartedRef = useRef(false);
+  const {targetsRef, handleCollisions, scoreRef} = useTargetManager('target', isCalibrated, gameKey, playHitSound, null, null, null, null, null, null, null, null, isPausedRef, null, isResumingRef);
 
-  const resume = () => {
-    playButtonSound(); 
-    isPausedRef.current = false; 
-    setIsPaused(false); 
-  }
-
-  const pause = () => {
-    isPausedRef.current = !isPausedRef.current;
-    setIsPaused(isPausedRef.current);
-    playButtonSound();
-  }
+  const pause = () => pauseHook(canvasRef, ctxRef);
+  const resume = () => resumeHook(canvasRef, ctxRef);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        pause(); 
-      }
-    };
+    const handleKeyDown = (e) => { if (e.key === 'Escape') pause(); };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [playButtonSound]);
@@ -83,27 +86,17 @@ function Targets(){
   //===== Timer Logic =====
   useEffect(() => {
     if (!isCalibrated || isGameOver) return;
-
     const timerInterval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          setIsGameOver(true);
-          return 0;
-        }
-        if (prev <= 6) {
-          lastFlashTimeRef.current = Date.now();
-        }
-        if(!isPausedRef.current) {
-          return prev - 1;
-        } else {
-          return prev; 
-        }
-        
+      setTimeRemaining(prev => {
+        if (prev <= 1) { setIsGameOver(true); return 0; }
+        if (prev <= 6) lastFlashTimeRef.current = Date.now();
+        // Do not decrement during pause or countdown
+        if (!isPausedRef.current && !isResuming) return prev - 1;
+        return prev;
       });
     }, 1000);
-
     return () => clearInterval(timerInterval);
-  }, [isCalibrated, isGameOver, isPaused]);
+  }, [isCalibrated, isGameOver, isPausedRef, isResuming]);
 
   //===== Navigation =====
   const back = () => {
@@ -115,10 +108,17 @@ function Targets(){
   const processFrame = useCallback(async (fps, timestamp) => {
     if(!videoRef.current || !canvasRef.current || isGameOver) return;
 
-    if (isPausedRef.current) {
+    if (isPausedRef.current && !isResuming) {
       if (lastFrameRef.current) {
         const pausedCtx = canvasRef.current.getContext('2d');
         pausedCtx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
+    }
+    if (isResuming) {
+      if (lastFrameRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.putImageData(lastFrameRef.current, 0, 0);
       }
       return;
     }
@@ -185,7 +185,16 @@ function Targets(){
   }, [isPaused]);
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Initial countdown before first target spawns after calibration
+  useEffect(() => {
+    if (isCalibrated && !isGameOver && !initialCountdownStartedRef.current) {
+      initialCountdownStartedRef.current = true;
+      pauseHook(canvasRef, ctxRef);
+      resumeHook(canvasRef, ctxRef);
+    }
+  }, [isCalibrated, isGameOver, pauseHook, resumeHook]);
 
   if(!isCalibrated) {
     return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Target Mode"/>)
@@ -213,21 +222,35 @@ function Targets(){
         <button className="menu-button" onClick={pause}>
           <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
         </button>
-        {isPaused && 
-        <div className="center-button-container">
-            <h1>PAUSED</h1>
-            <h2>Timed Targets</h2>
-            <div className="pause-buttons">
-              <button onClick={resume}>Resume</button>
-              <button onClick={back}>Back to Menu</button>
-              <button
-                onClick={() => { playButtonSound(); toggleMiniview(); }}
-                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
-              >
-                Toggle Camera
-              </button>
-            </div>
-        </div>}
+        {(isPaused || isResuming) && (
+          <div className="center-button-container">
+              {isResuming ? (
+              <>
+                  <h1>GET READY</h1>
+                  <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
+                <h1>{resumeCountdown}</h1>
+                <div className="pause-buttons">
+                  <button onClick={pause}>Cancel</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h1>PAUSED</h1>
+                <h2>Timed Targets</h2>
+                <div className="pause-buttons">
+                  <button onClick={resume}>Resume</button>
+                  <button onClick={back}>Back to Menu</button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMiniview(); }}
+                    style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
+                  >
+                    Toggle Camera
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <video 
           id="webcam" 
