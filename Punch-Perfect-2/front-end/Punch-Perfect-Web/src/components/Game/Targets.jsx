@@ -30,7 +30,7 @@ function Targets(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
-  const { playPunchSound, playHitSound, playButtonSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound } = useSound();
   // Pause handled by reusable hook
   const { isMiniviewEnabled, toggleMiniview, 
           gameKey, setGameKey} = useGameContext();
@@ -52,6 +52,7 @@ function Targets(){
     countdownSeconds: 3,
     enableCountdown: true,
     onToggle: () => playButtonSound(),
+    onCountdownStart: () => playCountdownSound(),
     allowPause: () => !isGameOver
   });
 
@@ -186,6 +187,13 @@ function Targets(){
 
   //===== Game Loop =====
   useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Reset countdown flag when going back to calibration
+  useEffect(() => {
+    if (!isCalibrated) {
+      initialCountdownStartedRef.current = false;
+    }
+  }, [isCalibrated]);
 
   // Initial countdown before first target spawns after calibration
   useEffect(() => {

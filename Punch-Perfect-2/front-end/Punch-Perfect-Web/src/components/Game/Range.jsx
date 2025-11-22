@@ -35,7 +35,7 @@ function Range(){
           gameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false); 
   // Pause handled by usePause hook now
-  const { playPunchSound, playHitSound, playButtonSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -54,6 +54,7 @@ function Range(){
     countdownSeconds: 3,
     enableCountdown: true,
     onToggle: (paused) => playButtonSound(),
+    onCountdownStart: () => playCountdownSound(),
     allowPause: () => true
   });
 
@@ -165,6 +166,13 @@ function Range(){
 
   //===== Game Loop =====
   useGameLoop(isCalibrated && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Reset countdown flag when going back to calibration
+  useEffect(() => {
+    if (!isCalibrated) {
+      initialCountdownStartedRef.current = false;
+    }
+  }, [isCalibrated]);
 
   // Initial countdown at calibration completion before practice begins
   useEffect(() => {

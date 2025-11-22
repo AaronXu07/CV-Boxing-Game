@@ -13,6 +13,7 @@ import launchBombSoundFile from '../assets/sounds/launchbomb.wav';
 import launchFruitSoundFile from '../assets/sounds/launchfruit.wav';
 import bombExplodeSoundFile from '../assets/sounds/bombexplode.wav';
 import loseLifeSoundFile from '../assets/sounds/loselife.mp3';
+import countdownSoundFile from '../assets/sounds/countdown.mp3';
 
 // Combo sounds
 import combo1SoundFile from '../assets/sounds/combo/Combo1.wav';
@@ -81,6 +82,7 @@ export const useSound = () => {
   const launchFruitSoundRef = useRef(null);
   const bombExplodeSoundRef = useRef(null);
   const loseLifeSoundRef = useRef(null);
+  const countdownSoundRef = useRef(null);
   const comboSoundRefs = useRef([]);
 
   useEffect(() => {
@@ -93,6 +95,7 @@ export const useSound = () => {
     launchFruitSoundRef.current = new Audio(launchFruitSoundFile);
     bombExplodeSoundRef.current = new Audio(bombExplodeSoundFile);
     loseLifeSoundRef.current = new Audio(loseLifeSoundFile);
+    countdownSoundRef.current = new Audio(countdownSoundFile);
     
     hitSoundRefs.current = targetHitSounds.map(sound => {
       const audio = new Audio(sound);
@@ -124,6 +127,7 @@ export const useSound = () => {
     launchFruitSoundRef.current.volume = 0.3;
     bombExplodeSoundRef.current.volume = 0.8;
     loseLifeSoundRef.current.volume = 0.6;
+    countdownSoundRef.current.volume = 0.5;
 
     const preloadSounds = () => {
       punchSoundRef.current.load();
@@ -135,6 +139,7 @@ export const useSound = () => {
       launchFruitSoundRef.current.load();
       bombExplodeSoundRef.current.load();
       loseLifeSoundRef.current.load();
+      countdownSoundRef.current.load();
       hitSoundRefs.current.forEach(audio => audio.load());
       Object.values(fruitSoundRefs.current).forEach(audio => audio.load());
       comboSoundRefs.current.forEach(audio => audio.load());
@@ -178,6 +183,10 @@ export const useSound = () => {
       if (loseLifeSoundRef.current) {
         loseLifeSoundRef.current.pause();
         loseLifeSoundRef.current = null;
+      }
+      if (countdownSoundRef.current) {
+        countdownSoundRef.current.pause();
+        countdownSoundRef.current = null;
       }
       hitSoundRefs.current.forEach(audio => {
         if (audio) {
@@ -314,6 +323,14 @@ export const useSound = () => {
     }
   };
 
+  const playCountdownSound = () => {
+    if (countdownSoundRef.current) {
+      countdownSoundRef.current.currentTime = 0;
+      countdownSoundRef.current.play();
+      console.log('countdown sound played');
+    }
+  };
+
   return {
     playPunchSound,
     playHitSound,
@@ -327,6 +344,7 @@ export const useSound = () => {
     playLaunchFruitSound,
     playBombExplodeSound,
     playLoseLifeSound,
-    playComboSound
+    playComboSound,
+    playCountdownSound
   };
 };

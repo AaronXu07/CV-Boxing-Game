@@ -6,6 +6,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 //   countdownSeconds: 3,
 //   enableCountdown: true,
 //   onToggle: (paused) => playButtonSound(),
+//   onCountdownStart: () => playCountdownSound(),
 //   allowPause: () => true // or (gameState) => gameState !== GAME_STATE.READY
 // });
 // Then call pause(canvasRef, ctxRef) / resume(canvasRef, ctxRef) passing refs.
@@ -14,6 +15,7 @@ export function usePause({
 	countdownSeconds = 3,
 	enableCountdown = true,
 	onToggle = () => {},
+	onCountdownStart = () => {},
 	allowPause = () => true // (optionalPredicateArg) => boolean
 } = {}) {
 	const [isPaused, setIsPaused] = useState(false);
@@ -54,6 +56,7 @@ export function usePause({
 		}
 		setIsResuming(true);
 		setResumeCountdown(countdownSeconds);
+		onCountdownStart(); // Play countdown sound when countdown starts
 		if (resumeTimerRef.current) clearInterval(resumeTimerRef.current);
 		resumeTimerRef.current = setInterval(() => {
 			setResumeCountdown(prev => {
@@ -71,7 +74,7 @@ export function usePause({
 				return prev - 1;
 			});
 		}, 1000);
-	}, [countdownSeconds, enableCountdown, onToggle]);
+	}, [countdownSeconds, enableCountdown, onToggle, onCountdownStart]);
 
 	// Toggle pause or cancel countdown
 	const pause = useCallback((canvasRef, ctxRef, predicateArg) => {

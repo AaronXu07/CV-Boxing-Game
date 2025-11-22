@@ -49,7 +49,8 @@ function FruitNinja(){
     playLaunchFruitSound,
     playBombExplodeSound,
     playLoseLifeSound,
-    playComboSound
+    playComboSound,
+    playCountdownSound
   } = useSound();
   
   const canvasRef = useRef(null);
@@ -83,6 +84,7 @@ function FruitNinja(){
         }
       }
     },
+    onCountdownStart: () => playCountdownSound(),
     allowPause: () => !isGameOver
   });
   const poseInFlightRef = useRef(false);
@@ -303,6 +305,13 @@ function FruitNinja(){
   // Move game loop after all hooks and state declarations
   // Keep the loop running during animations (pendingGameOver doesn't stop it anymore)
   useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Reset countdown flag when going back to calibration
+  useEffect(() => {
+    if (!isCalibrated) {
+      initialCountdownStartedRef.current = false;
+    }
+  }, [isCalibrated]);
 
   // Initial 3s countdown before first game start after calibration
   useEffect(() => {
