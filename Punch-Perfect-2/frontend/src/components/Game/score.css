@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
+
+/* Score Container */
+.score-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #000000;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Rajdhani', 'Bebas Neue', 'Orbitron', 'Space Grotesk', -apple-system, system-ui, sans-serif;
+}
+
+/* Score Content */
+.score-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* Score Title */
+.score-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Score Display */
+.score-display {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 2rem 3rem;
+  background-color: #0a0a0a;
+  border: 3px solid #ffffff;
+  border-radius: 4px;
+  min-width: 300px;
+  justify-content: center;
+}
+
+.score-value {
+  font-size: 5rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  font-family: 'Orbitron', 'Rajdhani', monospace;
+  letter-spacing: 0.05em;
+}
+
+.score-unit {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #cccccc;
+  margin-left: 0.5rem;
+}
+
+/* Score Buttons */
+.score-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.score-button {
+  padding: 1.25rem 2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 2px solid #222222;
+  background-color: #0a0a0a;
+  transition: all 0.2s;
+  width: 100%;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.score-button:hover {
+  border-color: #e63946;
+  background-color: #000000;
+}
+
+.score-button:active {
+  transform: translateY(1px);
+}
+
+.restart-button {
+  background-color: #e63946;
+  border-color: #e63946;
+  font-size: 1.3rem;
+}
+
+.restart-button:hover {
+  background-color: #ff4d5a;
+  border-color: #ff4d5a;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .score-title {
+    font-size: 2.5rem;
+  }
+
+  .score-display {
+    padding: 1.5rem 2rem;
+    min-width: 250px;
+  }
+
+  .score-value {
+    font-size: 4rem;
+  }
+
+  .score-unit {
+    font-size: 1.5rem;
+  }
+
+  .score-button {
+    font-size: 1.1rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .restart-button {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .score-container {
+    padding: 1rem;
+  }
+
+  .score-title {
+    font-size: 2rem;
+  }
+
+  .score-display {
+    padding: 1rem 1.5rem;
+    min-width: 200px;
+  }
+
+  .score-value {
+    font-size: 3rem;
+  }
+
+  .score-unit {
+    font-size: 1.2rem;
+  }
+
+  .score-button {
+    font-size: 1rem;
+    padding: 0.9rem 1.2rem;
+  }
+
+  .restart-button {
+    font-size: 1.1rem;
+  }
+}

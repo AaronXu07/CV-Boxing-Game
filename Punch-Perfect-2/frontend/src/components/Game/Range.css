@@ -1,0 +1,124 @@
+/* Range Container */
+.app-root {
+  position: relative;          /* for absolute buttons */
+  min-height: 100vh;
+  height: 100%;
+  display: flex;               /* enable flex layout */
+  flex-direction: column;      /* header/buttons on top, video below */
+  align-items: center;         /* center children horizontally */
+  justify-content:center; 
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.video-wrap {
+  position: relative;          /* positioning context for buttons */
+  display: inline-block;
+  padding:0.5rem; 
+  box-sizing: border-box;
+}
+
+/* Canvas Styling */
+canvas#output {
+  display: block;              /* remove inline-gap issues */
+  margin: 0 auto;              /* safe fallback centering */
+  width: auto;
+  height: auto;
+  max-width: 95vw;
+  max-height: 95vh;
+  border: 3px solid #e63946;
+  border-radius: 4px;
+  background: #000000;
+  transform: scaleX(-1);
+  transition: filter 0.3 ease; 
+}
+
+canvas#output.blurred {
+  filter: blur(10px);
+}
+
+/* Header */
+h1 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  font-size: 2.5rem;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transform: none !important;
+}
+
+.menu-button {
+  position:absolute; 
+  top:1rem; 
+  right:1rem; 
+  z-index: 30; 
+  padding:5px; 
+  display:flex; 
+  align-items:center; 
+  justify-content:center;
+}
+
+.outside-buttons {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  z-index: 30;
+}
+
+.outside-buttons > button:hover {
+  border-color: #e63946;
+  background-color: #000;
+}
+
+.outside-buttons > button:active {
+  transform: translateY(1px);
+}
+
+.center-button-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display:flex; 
+  align-items:center; 
+  flex-direction:column; 
+  z-index: 20;
+  gap:40px; 
+}
+
+.center-button-container > div {
+  display:flex; 
+  gap:30px; 
+}
+
+.center-button-container .start-button,
+.center-button-container > div > button  {
+  width: 150px; 
+  height: 150px; 
+  border-radius: 50%; 
+  padding:0px; 
+  border: 3px solid #e63946;
+  font-size:2rem; 
+}
+
+.center-button-container > h1 {
+  font-size:5rem; 
+}
+
+.center-button-container .start-button:hover,
+.center-button-container > div > button:hover {
+  transform:scale(1.25); 
+  border: 5px solid #e63946;
+}
+
+
+
+
