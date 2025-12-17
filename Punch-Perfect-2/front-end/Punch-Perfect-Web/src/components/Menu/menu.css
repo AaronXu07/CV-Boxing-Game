@@ -41,8 +41,7 @@
 .profile-icon-button:hover {
     border-color: #ff4d5a;
     background-color: #1a1a1a;
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.5);
+    transform: scale(1.05);
 }
 
 .profile-icon-button:active {
