@@ -6,6 +6,7 @@ dotenv.config();
 import cors from "cors"; 
 
 import supabase from "./config/supabase.js"; 
+import scoreRoutes from "./routes/scores.js"; 
 
 const app = express(); 
 
@@ -14,21 +15,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT; 
 
-app.get("/test", async (req, res) => {
-    try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*"); 
-
-        if (error) {
-            return res.status(500).json({ error:error.message }); 
-        }
-
-        res.json({profiles: data}); 
-    } catch (error) {
-        res.status(500).json({ error: "Something went wrong"}); 
-    }
-})
+app.use('/api/scores', scoreRoutes); 
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

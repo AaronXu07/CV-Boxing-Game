@@ -345,6 +345,7 @@ function FruitNinja(){
   if (isGameOver) {
     return (
       <Score 
+        gamemode_id={19587430}
         score={scoreRef.current} 
         resetTracking={resetTracking}
         ctxRef={ctxRef}

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './account.css'
 import { useSound } from '../../hooks/useSound.js'
+import { supabase } from '../../lib/supabase.js'
+import { getCurrentSession } from '../../lib/authFunctions.js'
 
 // Mock data - will be replaced with backend data later
 const mockData = {
@@ -20,11 +22,16 @@ function Account() {
 
   // Check if user is logged in (from localStorage)
   useEffect(() => {
-    const storedUser = localStorage.getItem('username');
-    if(storedUser){
-      setIsLoggedIn(true);
-      setUsername(storedUser);
+    const setPage = async () => {
+      const session = await getCurrentSession(); 
+      if(session){
+        setIsLoggedIn(true);
+        setUsername(session.user.user_metadata?.display_name);
+      }
     }
+
+    setPage(); 
+    
   }, []);
 
   const handleBack = () => {
@@ -37,12 +44,21 @@ function Account() {
     setTimeout(() => navigate('/auth'), 100);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     playButtonSound();
-    localStorage.removeItem('username');
-    setIsLoggedIn(false);
-    setUsername('');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error.message);
+        return; 
+      }
+      setIsLoggedIn(false);
+      setUsername('');
+    } catch (err) {
+      console.error(err);
+    }
   };
+
 
   return (
     <div className="account-container">
