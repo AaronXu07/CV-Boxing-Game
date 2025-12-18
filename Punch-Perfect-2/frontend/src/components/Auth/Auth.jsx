@@ -73,9 +73,18 @@ function Auth() {
         });
       }
       else{
+
+        const displayName = formData.username || formData.email.split('@')[0];
+
         result = await supabase.auth.signUp({
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          options: {
+            data: {
+              display_name: displayName,
+              username: displayName
+            }
+          }
         });
       }
     
@@ -87,7 +96,7 @@ function Auth() {
 
       // Store user data (both login and signup)
       if (result.data?.user) {
-        const displayName = formData.username || result.data.user.email.split('@')[0];
+        const displayName = result.data.user.user_metadata?.display_name || formData.username || result.data.user.email.split('@')[0];
         localStorage.setItem('username', displayName);
         localStorage.setItem('user_email', result.data.user.email);
       }
