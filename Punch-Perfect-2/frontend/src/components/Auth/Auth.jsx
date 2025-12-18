@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './auth.css';
 import { useSound } from '../../hooks/useSound.js';
+import { supabase } from '../../lib/supabase.js';
 
 function Auth() {
   const navigate = useNavigate();
@@ -40,20 +41,18 @@ function Auth() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     playButtonSound();
 
-    if (!formData.username || !formData.password) {
+    setError('');
+
+    if (!formData.email || !formData.password) {
       setError('Please fill in all required fields');
       return;
     }
 
     if (!isLogin) {
-      if (!formData.email) {
-        setError('Email is required');
-        return;
-      }
       if (formData.password !== formData.confirmPassword) {
         setError('Passwords do not match');
         return;
@@ -64,11 +63,50 @@ function Auth() {
       }
     }
 
-    // Mock authentication - store username in localStorage
-    localStorage.setItem('username', formData.username);
+    try{
+      let result;
+      
+      if(isLogin){
+        result = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password
+        });
+      }
+      else{
+
+        const displayName = formData.username || formData.email.split('@')[0];
+
+        result = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              display_name: displayName,
+              username: displayName
+            }
+          }
+        });
+      }
     
-    // Navigate to account page
-    navigate('/account');
+
+      if(result.error){
+        setError(result.error.message);
+        return;
+      }
+
+      // Store user data (both login and signup)
+      if (result.data?.user) {
+        const displayName = result.data.user.user_metadata?.display_name || formData.username || result.data.user.email.split('@')[0];
+        localStorage.setItem('username', displayName);
+        localStorage.setItem('user_email', result.data.user.email);
+      }
+
+      navigate('/account');
+    }
+    catch(err){
+      setError('Something went wrong. Please try again.');
+      console.error(err);
+    }
   };
 
   return (
@@ -80,32 +118,33 @@ function Auth() {
           <h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
           
           <form onSubmit={handleSubmit} className="auth-form">
-            {/* Username */}
+            {/* Email (required for both login and signup) */}
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="email">Email</label>
               <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
-                placeholder="Enter your username"
-                autoComplete="username"
+                placeholder="Enter your email"
+                autoComplete="email"
+                required
               />
             </div>
 
-            {/* Email (Sign up only) */}
+            {/* Username (signup only - display name) */}
             {!isLogin && (
               <div className="form-group">
-                <label htmlFor="email">Email</label>
+                <label htmlFor="username">Username</label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  autoComplete="email"
+                  placeholder="Enter your display name"
+                  autoComplete="username"
                 />
               </div>
             )}
