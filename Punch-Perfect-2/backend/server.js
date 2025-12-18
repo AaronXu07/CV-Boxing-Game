@@ -5,8 +5,6 @@ dotenv.config();
 
 import cors from "cors"; 
 
-
-
 import supabase from "./config/supabase.js"; 
 
 const app = express(); 
