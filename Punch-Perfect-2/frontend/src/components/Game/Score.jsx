@@ -2,9 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { useSound } from '../../hooks/useSound.js';
 import { CANVAS_SIZE } from '../../utils/constants.js';
 import './score.css';
+import { supabase } from '../../lib/supabase.js'; 
+import { getCurrentSession } from '../../lib/authFunctions.js'; 
+import { useEffect, useRef } from 'react'; 
 
 function Score(
   { 
+    gamemode_id,
     score, 
     resetTracking, 
     ctxRef, 
@@ -18,6 +22,39 @@ function Score(
 ) {
   const { playButtonSound } = useSound(); 
   const navigate = useNavigate(); 
+
+  const hasRanRef = useRef(false); 
+
+  useEffect(() => {
+    if(hasRanRef.current) return; 
+   
+    hasRanRef.current = true; 
+
+    const saveScore = async () => {
+      const session = await getCurrentSession(); 
+
+      if(!session) {
+        console.log("user not logged in, not saving score"); 
+        return null; 
+      }
+
+      try {
+        console.log("sending post request"); 
+        await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/`, {
+          method: 'POST',
+          headers: {
+             'Content-Type': 'application/json',
+             'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ score, gamemode_id })
+        });
+      } catch (err) {
+        console.err('error occured: ', err); 
+      }
+    }
+
+    saveScore(); 
+  }, [])
 
   const restart = () => {
     playButtonSound();

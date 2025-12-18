@@ -211,6 +211,7 @@ function Targets(){
   if (isGameOver) {
     return (
       <Score 
+        gamemode_id={48392017}
         score={scoreRef.current} 
         resetTracking={resetTracking}
         ctxRef={ctxRef}

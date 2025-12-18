@@ -404,6 +404,7 @@ function Reaction(){
     
     return (
       <Score 
+        gamemode_id={76015482}
         score={avgReactionTime}
         resetTracking={resetTracking}
         ctxRef={ctxRef}
