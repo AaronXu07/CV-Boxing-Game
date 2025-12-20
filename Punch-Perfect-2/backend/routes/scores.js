@@ -2,6 +2,66 @@ import express from 'express';
 import supabase from '../config/supabase.js';
 const router = express.Router(); 
 
+//get leaderboard for a specific game mode
+router.get('/leaderboard/:gamemodeId', async (req, res) => {
+    try {
+        
+        const gamemodeId = Number(req.params.gamemodeId); 
+
+        const isAscending = gamemodeId === 76015482 ? true : false; 
+
+        const {data, error: err} = await supabase
+            .from('scores')
+            .select(`
+                user_id,
+                score,
+                created_at
+            `)
+            .eq('gamemode_id', gamemodeId)
+            .order('score', { ascending: isAscending}); 
+        
+        if(err){
+            console.log("supabase error"); 
+            return res.status(500).json({error: err.message});
+        }
+
+        const {data:{users}, error} = await supabase.auth.admin.listUsers(); 
+
+        if(error) {
+            console.log("error getting usernames"); 
+            return res.status(500).json({error: error}); 
+        }
+
+        const userMap = {}; 
+        users.forEach(user => {
+            userMap[user.id] = user.user_metadata?.display_name; 
+        })
+
+        const leaderboard = []; 
+        const seen = new Set(); 
+        console.log("reached loop"); 
+        
+        for(const score of data) {
+            if(!seen.has(score.user_id)) {
+                leaderboard.push({
+                    user: { display_name: userMap[score.user_id]},
+                    score: score.score,
+                    created_at: score.created_at
+                }); 
+                seen.add(score.user_id); 
+                if(leaderboard.length === 10) {
+                    break; 
+                }
+            }
+        }
+
+        res.json(leaderboard);
+
+    } catch (error) {
+        res.status(500).json({error: 'Failed to fetch leaderboard'}); 
+    }
+})
+
 //verify user token from frontend
 const verifyToken = async (req, res, next) => {
     console.log("attempted to verify"); 
@@ -65,7 +125,7 @@ router.post('/', async(req, res) => {
     }
 });
 
-//get highscores for all gamemodes
+//get highscores for all gamemodes for a user
 router.get('/highscores', async(req, res) => {
     try{
         const userId = req.user.id;
@@ -91,11 +151,19 @@ router.get('/highscores', async(req, res) => {
             const modeScores = scores
                 .filter(s => s.gamemode_id === mode.id)
                 .map(s => s.score);
+
+            // Reaction Time
+            let hs = null; 
+            if(mode.id === 76015482) {
+                hs = modeScores.length? Math.min(...modeScores) : null; 
+            } else {
+                hs = modeScores.length? Math.max(...modeScores) : null; 
+            }
             
             return{
                 gamemode_id: mode.id,
                 mode: mode.gamemode_name,
-                highscore: modeScores.length? Math.max(...modeScores) : 0
+                highscore: hs
             };
         });
 
@@ -105,5 +173,63 @@ router.get('/highscores', async(req, res) => {
         res.status(500).json({error: 'Failed to fetch highscores'});
     }
 });
+
+//get leaderboard for a specific game mode
+router.get('/leaderboard/:gamemodeId/me', async (req, res) => {
+    try {
+        const gamemodeId = Number(req.params.gamemodeId); 
+
+        const isAscending = gamemodeId === 76015482 ? true : false; 
+
+        const {data, error: err} = await supabase
+            .from('scores')
+            .select(`
+                user_id,
+                score,
+                created_at
+            `)
+            .eq('gamemode_id', gamemodeId)
+            .order('score', { ascending: isAscending}); 
+        
+        if(err){
+            console.log("supabase error"); 
+            return res.status(500).json({error: err.message});
+        }
+
+        const {data:user, error} = await supabase.auth.admin.getUserById(req.user.id)
+
+        if(error) {
+            console.log("error getting username"); 
+            return res.status(500).json({error: error}); 
+        }
+
+        let info = {}; 
+        const seen = new Set(); 
+        console.log("reached loop"); 
+
+        let rank = 0; 
+        
+        for(const score of data) {
+            if(!seen.has(score.user_id)) {
+                seen.add(score.user_id); 
+                rank++; 
+                if(score.user_id == req.user.id) {
+                    info = {
+                        rank: rank, 
+                        display_name: user.user.user_metadata?.display_name,
+                        score: score.score,
+                        created_at: score.created_at
+                    }
+                }
+                
+            }
+        }
+
+        res.json(info || null);
+        
+    } catch (error) {
+        res.status(500).json({error: 'Failed to fetch user best score'}); 
+    }
+})
 
 export default router;
