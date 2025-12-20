@@ -65,29 +65,44 @@ router.post('/', async(req, res) => {
     }
 });
 
-//get high score
-router.get('/:gamemode_id/high', async(req, res) => {
+//get highscores for all gamemodes
+router.get('/highscores', async(req, res) => {
     try{
-        const{gamemode_id} = req.params;
         const userId = req.user.id;
 
-        const{data, error} = await supabase
-            .from('scores')
-            .select('score')
-            .eq('user_id', userId)
-            .eq('gamemode_id', parseInt(gamemode_id))
-            .order('score', {ascending: false})
-            .limit(1)
-            .single();
+        const {data: gamemodes, error: gmError} = await supabase
+            .from('game_modes')
+            .select('id, gamemode_name');
         
-            if(error && error.code !== 'PGRST116'){
-                return res.status(500).json({error: error.message});
-            }
+        if(gmError){
+            return res.status(500).json({error: gmError.message});
+        }
 
-            res.json({highscore: data?.score || 0});
+        const {data: scores, error: scoreError} = await supabase
+            .from('scores')
+            .select('gamemode_id, score')
+            .eq('user_id', userId);
+        
+        if(scoreError){
+            return res.status.json({error: scoreError.message});
+        }
+
+        const highscores = gamemodes.map((mode) => {
+            const modeScores = scores
+                .filter(s => s.gamemode_id === mode.id)
+                .map(s => s.score);
+            
+            return{
+                gamemode_id: mode.id,
+                mode: mode.gamemode_name,
+                highscore: modeScores.length? Math.max(...modeScores) : 0
+            };
+        });
+
+        res.json(highscores);
     }
     catch(error){
-        res.status(500).json({error: 'Failed to fetch high score'});
+        res.status(500).json({error: 'Failed to fetch highscores'});
     }
 });
 

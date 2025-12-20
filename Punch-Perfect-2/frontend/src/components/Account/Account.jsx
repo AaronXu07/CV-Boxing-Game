@@ -5,30 +5,38 @@ import { useSound } from '../../hooks/useSound.js'
 import { supabase } from '../../lib/supabase.js'
 import { getCurrentSession } from '../../lib/authFunctions.js'
 
-// Mock data - will be replaced with backend data later
-const mockData = {
-  highScores: [
-    { mode: 'Fruit Ninja', score: '101' },
-    { mode: 'Targets', score: '35' },
-    { mode: 'Reaction', score: '895 ms' }
-  ]
-};
-
 function Account() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
 
-  // Check if user is logged in (from localStorage)
+  const [highScores, setHighScores] = useState([]);
+
+  const fetchHighScores = async() => {
+    const session = await getCurrentSession();
+    if(!session) return;
+
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/highscores`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
+
+    const data = await res.json();
+    setHighScores(data);
+  }
+
+  // Check if user is logged in
   useEffect(() => {
     const setPage = async () => {
       const session = await getCurrentSession(); 
       if(session){
         setIsLoggedIn(true);
         setUsername(session.user.user_metadata?.display_name);
+        await fetchHighScores();
       }
-    }
+    };
 
     setPage(); 
     
@@ -54,6 +62,7 @@ function Account() {
       }
       setIsLoggedIn(false);
       setUsername('');
+      setHighScores([]);
     } catch (err) {
       console.error(err);
     }
@@ -80,10 +89,12 @@ function Account() {
             <div className="high-scores-section">
               <h2>Your High Scores</h2>
               <div className="high-scores-grid">
-                {mockData.highScores.map((item, index) => (
+                {highScores.map((item, index) => (
                   <div key={index} className="score-card">
                     <div className="score-card-mode">{item.mode}</div>
-                    <div className="score-card-value">{item.score}</div>
+                    <div className="score-card-value">
+                      {item.highscore}{item.mode === 'Reaction' ? ' ms' : ''}
+                    </div>
                   </div>
                 ))}
               </div>
