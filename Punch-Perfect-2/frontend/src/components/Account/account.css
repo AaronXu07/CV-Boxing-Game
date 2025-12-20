@@ -212,6 +212,13 @@
   transform: translateY(0);
 }
 
+.spinner {
+  display:flex; 
+  justify-content:center; 
+  align-items:center; 
+  height:100vh; 
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .account-container h1 {

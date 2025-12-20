@@ -1,52 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './leaderboard.css'
 import { useSound } from '../../hooks/useSound.js'
-
-// Mock data - will be replaced with backend data later
-const mockData = {
-  reactionTime: [
-    { rank: 1, username: 'SpeedDemon', score: '512 ms', date: '2025-11-01' },
-    { rank: 2, username: 'QuickFist', score: '548 ms', date: '2025-10-30' },
-    { rank: 3, username: 'ThunderPunch', score: '573 ms', date: '2025-10-29' },
-    { rank: 4, username: 'LightningJab', score: '621 ms', date: '2025-10-28' },
-    { rank: 5, username: 'FastHands', score: '658 ms', date: '2025-10-27' },
-    { rank: 6, username: 'BoxerPro', score: '692 ms', date: '2025-10-26' },
-    { rank: 7, username: 'PunchMaster', score: '734 ms', date: '2025-10-25' },
-    { rank: 8, username: 'IronFist', score: '781 ms', date: '2025-10-24' },
-    { rank: 9, username: 'SwiftStrike', score: '823 ms', date: '2025-10-23' },
-    { rank: 10, username: 'ChampionBoxer', score: '897 ms', date: '2025-10-22' },
-  ],
-  targetTest: [
-    { rank: 1, username: 'BullseyeKing', score: '2500', date: '2025-11-01' },
-    { rank: 2, username: 'Sharpshooter', score: '2350', date: '2025-10-31' },
-    { rank: 3, username: 'AccuratePunch', score: '2280', date: '2025-10-30' },
-    { rank: 4, username: 'TargetHunter', score: '2150', date: '2025-10-29' },
-    { rank: 5, username: 'PrecisionFist', score: '2080', date: '2025-10-28' },
-    { rank: 6, username: 'AimExpert', score: '1950', date: '2025-10-27' },
-    { rank: 7, username: 'HitMaster', score: '1890', date: '2025-10-26' },
-    { rank: 8, username: 'DeadEye', score: '1820', date: '2025-10-25' },
-    { rank: 9, username: 'SnipeKing', score: '1750', date: '2025-10-24' },
-    { rank: 10, username: 'AccuracyPro', score: '1680', date: '2025-10-23' },
-  ],
-  fruitNinja: [
-    { rank: 1, username: 'SliceMaster', score: '15,420', date: '2025-11-02' },
-    { rank: 2, username: 'FruitDestroyer', score: '14,890', date: '2025-11-01' },
-    { rank: 3, username: 'NinjaFist', score: '14,320', date: '2025-10-31' },
-    { rank: 4, username: 'ComboKing', score: '13,750', date: '2025-10-30' },
-    { rank: 5, username: 'BladeHands', score: '13,280', date: '2025-10-29' },
-    { rank: 6, username: 'FruitSlicer', score: '12,950', date: '2025-10-28' },
-    { rank: 7, username: 'ChopChamp', score: '12,460', date: '2025-10-27' },
-    { rank: 8, username: 'SwipeExpert', score: '11,890', date: '2025-10-26' },
-    { rank: 9, username: 'QuickSlice', score: '11,320', date: '2025-10-25' },
-    { rank: 10, username: 'FruitNinja99', score: '10,850', date: '2025-10-24' },
-  ],
-};
+import { BarLoader } from 'react-spinners'
+import { getCurrentSession } from '../../lib/authFunctions.js'
 
 function Leaderboard() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
   const [activeTab, setActiveTab] = useState('reactionTime');
+  const [isLoading, setIsLoading] = useState(true); 
+  const [leaderboard, setLeaderboard] = useState([]); 
+  const [userRank, setUserRank] = useState(null); 
+  const [loggedIn, setLoggedIn ] = useState(false); 
 
   const back = () => {
     playButtonSound();
@@ -58,18 +24,77 @@ function Leaderboard() {
     setActiveTab(tab);
   };
 
-  const getTabData = () => {
-    switch (activeTab) {
-      case 'reactionTime':
-        return mockData.reactionTime;
-      case 'targetTest':
-        return mockData.targetTest;
-      case 'fruitNinja':
-        return mockData.fruitNinja;
-      default:
-        return mockData.reactionTime;
-    }
+  const gamemodeMap = {
+    reactionTime: 76015482,
+    targetTest: 48392017,
+    fruitNinja: 19587430,
   };
+
+  const fetchLeaderboard = async (gamemodeId) => {
+    try {
+
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}`, {
+        headers: {
+        }
+      })
+      console.log(res); 
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch leaderboard');
+      }
+
+      const data = await res.json(); 
+      setLeaderboard(data); 
+      
+
+    } catch (err) {
+      console.error("error occured:", err); 
+    } finally {
+      setIsLoading(false); 
+    }
+  } 
+
+  const fetchRank = async (gamemodeId) => {
+      const session = await getCurrentSession();
+      if(!session) {
+        setLoggedIn(false); 
+        return; 
+      }
+      setIsLoading(true); 
+
+      setLoggedIn(true); 
+  
+      try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}/me`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        });
+  
+        const data = await res.json();
+        if(data) {
+          setUserRank(data);
+        }
+        
+      } catch (err) {
+        console.error("Error occured: ", err); 
+      } finally {
+        setIsLoading(false); 
+      }
+    }
+
+  useEffect(() => {
+    const update = async () => {
+      const gamemodeId = gamemodeMap[activeTab]; 
+      console.log(gamemodeId); 
+      await fetchLeaderboard(gamemodeId); 
+      await fetchRank(gamemodeId); 
+      console.log("user rank:", userRank); 
+    }
+
+    update(); 
+    
+  }, [activeTab])
 
   const getTabTitle = () => {
     switch (activeTab) {
@@ -127,7 +152,7 @@ function Leaderboard() {
         </button>
       </div>
 
-      {/* Leaderboard Content */}
+      {isLoading ? <div className="spinner"><BarLoader color="#ed0c2e" width={200} height={8}/></div> :
       <div className="leaderboard-content">
         <h2>{getTabTitle()}</h2>
         
@@ -142,17 +167,17 @@ function Leaderboard() {
               </tr>
             </thead>
             <tbody>
-              {getTabData().map((entry) => (
+              {leaderboard.map((entry, index) => (
                 <tr 
-                  key={entry.rank} 
-                  className={`leaderboard-row ${entry.rank <= 3 ? `rank-${entry.rank}` : ''}`}
+                  key={index+1} 
+                  className={`leaderboard-row ${index+1 <= 3 ? `rank-${index+1}` : ''}`}
                 >
                   <td className="rank-column">
-                    {entry.rank}
+                    {index+1}
                   </td>
-                  <td className="username-column">{entry.username}</td>
+                  <td className="username-column">{entry.user.display_name}</td>
                   <td className="score-column">{entry.score}</td>
-                  <td className="date-column">{entry.date}</td>
+                  <td className="date-column">{entry.created_at}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,11 +186,33 @@ function Leaderboard() {
 
         {/* Placeholder for user's rank (when backend is connected) */}
         <div className="user-rank-info">
-          <p className="info-text">
-            Connect your account to see your ranking and compete with others!
-          </p>
+            {!loggedIn ? <p className="info-text">Connect your account to see your ranking and compete with others!</p> : 
+              <table>
+                <tbody>
+                  {!userRank || !userRank.display_name ? <tr className='leaderboard-row'>
+                                  <td className="rank-column"> - </td>
+                                  <td className="username-column"> - </td>
+                                  <td className="score-column"> - </td>
+                                  <td className="date-column"> - </td>
+                                </tr> : 
+                  <tr 
+                    className={`leaderboard-row ${userRank.rank <= 3 ? `rank-${userRank.rank}` : ''}`}
+                  >
+                    <td className="rank-column">
+                      {userRank.rank}
+                    </td>
+                    <td className="username-column">{userRank.display_name}</td>
+                    <td className="score-column">{userRank.score}</td>
+                    <td className="date-column">{userRank.created_at}</td>
+                  </tr>
+                  }
+                </tbody>
+
+              </table>
+            }
         </div>
-      </div>
+
+      </div>}
     </div>
   );
 }
