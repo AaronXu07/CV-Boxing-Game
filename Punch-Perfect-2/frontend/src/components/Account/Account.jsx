@@ -14,7 +14,10 @@ function Account() {
   const [isLoading, setIsLoading] = useState(true); 
 
   const [highScores, setHighScores] = useState([]);
+  const [gameRanks, setGameRanks] = useState([]); 
   const [userScores, setUserScores] = useState([]); 
+
+  const suffix = (n) => [,'st','nd','rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || 'th';
 
   const fetchHighScores = async (session) => {
     try {
@@ -26,6 +29,38 @@ function Account() {
 
       const data = await res.json();
       setHighScores(data);
+    } catch (err) {
+      console.error("Error occured: ", err); 
+    } 
+  }
+
+  const fetchGamemodeRanks = async (session) => {
+    try {
+      const res_fruit = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430/me`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const fruit_score = await res_fruit.json();
+
+      const res_target = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017/me`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const target_score = await res_target.json();
+
+      const res_reaction = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482/me`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const reaction_score = await res_reaction.json();
+
+      setGameRanks([target_score.rank, reaction_score.rank, fruit_score.rank])
     } catch (err) {
       console.error("Error occured: ", err); 
     } 
@@ -55,6 +90,7 @@ function Account() {
         setUsername(session.user.user_metadata?.display_name);
         await fetchHighScores(session);
         await fetchUserScores(session); 
+        await fetchGamemodeRanks(session); 
         setIsLoading(false); 
       } else {
         setIsLoading(false); 
@@ -128,8 +164,16 @@ function Account() {
                         </div>
                       ))}
                     </div>
+                    <div className="high-scores-grid">
+                      {gameRanks.map((item, index) => (
+                        <div key={index} className="score-card">
+                          <div className="score-card-value">
+                            {!item ? '-' : item + suffix(Number(item))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-
                   <div className="user-scores">
                     <h2>Your Scores</h2>
                     <div className="high-scores-grid">
