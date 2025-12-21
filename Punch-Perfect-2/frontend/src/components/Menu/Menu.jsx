@@ -40,7 +40,7 @@ function Menu() {
         </svg>
       </button>
       
-      <h1>Punch Perfect Menu</h1>
+      <img src="/punch-perfect-logo.png" width="350px"/>
       <div className="menu-buttons">
         <button className="start-button" onClick={startGame}>Start Game</button>
         <button onClick={startAbout}>Tutorial</button>

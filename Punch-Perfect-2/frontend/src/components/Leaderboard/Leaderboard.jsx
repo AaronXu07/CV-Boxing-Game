@@ -30,65 +30,54 @@ function Leaderboard() {
     fruitNinja: 19587430,
   };
 
-  const fetchLeaderboard = async (gamemodeId) => {
-    try {
-
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}`, {
-        headers: {
-        }
-      })
-      console.log(res); 
-
-      if (!res.ok) {
-        throw new Error('Failed to fetch leaderboard');
-      }
-
-      const data = await res.json(); 
-      setLeaderboard(data); 
-      
-
-    } catch (err) {
-      console.error("error occured:", err); 
-    } finally {
-      setIsLoading(false); 
-    }
-  } 
-
-  const fetchRank = async (gamemodeId) => {
+  const fetchData = async (gamemodeId) => {
       const session = await getCurrentSession();
-      if(!session) {
-        setLoggedIn(false); 
-        return; 
-      }
-      setIsLoading(true); 
 
-      setLoggedIn(true); 
-  
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}/me`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
+        setIsLoading(true); 
+        if(session) {
+          setLoggedIn(true); 
+          const res1 = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}/me`, {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`
+            }
+          });
+    
+          const data1 = await res1.json();
+          if(data1) {
+            setUserRank(data1);
           }
-        });
-  
-        const data = await res.json();
-        if(data) {
-          setUserRank(data);
+        } else {
+          setLoggedIn(false); 
         }
+
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}`, {
+          headers: {
+          }
+        })
+        console.log(res); 
+
+        if (!res.ok) {
+          throw new Error('Failed to fetch leaderboard');
+        }
+
+        const data = await res.json(); 
+        setLeaderboard(data); 
         
       } catch (err) {
         console.error("Error occured: ", err); 
       } finally {
         setIsLoading(false); 
       }
+      
+      
     }
 
   useEffect(() => {
     const update = async () => {
       const gamemodeId = gamemodeMap[activeTab]; 
       console.log(gamemodeId); 
-      await fetchLeaderboard(gamemodeId); 
-      await fetchRank(gamemodeId); 
+      await fetchData(gamemodeId); 
       console.log("user rank:", userRank); 
     }
 
@@ -176,8 +165,8 @@ function Leaderboard() {
                     {index+1}
                   </td>
                   <td className="username-column">{entry.user.display_name}</td>
-                  <td className="score-column">{entry.score}</td>
-                  <td className="date-column">{entry.created_at}</td>
+                  <td className="score-column">{entry.score}{activeTab === 'reactionTime' ? ' ms' : ''}</td>
+                  <td className="date-column">{new Date(entry.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -187,11 +176,11 @@ function Leaderboard() {
         {/* Placeholder for user's rank (when backend is connected) */}
         <div className="user-rank-info">
             {!loggedIn ? <p className="info-text">Connect your account to see your ranking and compete with others!</p> : 
-              <table>
+              <table className="leaderboard-table">
                 <tbody>
                   {!userRank || !userRank.display_name ? <tr className='leaderboard-row'>
                                   <td className="rank-column"> - </td>
-                                  <td className="username-column"> - </td>
+                                  <td className="username-column"> You </td>
                                   <td className="score-column"> - </td>
                                   <td className="date-column"> - </td>
                                 </tr> : 
@@ -201,9 +190,9 @@ function Leaderboard() {
                     <td className="rank-column">
                       {userRank.rank}
                     </td>
-                    <td className="username-column">{userRank.display_name}</td>
+                    <td className="username-column">{userRank.display_name} (You)</td>
                     <td className="score-column">{userRank.score}</td>
-                    <td className="date-column">{userRank.created_at}</td>
+                    <td className="date-column">{new Date(userRank.created_at).toLocaleDateString()}</td>
                   </tr>
                   }
                 </tbody>
