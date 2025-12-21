@@ -13,7 +13,6 @@ import Reaction from './components/Game/Reaction.jsx'
 import Targets from './components/Game/Targets.jsx'
 import Account from './components/Account/Account.jsx'
 import Auth from './components/Auth/Auth.jsx'
-import Settings from './components/Settings/Settings.jsx'
 import { GameProvider } from './context/GameContext.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -31,7 +30,6 @@ createRoot(document.getElementById('root')).render(
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/account" element={<Account />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/settings" element={<Settings />} />
         </Routes>
       </GameProvider>
     </BrowserRouter>
