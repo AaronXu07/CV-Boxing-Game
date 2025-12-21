@@ -3,49 +3,71 @@
 // Each function takes (ctx, radius) and draws centered at (0, 0)
 
 const drawWatermelon = (ctx, radius) => {
-    // Dark green outer circle - more vibrant
+    // Base shadow
     ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#0D8B3A';
+    ctx.arc(radius * 0.05, radius * 0.05, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
     ctx.fill();
     
-    // Light green stripes - clipped to circle - brighter
+    // Dark green body with gradient
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    const gradient = ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 0, 0, 0, radius);
+    gradient.addColorStop(0, '#2DA44E');
+    gradient.addColorStop(0.6, '#0D8B3A');
+    gradient.addColorStop(1, '#0A6B2F');
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Light green stripes with curve
     ctx.save();
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.clip();
     
-    ctx.strokeStyle = '#3CB371';
-    ctx.lineWidth = radius / 8;
+    ctx.strokeStyle = '#50C878';
+    ctx.lineWidth = radius / 6;
+    ctx.lineCap = 'round';
     for (let i = -2; i <= 2; i++) {
         ctx.beginPath();
         ctx.moveTo(i * radius / 3, -radius * 1.5);
-        ctx.lineTo(i * radius / 3, radius * 1.5);
+        ctx.quadraticCurveTo(i * radius / 3 + radius / 10, 0, i * radius / 3, radius * 1.5);
         ctx.stroke();
     }
     ctx.restore();
     
-    // Darker spots for texture
+    // Darker spots for texture - fixed positions to prevent flickering
     ctx.save();
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.clip();
-    for (let i = 0; i < 20; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * radius * 0.8;
-        const x = Math.cos(angle) * dist;
-        const y = Math.sin(angle) * dist;
+    const spotPositions = [
+        {angle: 0.3, dist: 0.5}, {angle: 1.2, dist: 0.6}, {angle: 2.5, dist: 0.4},
+        {angle: 3.8, dist: 0.7}, {angle: 5.1, dist: 0.55}, {angle: 0.9, dist: 0.3},
+        {angle: 2.0, dist: 0.65}, {angle: 4.5, dist: 0.45}, {angle: 1.5, dist: 0.75},
+        {angle: 3.2, dist: 0.35}, {angle: 5.8, dist: 0.5}, {angle: 0.6, dist: 0.7},
+        {angle: 4.0, dist: 0.6}, {angle: 1.8, dist: 0.4}, {angle: 3.5, dist: 0.55},
+        {angle: 5.5, dist: 0.35}, {angle: 2.3, dist: 0.7}, {angle: 4.8, dist: 0.5},
+        {angle: 1.0, dist: 0.45}, {angle: 3.0, dist: 0.65}
+    ];
+    spotPositions.forEach(pos => {
+        const x = Math.cos(pos.angle) * pos.dist * radius;
+        const y = Math.sin(pos.angle) * pos.dist * radius;
         ctx.beginPath();
         ctx.arc(x, y, radius / 15, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 80, 0, 0.2)';
+        ctx.fillStyle = 'rgba(0, 60, 0, 0.3)';
         ctx.fill();
-    }
+    });
     ctx.restore();
     
-    // Highlight
+    // Glossy highlight
     ctx.beginPath();
-    ctx.arc(-radius / 3, -radius / 3, radius / 4, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.arc(-radius * 0.35, -radius * 0.35, radius * 0.3, 0, Math.PI * 2);
+    const highlightGrad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, 0, -radius * 0.35, -radius * 0.35, radius * 0.3);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+    highlightGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.2)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = highlightGrad;
     ctx.fill();
 };
 
@@ -377,30 +399,49 @@ const drawKiwi = (ctx, radius) => {
 };
 
 const drawBanana = (ctx, radius) => {
-    // Banana curve - more refined shape
+    // Shadow
+    ctx.save();
+    ctx.translate(radius * 0.08, radius * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(-radius / 2, -radius / 3);
+    ctx.bezierCurveTo(-radius, 0, -radius, radius / 2, -radius / 3, radius);
+    ctx.bezierCurveTo(0, radius * 1.1, radius / 2, radius, radius / 2, radius / 2);
+    ctx.bezierCurveTo(radius / 2, 0, radius / 3, -radius / 2, -radius / 2, -radius / 3);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fill();
+    ctx.restore();
+    
+    // Banana curve - refined shape
     ctx.beginPath();
     ctx.moveTo(-radius / 2, -radius / 3);
     ctx.bezierCurveTo(-radius, 0, -radius, radius / 2, -radius / 3, radius);
     ctx.bezierCurveTo(0, radius * 1.1, radius / 2, radius, radius / 2, radius / 2);
     ctx.bezierCurveTo(radius / 2, 0, radius / 3, -radius / 2, -radius / 2, -radius / 3);
     
-    // More vibrant yellow gradient
+    // Vibrant yellow gradient
     const gradient = ctx.createLinearGradient(-radius, -radius / 2, radius / 2, radius);
-    gradient.addColorStop(0, '#FFED4E');
-    gradient.addColorStop(0.5, '#FFE135');
+    gradient.addColorStop(0, '#FFF59D');
+    gradient.addColorStop(0.3, '#FFED4E');
+    gradient.addColorStop(0.7, '#FFE135');
     gradient.addColorStop(1, '#F4C430');
     ctx.fillStyle = gradient;
     ctx.fill();
     
-    // Brown edge/ridge along banana
-    ctx.beginPath();
-    ctx.moveTo(-radius / 2, -radius / 3);
-    ctx.bezierCurveTo(-radius, 0, -radius, radius / 2, -radius / 3, radius);
-    ctx.strokeStyle = 'rgba(139, 90, 0, 0.6)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // Ridge lines along banana
+    ctx.save();
+    ctx.clip();
+    for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        const offset = (i - 1) * radius * 0.15;
+        ctx.moveTo(-radius / 2 + offset, -radius / 3);
+        ctx.bezierCurveTo(-radius + offset, 0, -radius + offset, radius / 2, -radius / 3 + offset, radius);
+        ctx.strokeStyle = `rgba(220, 180, 30, ${0.3 - i * 0.1})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+    ctx.restore();
     
-    // Fixed brown spots (not random to avoid flashing)
+    // Fixed brown spots
     const spots = [
         { x: -radius * 0.6, y: 0 },
         { x: -radius * 0.3, y: radius * 0.3 },
@@ -414,20 +455,29 @@ const drawBanana = (ctx, radius) => {
     spots.forEach(spot => {
         ctx.beginPath();
         ctx.ellipse(spot.x, spot.y, radius / 10, radius / 12, 0.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(139, 69, 19, 0.5)';
+        const spotGrad = ctx.createRadialGradient(spot.x, spot.y, 0, spot.x, spot.y, radius / 10);
+        spotGrad.addColorStop(0, 'rgba(139, 69, 19, 0.6)');
+        spotGrad.addColorStop(1, 'rgba(139, 69, 19, 0.3)');
+        ctx.fillStyle = spotGrad;
         ctx.fill();
     });
     
     // Stem
     ctx.beginPath();
-    ctx.rect(-radius * 0.6, -radius / 2, radius / 8, radius / 4);
-    ctx.fillStyle = '#8B6914';
+    ctx.roundRect(-radius * 0.62, -radius / 2, radius / 7, radius / 4, radius / 20);
+    const stemGrad = ctx.createLinearGradient(-radius * 0.6, 0, -radius * 0.5, 0);
+    stemGrad.addColorStop(0, '#6B5220');
+    stemGrad.addColorStop(1, '#8B6914');
+    ctx.fillStyle = stemGrad;
     ctx.fill();
     
     // Highlight
     ctx.beginPath();
-    ctx.arc(-radius * 0.5, radius * 0.1, radius / 5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.ellipse(-radius * 0.5, radius * 0.1, radius / 4, radius / 6, -0.3, 0, Math.PI * 2);
+    const highlightGrad = ctx.createRadialGradient(-radius * 0.5, radius * 0.1, 0, -radius * 0.5, radius * 0.1, radius / 4);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = highlightGrad;
     ctx.fill();
 };
 
@@ -504,23 +554,30 @@ const drawLime = (ctx, radius) => {
 };
 
 const drawOrange = (ctx, radius) => {
-    // Orange body - more vibrant orange
+    // Shadow
+    ctx.beginPath();
+    ctx.arc(radius * 0.05, radius * 0.05, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.fill();
+    
+    // Orange body with vibrant gradient
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    const gradient = ctx.createRadialGradient(-radius / 4, -radius / 4, 0, 0, 0, radius * 1.2);
-    gradient.addColorStop(0, '#FFB347');
-    gradient.addColorStop(0.7, '#FF9500');
-    gradient.addColorStop(1, '#FF7F00');
+    const gradient = ctx.createRadialGradient(-radius * 0.3, -radius * 0.3, 0, 0, 0, radius * 1.3);
+    gradient.addColorStop(0, '#FFC670');
+    gradient.addColorStop(0.5, '#FFB347');
+    gradient.addColorStop(0.8, '#FF9500');
+    gradient.addColorStop(1, '#E8890C');
     ctx.fillStyle = gradient;
     ctx.fill();
     
     // Pitted texture - fixed positions
     const texturePoints = [];
-    for (let ring = 0; ring < 4; ring++) {
+    for (let ring = 0; ring < 5; ring++) {
         const pointsInRing = 8 + ring * 4;
-        const ringRadius = (ring / 3.5) * radius * 0.85;
+        const ringRadius = (ring / 4.5) * radius * 0.9;
         for (let i = 0; i < pointsInRing; i++) {
-            const angle = (i / pointsInRing) * Math.PI * 2;
+            const angle = (i / pointsInRing) * Math.PI * 2 + ring * 0.2;
             texturePoints.push({
                 x: Math.cos(angle) * ringRadius,
                 y: Math.sin(angle) * ringRadius
@@ -530,15 +587,24 @@ const drawOrange = (ctx, radius) => {
     
     texturePoints.forEach(point => {
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(210, 105, 30, 0.4)';
+        ctx.arc(point.x, point.y, radius / 30, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(200, 90, 20, 0.4)';
+        ctx.fill();
+        // Tiny highlight on each dimple
+        ctx.beginPath();
+        ctx.arc(point.x - 1, point.y - 1, radius / 50, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 200, 150, 0.3)';
         ctx.fill();
     });
     
-    // Highlight
+    // Main glossy highlight
     ctx.beginPath();
-    ctx.arc(-radius / 3, -radius / 3, radius / 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.arc(-radius * 0.35, -radius * 0.35, radius * 0.35, 0, Math.PI * 2);
+    const highlightGrad = ctx.createRadialGradient(-radius * 0.35, -radius * 0.35, 0, -radius * 0.35, -radius * 0.35, radius * 0.35);
+    highlightGrad.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+    highlightGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+    highlightGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = highlightGrad;
     ctx.fill();
 };
 

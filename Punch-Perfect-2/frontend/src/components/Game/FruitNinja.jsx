@@ -51,6 +51,7 @@ function FruitNinja(){
     playLoseLifeSound,
     playComboSound,
     playCountdownSound,
+    stopCountdownSound,
     toggleMute,
     isMuted
   } = useSound();
@@ -87,6 +88,7 @@ function FruitNinja(){
       }
     },
     onCountdownStart: () => playCountdownSound(),
+    onCountdownStop: () => stopCountdownSound(),
     allowPause: () => !isGameOver
   });
   const poseInFlightRef = useRef(false);
@@ -113,7 +115,7 @@ function FruitNinja(){
 
   const {targetsRef, handleCollisions, scoreRef, handleMissedFruit, comboPopupsRef, clearSpawnInterval} = useTargetManager(
     'fruit', 
-    isCalibrated, 
+    isCalibrated && initialCountdownStartedRef.current, // Only activate after initial countdown starts
     gameKey, 
     null, 
     playFruitSound,
@@ -388,12 +390,8 @@ function FruitNinja(){
                       style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
                     >
                       Toggle Camera
-                    </button>                    <button
-                      onClick={() => { playButtonSound(); toggleMute(); }}
-                      style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
-                    >
-                      {isMuted ? 'Unmute' : 'Mute'}
-                    </button>                    <button
+                    </button>
+                    <button
                       onClick={() => { playButtonSound(); toggleMute(); }}
                       style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
                     >

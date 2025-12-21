@@ -225,11 +225,11 @@ export const useSound = () => {
     if (successSoundRef.current) successSoundRef.current.volume = isMuted ? 0 : 0.6;
     if (buttonSoundRef.current) buttonSoundRef.current.volume = isMuted ? 0 : 0.4;
     if (bombFuseSoundRef.current) bombFuseSoundRef.current.volume = isMuted ? 0 : 0.5;
-    if (gameOverSoundRef.current) gameOverSoundRef.current.volume = isMuted ? 0 : 0.7;
+    if (gameOverSoundRef.current) gameOverSoundRef.current.volume = isMuted ? 0 : 0.6;
     if (launchBombSoundRef.current) launchBombSoundRef.current.volume = isMuted ? 0 : 0.4;
     if (launchFruitSoundRef.current) launchFruitSoundRef.current.volume = isMuted ? 0 : 0.3;
-    if (bombExplodeSoundRef.current) bombExplodeSoundRef.current.volume = isMuted ? 0 : 0.8;
-    if (loseLifeSoundRef.current) loseLifeSoundRef.current.volume = isMuted ? 0 : 0.6;
+    if (bombExplodeSoundRef.current) bombExplodeSoundRef.current.volume = isMuted ? 0 : 0.7;
+    if (loseLifeSoundRef.current) loseLifeSoundRef.current.volume = isMuted ? 0 : 0.4;
     if (countdownSoundRef.current) countdownSoundRef.current.volume = isMuted ? 0 : 0.5;
     
     hitSoundRefs.current.forEach(audio => {
@@ -373,6 +373,14 @@ export const useSound = () => {
     }
   };
 
+  const stopCountdownSound = () => {
+    if (countdownSoundRef.current) {
+      countdownSoundRef.current.pause();
+      countdownSoundRef.current.currentTime = 0;
+      console.log('countdown sound stopped');
+    }
+  };
+
   return {
     playPunchSound,
     playHitSound,
@@ -388,6 +396,7 @@ export const useSound = () => {
     playLoseLifeSound,
     playComboSound,
     playCountdownSound,
+    stopCountdownSound,
     toggleMute,
     isMuted
   };

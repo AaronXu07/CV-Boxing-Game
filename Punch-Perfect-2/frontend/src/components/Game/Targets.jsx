@@ -30,7 +30,7 @@ function Targets(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
-  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, toggleMute, isMuted } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, stopCountdownSound, toggleMute, isMuted } = useSound();
   // Pause handled by reusable hook
   const { isMiniviewEnabled, toggleMiniview, 
           gameKey, setGameKey} = useGameContext();
@@ -53,6 +53,7 @@ function Targets(){
     enableCountdown: true,
     onToggle: () => playButtonSound(),
     onCountdownStart: () => playCountdownSound(),
+    onCountdownStop: () => stopCountdownSound(),
     allowPause: () => !isGameOver
   });
 

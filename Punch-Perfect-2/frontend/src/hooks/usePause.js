@@ -7,6 +7,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 //   enableCountdown: true,
 //   onToggle: (paused) => playButtonSound(),
 //   onCountdownStart: () => playCountdownSound(),
+//   onCountdownStop: () => stopCountdownSound(),
 //   allowPause: () => true // or (gameState) => gameState !== GAME_STATE.READY
 // });
 // Then call pause(canvasRef, ctxRef) / resume(canvasRef, ctxRef) passing refs.
@@ -16,6 +17,7 @@ export function usePause({
 	enableCountdown = true,
 	onToggle = () => {},
 	onCountdownStart = () => {},
+	onCountdownStop = () => {},
 	allowPause = () => true // (optionalPredicateArg) => boolean
 } = {}) {
 	const [isPaused, setIsPaused] = useState(false);
@@ -26,14 +28,17 @@ export function usePause({
 	const lastFrameRef = useRef(null);
 	const resumeTimerRef = useRef(null);
 
-	const clearCountdown = useCallback(() => {
+	const clearCountdown = useCallback((shouldStopSound = false) => {
 		if (resumeTimerRef.current) {
 			clearInterval(resumeTimerRef.current);
 			resumeTimerRef.current = null;
 		}
 		setIsResuming(false);
 		setResumeCountdown(0);
-	}, []);
+		if (shouldStopSound) {
+			onCountdownStop();
+		}
+	}, [onCountdownStop]);
 
 	const captureFrame = useCallback((canvasRef, ctxRef) => {
 		if (!canvasRef?.current || !ctxRef?.current) return;
@@ -82,7 +87,7 @@ export function usePause({
 
 		// If currently counting down -> cancel and restore full pause
 		if (isResuming) {
-			clearCountdown();
+			clearCountdown(true); // Pass true to stop the sound
 			isPausedRef.current = true;
 			setIsPaused(true);
 			captureFrame(canvasRef, ctxRef); // ensure we have a frozen frame
@@ -115,7 +120,12 @@ export function usePause({
 	}, [allowPause, isResuming, startCountdown]);
 
 	// Cleanup interval on unmount
-	useEffect(() => () => clearCountdown(), [clearCountdown]);
+	useEffect(() => () => {
+		if (resumeTimerRef.current) {
+			clearInterval(resumeTimerRef.current);
+			resumeTimerRef.current = null;
+		}
+	}, []);
 
 	return {
 		isPaused,

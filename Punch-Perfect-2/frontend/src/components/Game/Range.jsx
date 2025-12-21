@@ -35,7 +35,7 @@ function Range(){
           gameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false); 
   // Pause handled by usePause hook now
-  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, toggleMute, isMuted } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, stopCountdownSound, toggleMute, isMuted } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -55,6 +55,7 @@ function Range(){
     enableCountdown: true,
     onToggle: (paused) => playButtonSound(),
     onCountdownStart: () => playCountdownSound(),
+    onCountdownStop: () => stopCountdownSound(),
     allowPause: () => true
   });
 

@@ -44,7 +44,7 @@ function Reaction(){
   const [isGameOver, setIsGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false); 
   
-  const { playPunchSound, playButtonSound, playHitSound } = useSound();
+  const { playPunchSound, playButtonSound, playHitSound, toggleMute, isMuted } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
