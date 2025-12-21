@@ -44,6 +44,8 @@ function Account() {
         setIsLoggedIn(true);
         setUsername(session.user.user_metadata?.display_name);
         await fetchHighScores();
+      } else {
+        setIsLoading(false); 
       }
     };
 
