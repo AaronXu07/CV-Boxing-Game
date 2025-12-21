@@ -35,7 +35,7 @@ function Range(){
           gameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false); 
   // Pause handled by usePause hook now
-  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, toggleMute, isMuted } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -217,6 +217,12 @@ function Range(){
                     style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
                   >
                     Toggle Camera
+                  </button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMute(); }}
+                    style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
+                  >
+                    {isMuted ? 'Unmute' : 'Mute'}
                   </button>
                 </div>
               </>

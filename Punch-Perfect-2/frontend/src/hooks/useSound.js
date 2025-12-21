@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import punchSoundFile from '../assets/sounds/punch.mp3';
 import targetHit1 from '../assets/sounds/target-hits/punchtarget1.mp3';
 import targetHit2 from '../assets/sounds/target-hits/punchtarget2.mp3';
@@ -71,6 +71,12 @@ const fruitSoundMap = {
 };
 
 export const useSound = () => {
+  // Initialize mute state from localStorage
+  const [isMuted, setIsMuted] = useState(() => {
+    const saved = localStorage.getItem('audioMuted');
+    return saved === 'true';
+  });
+
   const punchSoundRef = useRef(null);
   const hitSoundRefs = useRef([]);
   const fruitSoundRefs = useRef({});
@@ -211,6 +217,42 @@ export const useSound = () => {
     };
   }, []); 
 
+  // Update all audio volumes when mute state changes
+  useEffect(() => {
+    const targetVolume = isMuted ? 0 : 1;
+    
+    if (punchSoundRef.current) punchSoundRef.current.volume = isMuted ? 0 : 0.1;
+    if (successSoundRef.current) successSoundRef.current.volume = isMuted ? 0 : 0.6;
+    if (buttonSoundRef.current) buttonSoundRef.current.volume = isMuted ? 0 : 0.4;
+    if (bombFuseSoundRef.current) bombFuseSoundRef.current.volume = isMuted ? 0 : 0.5;
+    if (gameOverSoundRef.current) gameOverSoundRef.current.volume = isMuted ? 0 : 0.7;
+    if (launchBombSoundRef.current) launchBombSoundRef.current.volume = isMuted ? 0 : 0.4;
+    if (launchFruitSoundRef.current) launchFruitSoundRef.current.volume = isMuted ? 0 : 0.3;
+    if (bombExplodeSoundRef.current) bombExplodeSoundRef.current.volume = isMuted ? 0 : 0.8;
+    if (loseLifeSoundRef.current) loseLifeSoundRef.current.volume = isMuted ? 0 : 0.6;
+    if (countdownSoundRef.current) countdownSoundRef.current.volume = isMuted ? 0 : 0.5;
+    
+    hitSoundRefs.current.forEach(audio => {
+      if (audio) audio.volume = isMuted ? 0 : 0.5;
+    });
+    
+    Object.values(fruitSoundRefs.current).forEach(audio => {
+      if (audio) audio.volume = isMuted ? 0 : 0.6;
+    });
+    
+    comboSoundRefs.current.forEach(audio => {
+      if (audio) audio.volume = isMuted ? 0 : 0.7;
+    });
+  }, [isMuted]);
+
+  const toggleMute = () => {
+    setIsMuted(prev => {
+      const newValue = !prev;
+      localStorage.setItem('audioMuted', newValue.toString());
+      return newValue;
+    });
+  };
+
   const playPunchSound = () => {
     if (punchSoundRef.current) {
       punchSoundRef.current.currentTime = 0; 
@@ -345,6 +387,8 @@ export const useSound = () => {
     playBombExplodeSound,
     playLoseLifeSound,
     playComboSound,
-    playCountdownSound
+    playCountdownSound,
+    toggleMute,
+    isMuted
   };
 };

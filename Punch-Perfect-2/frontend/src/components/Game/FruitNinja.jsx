@@ -50,7 +50,9 @@ function FruitNinja(){
     playBombExplodeSound,
     playLoseLifeSound,
     playComboSound,
-    playCountdownSound
+    playCountdownSound,
+    toggleMute,
+    isMuted
   } = useSound();
   
   const canvasRef = useRef(null);
@@ -386,6 +388,16 @@ function FruitNinja(){
                       style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
                     >
                       Toggle Camera
+                    </button>                    <button
+                      onClick={() => { playButtonSound(); toggleMute(); }}
+                      style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
+                    >
+                      {isMuted ? 'Unmute' : 'Mute'}
+                    </button>                    <button
+                      onClick={() => { playButtonSound(); toggleMute(); }}
+                      style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
+                    >
+                      {isMuted ? 'Unmute' : 'Mute'}
                     </button>
                   </div>
                 </>

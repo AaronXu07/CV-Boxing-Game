@@ -437,6 +437,12 @@ function Reaction(){
               >
                 Toggle Camera
               </button>
+              <button
+                onClick={() => { playButtonSound(); toggleMute(); }}
+                style={isMuted ? { borderColor: "#e63946" } : { borderColor: "green" }}
+              >
+                {isMuted ? 'Unmute' : 'Mute'}
+              </button>
             </div>
         </div>}
 

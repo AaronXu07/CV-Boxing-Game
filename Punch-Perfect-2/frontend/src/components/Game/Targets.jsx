@@ -30,7 +30,7 @@ function Targets(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
-  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound } = useSound();
+  const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, toggleMute, isMuted } = useSound();
   // Pause handled by reusable hook
   const { isMiniviewEnabled, toggleMiniview, 
           gameKey, setGameKey} = useGameContext();
@@ -254,6 +254,12 @@ function Targets(){
                     style={isMiniviewEnabled ? { borderColor: 'green' } : { borderColor: '#e63946' }}
                   >
                     Toggle Camera
+                  </button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMute(); }}
+                    style={isMuted ? { borderColor: '#e63946' } : { borderColor: 'green' }}
+                  >
+                    {isMuted ? 'Unmute' : 'Mute'}
                   </button>
                 </div>
               </>
