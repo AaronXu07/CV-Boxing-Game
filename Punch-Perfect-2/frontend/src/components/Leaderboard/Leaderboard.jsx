@@ -34,10 +34,9 @@ function Leaderboard() {
       const session = await getCurrentSession();
 
       try {
-        setIsLoading(true); 
         if(session) {
           setLoggedIn(true); 
-          const res1 = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}/me`, {
+          const res1 = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}/me`, {
             headers: {
               Authorization: `Bearer ${session.access_token}`
             }
@@ -51,7 +50,7 @@ function Leaderboard() {
           setLoggedIn(false); 
         }
 
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/leaderboard/${gamemodeId}`, {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}`, {
           headers: {
           }
         })
@@ -66,19 +65,17 @@ function Leaderboard() {
         
       } catch (err) {
         console.error("Error occured: ", err); 
-      } finally {
-        setIsLoading(false); 
-      }
-      
-      
+      } 
     }
 
   useEffect(() => {
     const update = async () => {
+      setIsLoading(true); 
       const gamemodeId = gamemodeMap[activeTab]; 
       console.log(gamemodeId); 
       await fetchData(gamemodeId); 
       console.log("user rank:", userRank); 
+      setIsLoading(false); 
     }
 
     update(); 
@@ -191,7 +188,7 @@ function Leaderboard() {
                       {userRank.rank}
                     </td>
                     <td className="username-column">{userRank.display_name} (You)</td>
-                    <td className="score-column">{userRank.score}</td>
+                    <td className="score-column">{userRank.score}{activeTab === 'reactionTime' ? ' ms' : ''}</td>
                     <td className="date-column">{new Date(userRank.created_at).toLocaleDateString()}</td>
                   </tr>
                   }

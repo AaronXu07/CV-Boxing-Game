@@ -14,13 +14,10 @@ function Account() {
   const [isLoading, setIsLoading] = useState(true); 
 
   const [highScores, setHighScores] = useState([]);
+  const [userScores, setUserScores] = useState([]); 
 
-  const fetchHighScores = async() => {
-    const session = await getCurrentSession();
-    if(!session) return;
-
+  const fetchHighScores = async (session) => {
     try {
-      setIsLoading(true); 
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/highscores`, {
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -31,9 +28,22 @@ function Account() {
       setHighScores(data);
     } catch (err) {
       console.error("Error occured: ", err); 
-    } finally {
-      setIsLoading(false); 
-    }
+    } 
+  }
+
+  const fetchUserScores = async (session) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/me`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const data = await res.json();
+      setUserScores(data); 
+    } catch (err) {
+      console.error("Error occured: ", err); 
+    } 
   }
 
   // Check if user is logged in
@@ -43,7 +53,9 @@ function Account() {
       if(session){
         setIsLoggedIn(true);
         setUsername(session.user.user_metadata?.display_name);
-        await fetchHighScores();
+        await fetchHighScores(session);
+        await fetchUserScores(session); 
+        setIsLoading(false); 
       } else {
         setIsLoading(false); 
       }
@@ -91,13 +103,18 @@ function Account() {
               {isLoggedIn ? (
                 <>
                   <div className="user-info">
-                    <h2>{username}</h2>
-                    <button className="logout-button" onClick={handleLogout}>
-                      Logout
-                    </button>
+                    <div>
+                      <h2>{username}</h2>
+                      <button className="logout-button" onClick={handleLogout}>
+                        Logout
+                      </button>
+                    </div>
+                    <div className="count-section">
+                      <div>Tests Taken</div>
+                      <div>{userScores.length}</div>
+                    </div>
                   </div>
 
-                  {/* High Scores Section */}
                   <div className="high-scores-section">
                     <h2>Your High Scores</h2>
                     <div className="high-scores-grid">
@@ -110,6 +127,24 @@ function Account() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="user-scores">
+                    <h2>Your Scores</h2>
+                    <div className="high-scores-grid">
+                      <table>
+                        <thead></thead>
+                        <tbody>
+                          {userScores.map((item, index) => (
+                            <tr key={index}>
+                              <td>{item.gamemode.gamemode_name}</td>
+                              <td>{item.score}</td>
+                              <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </>
