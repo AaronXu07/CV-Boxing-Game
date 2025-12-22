@@ -18,7 +18,7 @@ function Auth() {
 
   const handleBack = () => {
     playButtonSound();
-    navigate('/account');
+    setTimeout(() => navigate('/account'), 200);
   };
 
   const handleToggleMode = () => {

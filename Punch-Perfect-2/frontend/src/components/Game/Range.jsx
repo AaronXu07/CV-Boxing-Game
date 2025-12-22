@@ -96,7 +96,7 @@ function Range(){
   //===== Navigation =====
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/gamemenu'), 100);
+    setTimeout(() => navigate('/gamemenu'), 200);
   };
 
   //===== Frame Processing =====
@@ -203,7 +203,7 @@ function Range(){
                 <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
                 <h1>{resumeCountdown}</h1>
                 <div className="pause-buttons">
-                  <button onClick={pause}>Cancel</button>
+                  <button onClick={() => { playButtonSound(); pause(); }}>Cancel</button>
                 </div>
               </>
             ) : (
@@ -211,7 +211,7 @@ function Range(){
                 <h1>PAUSED</h1>
                 <h2>The Range</h2>
                 <div className="pause-buttons">
-                  <button onClick={resume}>Resume</button>
+                  <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
                   <button onClick={back}>Back to Menu</button>
                   <button
                     onClick={() => { playButtonSound(); toggleMiniview(); }}

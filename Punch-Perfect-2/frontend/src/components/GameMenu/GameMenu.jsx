@@ -10,27 +10,27 @@ function GameMenu() {
 
   const startRangeMode = () => {
     playButtonSound();
-    setTimeout(() => navigate('/range'), 100);
+    setTimeout(() => navigate('/range'), 200);
   };
 
   const startTargetsMode = () => {
     playButtonSound();
-    setTimeout(() => navigate('/targets'), 100);
+    setTimeout(() => navigate('/targets'), 200);
   };
 
   const startReactionMode = () => {
     playButtonSound();
-    setTimeout(() => navigate('/reaction'), 100);
+    setTimeout(() => navigate('/reaction'), 200);
   };
 
   const startFruitNinja = () => {
     playButtonSound();
-    setTimeout(() => navigate('/fruitninja'), 100);
+    setTimeout(() => navigate('/fruitninja'), 200);
   };
 
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/'), 100);
+    setTimeout(() => navigate('/'), 200);
   };
 
   const handleMouseMove = (e, cardId) => {

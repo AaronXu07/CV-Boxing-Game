@@ -16,7 +16,7 @@ function Leaderboard() {
 
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/'), 100);
+    setTimeout(() => navigate('/'), 200);
   };
 
   const handleTabChange = (tab) => {

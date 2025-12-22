@@ -14,7 +14,7 @@ import launchFruitSoundFile from '../assets/sounds/launchfruit.wav';
 import bombExplodeSoundFile from '../assets/sounds/bombexplode.wav';
 import loseLifeSoundFile from '../assets/sounds/loselife.mp3';
 import countdownSoundFile from '../assets/sounds/countdown.mp3';
-
+import highscoreSoundFile from '../assets/sounds/highscore.mp3';
 // Combo sounds
 import combo1SoundFile from '../assets/sounds/combo/Combo1.wav';
 import combo2SoundFile from '../assets/sounds/combo/Combo2.wav';
@@ -90,11 +90,13 @@ export const useSound = () => {
   const loseLifeSoundRef = useRef(null);
   const countdownSoundRef = useRef(null);
   const comboSoundRefs = useRef([]);
+  const highscoreSoundRef = useRef(null);
 
   useEffect(() => {
     punchSoundRef.current = new Audio(punchSoundFile);
     successSoundRef.current = new Audio(successSoundFile);
     buttonSoundRef.current = new Audio(buttonSoundFile);
+    bombFuseSoundRef.current = new Audio(bombFuseSoundFile);
     bombFuseSoundRef.current = new Audio(bombFuseSoundFile);
     gameOverSoundRef.current = new Audio(gameOverSoundFile);
     launchBombSoundRef.current = new Audio(launchBombSoundFile);
@@ -102,7 +104,8 @@ export const useSound = () => {
     bombExplodeSoundRef.current = new Audio(bombExplodeSoundFile);
     loseLifeSoundRef.current = new Audio(loseLifeSoundFile);
     countdownSoundRef.current = new Audio(countdownSoundFile);
-    
+    highscoreSoundRef.current = new Audio(highscoreSoundFile);
+
     hitSoundRefs.current = targetHitSounds.map(sound => {
       const audio = new Audio(sound);
       audio.volume = 0.5; // 50% volume
@@ -134,6 +137,7 @@ export const useSound = () => {
     bombExplodeSoundRef.current.volume = 0.8;
     loseLifeSoundRef.current.volume = 0.6;
     countdownSoundRef.current.volume = 0.5;
+    highscoreSoundRef.current.volume = 0.6;
 
     const preloadSounds = () => {
       punchSoundRef.current.load();
@@ -146,6 +150,7 @@ export const useSound = () => {
       bombExplodeSoundRef.current.load();
       loseLifeSoundRef.current.load();
       countdownSoundRef.current.load();
+      highscoreSoundRef.current.load();
       hitSoundRefs.current.forEach(audio => audio.load());
       Object.values(fruitSoundRefs.current).forEach(audio => audio.load());
       comboSoundRefs.current.forEach(audio => audio.load());
@@ -231,6 +236,7 @@ export const useSound = () => {
     if (bombExplodeSoundRef.current) bombExplodeSoundRef.current.volume = isMuted ? 0 : 0.7;
     if (loseLifeSoundRef.current) loseLifeSoundRef.current.volume = isMuted ? 0 : 0.4;
     if (countdownSoundRef.current) countdownSoundRef.current.volume = isMuted ? 0 : 0.5;
+    if (highscoreSoundRef.current) highscoreSoundRef.current.volume = isMuted ? 0 : 0.6;
     
     hitSoundRefs.current.forEach(audio => {
       if (audio) audio.volume = isMuted ? 0 : 0.5;
@@ -255,53 +261,94 @@ export const useSound = () => {
 
   const playPunchSound = () => {
     if (punchSoundRef.current) {
-      punchSoundRef.current.currentTime = 0; 
-      punchSoundRef.current.play();
-      console.log("punch sound played");
+      try {
+        punchSoundRef.current.currentTime = 0;
+        const playPromise = punchSoundRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            if (error.name !== 'NotAllowedError') {
+              console.warn("Punch sound:", error.name);
+            }
+          });
+        }
+      } catch (error) {
+        console.warn("Punch sound play error:", error);
+      }
     }
   };
 
   const playHitSound = () => {
     if (hitSoundRefs.current.length > 0) {
-      const randomIndex = Math.floor(Math.random() * hitSoundRefs.current.length);
-      const selectedSound = hitSoundRefs.current[randomIndex];
-      selectedSound.currentTime = 0; 
-      selectedSound.play();
-      console.log(`hit sound played (variant ${randomIndex + 1})`);
+      try {
+        const randomIndex = Math.floor(Math.random() * hitSoundRefs.current.length);
+        const selectedSound = hitSoundRefs.current[randomIndex];
+        selectedSound.currentTime = 0;
+        const playPromise = selectedSound.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            if (error.name !== 'NotAllowedError') {
+              console.warn("Hit sound:", error.name);
+            }
+          });
+        }
+      } catch (error) {
+        console.warn("Hit sound play error:", error);
+      }
     }
   };
 
   const playSuccessSound = () => {
     if (successSoundRef.current) {
-      successSoundRef.current.currentTime = 0;
-      successSoundRef.current.play();
-      console.log("success sound played");
+      try {
+        successSoundRef.current.currentTime = 0;
+        const playPromise = successSoundRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            if (error.name !== 'NotAllowedError') {
+              console.warn("Success sound:", error.name);
+            }
+          });
+        }
+      } catch (error) {
+        console.warn("Success sound play error:", error);
+      }
     }
   };
 
   const playButtonSound = () => {
     if (buttonSoundRef.current) {
       buttonSoundRef.current.currentTime = 0;
-      buttonSoundRef.current.play();
-      console.log("button sound played");
+      buttonSoundRef.current.play().catch(() => {});
     }
   };
 
   const playFruitSound = (fruitName) => {
     if (fruitSoundRefs.current[fruitName]) {
-      fruitSoundRefs.current[fruitName].currentTime = 0;
-      fruitSoundRefs.current[fruitName].play();
-      console.log(`fruit sound played: ${fruitName}`);
-    } else {
-      console.warn(`No sound found for fruit: ${fruitName}`);
+      try {
+        fruitSoundRefs.current[fruitName].currentTime = 0;
+        const playPromise = fruitSoundRefs.current[fruitName].play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playBombFuseSound = () => {
     if (bombFuseSoundRef.current) {
-      bombFuseSoundRef.current.currentTime = 0;
-      bombFuseSoundRef.current.play();
-      console.log('bomb fuse sound played');
+      try {
+        bombFuseSoundRef.current.currentTime = 0;
+        const playPromise = bombFuseSoundRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => console.log('bomb fuse sound played'))
+            .catch((error) => console.warn('Bomb fuse sound play prevented:', error));
+        }
+      } catch (error) {
+        console.warn('Bomb fuse sound play error:', error);
+      }
     }
   };
 
@@ -315,61 +362,85 @@ export const useSound = () => {
 
   const playGameOverSound = () => {
     if (gameOverSoundRef.current) {
-      gameOverSoundRef.current.currentTime = 0;
-      gameOverSoundRef.current.play();
-      console.log('game over sound played');
+      try {
+        gameOverSoundRef.current.pause();
+        gameOverSoundRef.current.currentTime = 0;
+        gameOverSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playLaunchBombSound = () => {
     if (launchBombSoundRef.current) {
-      launchBombSoundRef.current.currentTime = 0;
-      launchBombSoundRef.current.play();
-      console.log('launch bomb sound played');
+      try {
+        launchBombSoundRef.current.currentTime = 0;
+        launchBombSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playLaunchFruitSound = () => {
     if (launchFruitSoundRef.current) {
-      launchFruitSoundRef.current.currentTime = 0;
-      launchFruitSoundRef.current.play();
-      console.log('launch fruit sound played');
+      try {
+        launchFruitSoundRef.current.currentTime = 0;
+        launchFruitSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playBombExplodeSound = () => {
     if (bombExplodeSoundRef.current) {
-      bombExplodeSoundRef.current.currentTime = 0;
-      bombExplodeSoundRef.current.play();
-      console.log('bomb explode sound played');
+      try {
+        bombExplodeSoundRef.current.currentTime = 0;
+        bombExplodeSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playLoseLifeSound = () => {
     if (loseLifeSoundRef.current) {
-      loseLifeSoundRef.current.currentTime = 0;
-      loseLifeSoundRef.current.play();
-      console.log('lose life sound played');
+      try {
+        loseLifeSoundRef.current.currentTime = 0;
+        loseLifeSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playComboSound = (comboCount) => {
-    // Combo starts at 3, so combo 3 = sound 0 (Combo1)
-    // combo 4 = sound 1 (Combo2), etc.
-    // For combos > 10, keep playing Combo8
     const soundIndex = Math.min(comboCount - 3, comboSoundRefs.current.length - 1);
     if (soundIndex >= 0 && soundIndex < comboSoundRefs.current.length) {
-      comboSoundRefs.current[soundIndex].currentTime = 0;
-      comboSoundRefs.current[soundIndex].play();
-      console.log(`combo sound played: Combo${soundIndex + 1} (combo count: ${comboCount})`);
+      try {
+        comboSoundRefs.current[soundIndex].currentTime = 0;
+        comboSoundRefs.current[soundIndex].play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
   const playCountdownSound = () => {
     if (countdownSoundRef.current) {
-      countdownSoundRef.current.currentTime = 0;
-      countdownSoundRef.current.play();
-      console.log('countdown sound played');
+      try {
+        countdownSoundRef.current.currentTime = 0;
+        const playPromise = countdownSoundRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => console.log('countdown sound played'))
+            .catch((error) => console.warn('Countdown sound play prevented:', error));
+        }
+      } catch (error) {
+        console.warn('Countdown sound play error:', error);
+      }
     }
   };
 
@@ -378,6 +449,18 @@ export const useSound = () => {
       countdownSoundRef.current.pause();
       countdownSoundRef.current.currentTime = 0;
       console.log('countdown sound stopped');
+    }
+  };
+
+  const playHighscoreSound = () => {
+    if (highscoreSoundRef.current) {
+      try {
+        highscoreSoundRef.current.pause();
+        highscoreSoundRef.current.currentTime = 0;
+        highscoreSoundRef.current.play().catch(() => {});
+      } catch (error) {
+        // Silently ignore
+      }
     }
   };
 
@@ -397,6 +480,7 @@ export const useSound = () => {
     playComboSound,
     playCountdownSound,
     stopCountdownSound,
+    playHighscoreSound,
     toggleMute,
     isMuted
   };

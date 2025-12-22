@@ -16,7 +16,7 @@ function About() {
       setSelected(null);
     } else {
       // If viewing overview, go back to main menu
-      setTimeout(() => navigate('/'), 100);
+      setTimeout(() => navigate('/'), 200);
     }
   };
 
@@ -132,7 +132,7 @@ function About() {
   const onStartMode = (route) => {
     if (!route) return;
     playButtonSound();
-    setTimeout(() => navigate(route), 120);
+    setTimeout(() => navigate(route), 200);
   };
 
   return (

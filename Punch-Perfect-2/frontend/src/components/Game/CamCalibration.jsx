@@ -25,7 +25,7 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
   
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/gamemenu'), 100);
+    setTimeout(() => navigate('/gamemenu'), 200);
   };
 
   useEffect(() => {
@@ -218,7 +218,7 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
       {!gameStarted && 
         <div className="center-button-container">
             <h1>{gameMode}</h1>
-            <button className="start-button" onClick={() => (setGameStarted(true))}>Start</button>
+            <button className="start-button" onClick={() => { playButtonSound(); setGameStarted(true); }}>Start</button>
         </div>
       }
     </div>

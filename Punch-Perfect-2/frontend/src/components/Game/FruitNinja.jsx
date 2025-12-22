@@ -154,7 +154,7 @@ function FruitNinja(){
   //===== Navigation =====
   const back = () => {
     playButtonSound();
-    setTimeout(() => navigate('/gamemenu'), 100);
+    setTimeout(() => navigate('/gamemenu'), 200);
   };
 
   //===== Loss Animation =====
@@ -375,7 +375,7 @@ function FruitNinja(){
                   <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
                   <h1>{resumeCountdown}</h1>
                   <div className="pause-buttons">
-                    <button onClick={pause}>Cancel</button>
+                    <button onClick={() => { playButtonSound(); pause(); }}>Cancel</button>
                   </div>
                 </>
               ) : (

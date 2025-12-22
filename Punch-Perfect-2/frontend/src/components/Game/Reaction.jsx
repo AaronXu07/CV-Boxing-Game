@@ -236,7 +236,7 @@ function Reaction(){
     if (waitTimerRef.current) {
       clearTimeout(waitTimerRef.current);
     }
-    setTimeout(() => navigate('/gamemenu'), 100);
+    setTimeout(() => navigate('/gamemenu'), 200);
   };
 
   //===== Drawing Functions =====
@@ -429,7 +429,7 @@ function Reaction(){
             <h1>PAUSED</h1>
             <h2>Reaction Mode</h2>
             <div className="pause-buttons">
-              <button onClick={resume}>Resume</button>
+              <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
               <button onClick={back}>Back to Menu</button>
               <button
                 onClick={() => { playButtonSound(); toggleMiniview(); }}

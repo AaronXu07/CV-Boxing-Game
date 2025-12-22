@@ -67,12 +67,12 @@ function Account() {
 
   const handleBack = () => {
     playButtonSound();
-    setTimeout(() => navigate('/'), 100);
+    setTimeout(() => navigate('/'), 200);
   };
 
   const handleLogin = () => {
     playButtonSound();
-    setTimeout(() => navigate('/auth'), 100);
+    setTimeout(() => navigate('/auth'), 200);
   };
 
   const handleLogout = async () => {

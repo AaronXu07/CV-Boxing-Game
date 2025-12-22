@@ -8,22 +8,22 @@ function Menu() {
 
   const startGame = () => {
     playButtonSound();
-    setTimeout(() => navigate('/gamemenu'), 100);
+    setTimeout(() => navigate('/gamemenu'), 200);
   };
 
   const startAbout = () => {
     playButtonSound();
-    setTimeout(() => navigate('/about'), 100);
+    setTimeout(() => navigate('/about'), 200);
   };
 
   const startLeaderboard = () => {
     playButtonSound();
-    setTimeout(() => navigate('/leaderboard'), 100);
+    setTimeout(() => navigate('/leaderboard'), 200);
   }
 
   const startAccount = () => {
     playButtonSound();
-    setTimeout(() => navigate('/account'), 100);
+    setTimeout(() => navigate('/account'), 200);
   }
   return (
     <div className="menu-container">
