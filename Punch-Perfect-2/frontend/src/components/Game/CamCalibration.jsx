@@ -9,14 +9,12 @@ import { useGameContext } from '../../context/GameContext.jsx'
 import { useNavigate } from 'react-router-dom'
 import { toggleFullScreen } from '../../utils/functions.js'
 
-function CamCalibration({isCalibrated, setIsCalibrated, gameMode}) {
+function CamCalibration({isCalibrated, setIsCalibrated, gameMode, gameStarted, setGameStarted}) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const poseLandmarkRef = useRef(null)
   const containerRef = useRef(null); 
   let rafId = useRef(null); 
-
-  const [ gameStarted, setGameStarted ] = useState(false); 
 
   const { isFullScreen, setIsFullScreen } = useGameContext(); 
 

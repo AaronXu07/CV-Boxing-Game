@@ -25,6 +25,7 @@ import {
   getPunchText,
   drawComboPopups
 } from '../../utils/drawingHelpers.js'
+import { checkShould } from '../../mediapipe/calibration.js'
 
 //==================== COMPONENT ====================
 function FruitNinja(){
@@ -37,6 +38,8 @@ function FruitNinja(){
             gameKey, setGameKey} = useGameContext();
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false); 
+  const [ gameStarted, setGameStarted ] = useState(false); 
+  const [ outOfBounds, setOutOfBounds ] = useState(false); 
   const { 
     playPunchSound, 
     playButtonSound, 
@@ -130,8 +133,6 @@ function FruitNinja(){
     playComboSound,
     isResumingRef
   );
-
-  
 
   const pause = () => pauseHook(canvasRef, ctxRef);
   const resume = () => resumeHook(canvasRef, ctxRef);
@@ -252,6 +253,13 @@ function FruitNinja(){
 
     let landmarks = await detectPose(videoRef.current, timestamp);
 
+    if(!checkShould(landmarks)) {
+      pause(); 
+      ctxRef.current = null; 
+      drawingUtilsRef.current = null; 
+      setOutOfBounds(true); 
+    }
+
     if (landmarks) {
       const { punchData, punchStates, handStates } = processPunches(landmarks);
       if (isMiniviewEnabled) {
@@ -343,7 +351,7 @@ function FruitNinja(){
   }, [isGameOver, stopBombFuseSound]);
 
   if (!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Fruit Ninja"/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Fruit Ninja" gameStarted={gameStarted} setGameStarted={setGameStarted}/>)
   }
 
   if (isGameOver) {
@@ -382,8 +390,10 @@ function FruitNinja(){
                 <>
                   <h1>PAUSED</h1>
                   <h2>Fruit Ninja</h2>
+                  {outOfBounds && <h2> Out of bounds!. Face the camera at roughly 1 m away and press Resume. </h2>}
                   <div className="pause-buttons">
-                    <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
+
+                    <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
                     <button onClick={back}>Back to Menu</button>
                     <button
                       onClick={() => { playButtonSound(); toggleMiniview(); }}

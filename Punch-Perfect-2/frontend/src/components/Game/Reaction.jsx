@@ -42,6 +42,7 @@ function Reaction(){
   const [reactionTimes, setReactionTimes] = useState([]); // Array to store all reaction times
   const [testCount, setTestCount] = useState(0); // Track number of completed tests
   const [isGameOver, setIsGameOver] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false); 
   const [isPaused, setIsPaused] = useState(false); 
   
   const { playPunchSound, playButtonSound, playHitSound, toggleMute, isMuted } = useSound();
@@ -394,7 +395,7 @@ function Reaction(){
   }, []);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Reaction Test"/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Reaction Test" gameStarted={gameStarted} setGameStarted={setGameStarted}/>)
   }
 
   if (isGameOver) {
