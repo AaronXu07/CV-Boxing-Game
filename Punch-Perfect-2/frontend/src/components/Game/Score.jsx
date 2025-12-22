@@ -28,6 +28,12 @@ function Score(
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const gamemode_map = {
+    19587430: "Fruit Ninja",
+    48392017: "Targets", 
+    76015482: "Reaction"
+  }
+
   useEffect(() => {
     if(hasRanRef.current) return; 
    
@@ -182,6 +188,7 @@ function Score(
           </div>
         )}
         <h1 className="score-title">Game Over</h1>
+        <h1 className="score-title">{gamemode_map[gamemode_id]}</h1>
         
         {isLoading ? (
           <div className="loading-container">

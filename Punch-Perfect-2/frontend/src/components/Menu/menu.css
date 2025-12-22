@@ -17,7 +17,7 @@
     position: absolute;
     top: 2rem;
     right: 2rem;
-    width: 65px;
+    min-width: 65px;
     height: 65px;
     padding: 1rem;
     background-color: #0a0a0a;
@@ -29,6 +29,21 @@
     align-items: center;
     justify-content: center;
     color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.profile-icon-button:has(svg) {
+    border-radius: 50%;
+}
+
+.profile-icon-button:not(:has(svg)) {
+    border-radius: 35px;
+    padding: 1rem 1.5rem;
+    background: black; 
+    border: 3px solid #ff4d5a;
+    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
 }
 
 .profile-icon-button svg {
@@ -41,6 +56,11 @@
     border-color: #ff4d5a;
     background-color: #1a1a1a;
     transform: scale(1.05);
+}
+
+.profile-icon-button:not(:has(svg)):hover {
+    border-color: #ff6b75;
+    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
 }
 
 .profile-icon-button:active {
@@ -121,9 +141,14 @@
     .profile-icon-button {
         top: 1rem;
         right: 1rem;
-        width: 55px;
+        min-width: 55px;
         height: 55px;
         padding: 0.85rem;
+        font-size: 0.8rem;
+    }
+
+    .profile-icon-button:not(:has(svg)) {
+        padding: 0.85rem 1.2rem;
     }
 
     .menu-container h1 {

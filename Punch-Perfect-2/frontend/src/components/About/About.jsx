@@ -139,9 +139,7 @@ function About() {
     <div className="about-container">
       <h1>Tutorial</h1>
 
-      <div className="about-buttons">
-        <button className="back-button" onClick={back}> ← Back</button>
-      </div>
+      <button className="back-button" onClick={back}> ← Back</button>
 
       {!selected && (
         <div className="about-text tutorial-overview">

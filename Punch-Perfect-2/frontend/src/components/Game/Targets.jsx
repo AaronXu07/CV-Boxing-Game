@@ -21,6 +21,7 @@ import {
 } from '../../utils/drawingHelpers.js'
 import { useGameContext } from '../../context/GameContext.jsx'
 import { usePause } from '../../hooks/usePause.js'
+import { checkShould } from '../../mediapipe/calibration.js'
 
 //==================== COMPONENT ====================
 function Targets(){
@@ -30,6 +31,8 @@ function Targets(){
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(30);
+  const [ gameStarted, setGameStarted ] = useState(false); 
+  const [ outOfBounds, setOutOfBounds ] = useState(false); 
   const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, stopCountdownSound, toggleMute, isMuted } = useSound();
   // Pause handled by reusable hook
   const { isMiniviewEnabled, toggleMiniview, 
@@ -142,6 +145,13 @@ function Targets(){
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
+     if(!checkShould(landmarks)) {
+        pause(); 
+        ctxRef.current = null; 
+        drawingUtilsRef.current = null; 
+        setOutOfBounds(true); 
+      }
+
     if(landmarks){
   
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
@@ -206,7 +216,7 @@ function Targets(){
   }, [isCalibrated, isGameOver, pauseHook, resumeHook]);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Target Mode"/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="Timed Targets" gameStarted={gameStarted} setGameStarted={setGameStarted}/>)
   }
 
   if (isGameOver) {
@@ -247,8 +257,9 @@ function Targets(){
               <>
                 <h1>PAUSED</h1>
                 <h2>Timed Targets</h2>
+                {outOfBounds && <h2> Out of bounds!. Face the camera at roughly 1 m away and press Resume. </h2>}
                 <div className="pause-buttons">
-                  <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
+                  <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
                   <button onClick={back}>Back to Menu</button>
                   <button
                     onClick={() => { playButtonSound(); toggleMiniview(); }}

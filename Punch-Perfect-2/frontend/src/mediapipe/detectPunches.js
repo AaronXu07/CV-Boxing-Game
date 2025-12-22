@@ -106,7 +106,9 @@ export const detectPunches = (landmarks) => {
         "rShouldElbCloseY": Math.abs(landmarks[rArm[0]].y - landmarks[rArm[1]].y),
         "lShouldWristCloseY": Math.abs(landmarks[lArm[0]].y - landmarks[lArm[2]].y), 
         "lAngle": lAngle, 
-        "rAngle": rAngle
+        "rAngle": rAngle,
+        "z-left": landmarks[lArm[2]].z-landmarks[lArm[0]].z, 
+        "z-right": landmarks[rArm[2]].z-landmarks[rArm[0]].z, 
     })
     //leftPunch = leftPunch || (landmarks[lArm[2]].y-landmarks[lArm[0]].y > 0.15 && lElbWristCloseX && lShouldElbCloseX);
     //rightPunch = rightPunch || (landmarks[rArm[2]].y-landmarks[rArm[0]].y > 0.15 && rElbWristCloseX && rShouldElbCloseX); 

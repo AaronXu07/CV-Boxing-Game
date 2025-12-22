@@ -15,6 +15,28 @@ const bounds = {
     bottom: winHeight/winHeight
 }
 
+const lWithin = (lm, landmarks) => {
+    return landmarks[lm].x <= bounds.right && landmarks[lm].x >= bounds.left && landmarks[lm].y >= bounds.top && landmarks[lm].y <= bounds.bottom; 
+}
+
+export const checkShould = (landmarks) => {
+    let within = false; 
+
+    try {
+        if(landmarks[lArm[0]] && landmarks[rArm[0]]) {
+            if(lWithin(lArm[0], landmarks) && lWithin(rArm[0], landmarks)) {
+                within = true; 
+            } 
+        }
+
+        
+    } catch(err) {
+        console.log(err); 
+    }
+
+    return within; 
+}
+
 export const checkBox = (ctx, landmarks) => {
     let within = false; 
 
@@ -25,7 +47,7 @@ export const checkBox = (ctx, landmarks) => {
                 break; 
             }
 
-            if(landmarks[lm].x <= bounds.right && landmarks[lm].x >= bounds.left && landmarks[lm].y >= bounds.top && landmarks[lm].y <= bounds.bottom) {
+            if(lWithin(lm, landmarks)) {
                 within = true; 
             } else {
                 within = false; 
@@ -41,7 +63,7 @@ export const checkBox = (ctx, landmarks) => {
                     break
                 }
 
-                if(landmarks[lm].x <= bounds.right && landmarks[lm].x >= bounds.left && landmarks[lm].y >= bounds.top && landmarks[lm].y <= bounds.bottom) {
+                if(lWithin(lm, landmarks)) {
                     within = true; 
                 } else {
                     within = false; 

@@ -23,6 +23,7 @@ import {
 } from '../../utils/drawingHelpers.js'
 import { useGameContext } from '../../context/GameContext'
 import { toggleFullScreen } from '../../utils/functions.js'
+import { checkShould } from '../../mediapipe/calibration.js'
 
 //==================== COMPONENT ====================
 function Range(){
@@ -33,7 +34,9 @@ function Range(){
   const { isMiniviewEnabled, toggleMiniview, 
           isFullScreen, setIsFullScreen,  
           gameKey} = useGameContext();
-  const [isCalibrated, setIsCalibrated] = useState(false); 
+  const [ isCalibrated, setIsCalibrated ] = useState(false); 
+  const [ gameStarted, setGameStarted ] = useState(false); 
+  const [ outOfBounds, setOutOfBounds ] = useState(false); 
   // Pause handled by usePause hook now
   const { playPunchSound, playHitSound, playButtonSound, playCountdownSound, stopCountdownSound, toggleMute, isMuted } = useSound();
   
@@ -137,9 +140,15 @@ function Range(){
       ctx.fillRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
     }
     
-
     //Detect pose
     const landmarks = await detectPose(videoRef.current, timestamp);
+
+    if(!checkShould(landmarks)) {
+        pause(); 
+        ctxRef.current = null; 
+        drawingUtilsRef.current = null; 
+        setOutOfBounds(true); 
+      }
 
     //Process landmarks if detected
     if(landmarks){
@@ -165,6 +174,17 @@ function Range(){
     // Do not capture frame each render; only on pause
   };
 
+  // Capture a static frame ONLY when entering pause (avoid per-frame getImageData cost)
+  useEffect(() => {
+    if (isPaused && ctxRef.current && canvasRef.current) {
+      try {
+        lastFrameRef.current = ctxRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
+      } catch (e) {
+        debugLog('Pause capture failed', e.message);
+      }
+    }
+  }, [isPaused]);
+
   //===== Game Loop =====
   useGameLoop(isCalibrated && !isResuming && !isPausedRef.current, gameKey, processFrame);
 
@@ -185,7 +205,7 @@ function Range(){
   }, [isCalibrated, pauseHook, resumeHook]);
 
   if(!isCalibrated) {
-    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="The Range"/>)
+    return (<CamCalibration isCalibrated={isCalibrated} setIsCalibrated={setIsCalibrated} gameMode="The Range" gameStarted={gameStarted} setGameStarted={setGameStarted}/>)
   }
   
   //===== Render =====
@@ -210,8 +230,9 @@ function Range(){
               <>
                 <h1>PAUSED</h1>
                 <h2>The Range</h2>
+                {outOfBounds && <h2> Out of bounds!. Face the camera at roughly 1 m away and press Resume. </h2>}
                 <div className="pause-buttons">
-                  <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
+                  <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
                   <button onClick={back}>Back to Menu</button>
                   <button
                     onClick={() => { playButtonSound(); toggleMiniview(); }}
