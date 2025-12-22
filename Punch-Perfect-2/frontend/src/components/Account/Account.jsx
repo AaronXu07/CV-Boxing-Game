@@ -16,8 +16,35 @@ function Account() {
   const [highScores, setHighScores] = useState([]);
   const [gameRanks, setGameRanks] = useState([]); 
   const [userScores, setUserScores] = useState([]); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const scoresPerPage = 10;
 
   const suffix = (n) => [,'st','nd','rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || 'th';
+
+  // Pagination calculations
+  const totalPages = Math.ceil(userScores.length / scoresPerPage);
+  const indexOfLastScore = currentPage * scoresPerPage;
+  const indexOfFirstScore = indexOfLastScore - scoresPerPage;
+  const currentScores = userScores.slice(indexOfFirstScore, indexOfLastScore);
+
+  const goToPage = (pageNumber) => {
+    playButtonSound();
+    setCurrentPage(pageNumber);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      playButtonSound();
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      playButtonSound();
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const fetchHighScores = async (session) => {
     try {
@@ -139,19 +166,19 @@ function Account() {
               {isLoggedIn ? (
                 <>
                   <div className="user-info">
-                    <div>
+                    <div className="username-section">
                       <h2>{username}</h2>
                       <button className="logout-button" onClick={handleLogout}>
                         Logout
                       </button>
                     </div>
-                    <div className="count-section">
-                      <div>Tests Taken</div>
-                      <div>{userScores.length}</div>
+                    <div className="stats-card">
+                      <div className="stat-label">Total Tests</div>
+                      <div className="stat-value">{userScores.length}</div>
                     </div>
                   </div>
 
-                  <div className="high-scores-section">
+                  <div className="stats-section">
                     <h2>Your High Scores</h2>
                     <div className="high-scores-grid">
                       {highScores.map((item, index) => (
@@ -164,9 +191,16 @@ function Account() {
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  <div className="stats-section">
+                    <h2>Leaderboard Ranks</h2>
                     <div className="high-scores-grid">
                       {gameRanks.map((item, index) => (
-                        <div key={index} className="score-card">
+                        <div key={index} className="score-card rank-card">
+                          <div className="score-card-mode">
+                            {index === 0 ? 'Targets' : index === 1 ? 'Reaction' : 'Fruit Ninja'}
+                          </div>
                           <div className="score-card-value">
                             {!item ? '-' : item + suffix(Number(item))}
                           </div>
@@ -174,22 +208,63 @@ function Account() {
                       ))}
                     </div>
                   </div>
-                  <div className="user-scores">
-                    <h2>Your Scores</h2>
-                    <div className="high-scores-grid">
-                      <table>
-                        <thead></thead>
+                  <div className="stats-section">
+                    <h2>Score History</h2>
+                    <div className="scores-table-container">
+                      <table className="scores-table">
+                        <thead>
+                          <tr>
+                            <th>Game Mode</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                          </tr>
+                        </thead>
                         <tbody>
-                          {userScores.map((item, index) => (
-                            <tr key={index}>
-                              <td>{item.gamemode.gamemode_name}</td>
-                              <td>{item.score}</td>
-                              <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                          {userScores.length > 0 ? (
+                            currentScores.map((item, index) => (
+                              <tr key={index}>
+                                <td className="gamemode-cell">{item.gamemode.gamemode_name}</td>
+                                <td className="score-cell">{item.score}</td>
+                                <td className="date-cell">{new Date(item.created_at).toLocaleDateString()}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="no-scores">No scores yet. Start playing to see your history!</td>
                             </tr>
-                          ))}
+                          )}
                         </tbody>
                       </table>
                     </div>
+                    {userScores.length > scoresPerPage && (
+                      <div className="pagination">
+                        <button 
+                          className="pagination-btn" 
+                          onClick={goToPrevPage}
+                          disabled={currentPage === 1}
+                        >
+                          ← Previous
+                        </button>
+                        <div className="pagination-numbers">
+                          {[...Array(totalPages)].map((_, index) => (
+                            <button
+                              key={index + 1}
+                              className={`pagination-number ${currentPage === index + 1 ? 'active' : ''}`}
+                              onClick={() => goToPage(index + 1)}
+                            >
+                              {index + 1}
+                            </button>
+                          ))}
+                        </div>
+                        <button 
+                          className="pagination-btn" 
+                          onClick={goToNextPage}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (
