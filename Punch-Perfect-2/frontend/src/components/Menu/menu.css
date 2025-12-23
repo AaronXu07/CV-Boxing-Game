@@ -215,10 +215,21 @@
 @media (max-width: 768px) {
     .menu-header {
         padding: 1.5rem;
+        grid-template-columns: 1fr;
+        justify-items: center;
     }
     
+    .menu-logo {
+        justify-self: center;
+        order: 2;
+    }
+
     .menu-logo img {
-        height: 48px;
+        height: 150px;
+    }
+
+    .menu-page-title {
+        display: none;
     }
     
     .menu-group {

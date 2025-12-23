@@ -329,6 +329,40 @@
 }
 
 /* Responsive Design */
+/* Medium screens (14-inch laptops: 1366x768 to 1920x1080) */
+@media (max-width: 1600px) {
+  .leaderboard-content {
+    max-width: 900px;
+  }
+
+  .leaderboard-table thead th,
+  .leaderboard-table tbody td {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .rank-column {
+    font-size: 1.1rem;
+  }
+
+  .score-column {
+    font-size: 1rem;
+  }
+
+  .date-column {
+    font-size: 0.85rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 2.75rem;
+  }
+
+  .tab-button {
+    padding: 0.9rem 1.75rem;
+    font-size: 1.05rem;
+  }
+}
+
 @media (max-width: 768px) {
   .leaderboard-header h1 {
     font-size: 2.5rem;
