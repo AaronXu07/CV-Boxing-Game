@@ -119,6 +119,15 @@ h1 {
   border: 5px solid #e63946;
 }
 
+.out-of-bounds-message {
+  text-align: center;
+  white-space: nowrap;
+  font-size: 2rem;
+  color: #ff0000;
+  margin: 0;
+  width: 100%;
+}
+
 
 
 

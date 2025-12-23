@@ -18,6 +18,7 @@ import {
   drawFullSizeHandLandmarks,
   getPunchText
 } from '../../utils/drawingHelpers.js'
+import { checkShould } from '../../mediapipe/calibration.js'
 
 //==================== GAME STATES ====================
 const GAME_STATE = {
@@ -44,6 +45,7 @@ function Reaction(){
   const [isGameOver, setIsGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false); 
   const [isPaused, setIsPaused] = useState(false); 
+  const [outOfBounds, setOutOfBounds] = useState(false);
   
   const { playPunchSound, playButtonSound, playHitSound, toggleMute, isMuted } = useSound();
   
@@ -367,6 +369,13 @@ function Reaction(){
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
+    if(!checkShould(landmarks)) {
+      pause(); 
+      ctxRef.current = null; 
+      drawingUtilsRef.current = null; 
+      setOutOfBounds(true); 
+    }
+
     if(landmarks){
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
   
@@ -429,8 +438,9 @@ function Reaction(){
         <div className="center-button-container">
             <h1>PAUSED</h1>
             <h2>Reaction Mode</h2>
+            {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
             <div className="pause-buttons">
-              <button onClick={() => { playButtonSound(); resume(); }}>Resume</button>
+              <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
               <button onClick={back}>Back to Menu</button>
               <button
                 onClick={() => { playButtonSound(); toggleMiniview(); }}
