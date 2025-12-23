@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './gamemenu.css';
 import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
@@ -8,6 +8,14 @@ function GameMenu() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
   const [tiltStyle, setTiltStyle] = useState({});
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+  }, []);
 
   const startRangeMode = () => {
     playButtonSound();
@@ -87,6 +95,20 @@ function GameMenu() {
       onClick: startFruitNinja
     }
   ];
+
+  if (isMobile) {
+    return (
+      <>
+        <div className="outside-buttons">
+          <button className="back-button" onClick={back}> ← Back</button>
+        </div>
+        <div className="mobile-message-container">
+          <h1>Please access on desktop to play</h1>
+        </div>
+
+      </>
+    );
+  }
 
   return (
     <div className="game-menu-container">
