@@ -211,6 +211,11 @@
   white-space: nowrap;
 }
 
+.percentile-card-value {
+  color: #4a90e2;
+  font-size:1.5rem; 
+}
+
 /* Scores Table */
 .scores-table-container {
   overflow-x: auto;

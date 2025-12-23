@@ -43,7 +43,6 @@
     padding: 1rem 1.5rem;
     background: black; 
     border: 3px solid #ff4d5a;
-    box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
 }
 
 .profile-icon-button svg {
@@ -56,11 +55,6 @@
     border-color: #ff4d5a;
     background-color: #1a1a1a;
     transform: scale(1.05);
-}
-
-.profile-icon-button:not(:has(svg)):hover {
-    border-color: #ff6b75;
-    box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
 }
 
 .profile-icon-button:active {

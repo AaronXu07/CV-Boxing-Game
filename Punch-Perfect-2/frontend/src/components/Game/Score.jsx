@@ -209,7 +209,7 @@ function Score(
               <div className="stat-card high-score">
                 <div className="stat-label">High Score</div>
                 <div className="stat-value-wrapper">
-                  <span className="stat-value">
+                  <span className="high-score-value">
                     {gamemode_id === 76015482 
                       ? (highScore === 0 ? score : Math.min(score, highScore))
                       : Math.max(score, highScore)
