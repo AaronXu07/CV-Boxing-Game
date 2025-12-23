@@ -159,10 +159,18 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode, gameStarted, s
               
               ctx.font = '50px Rajdhani, sans-serif';
               ctx.fillText('FPS: ', 30, 100);
-              
+              ctx.fillStyle = 'gray'; 
+              ctx.fillRect(0, 980, 1920, 100); 
+              ctx.fillStyle = 'white'; 
+              ctx.fillText('Hold your hands up in a boxing stance, keeping your arms inside the box', 200, 1040); 
+
+              ctx.fillStyle = 'white'; 
               ctx.font = '50px Orbitron, monospace';
               const fpsLabelWidth = ctx.measureText('FPS: ').width;
               ctx.fillText(`${actualFPS}`, 30 + fpsLabelWidth, 100);
+              
+
+              
               
               ctx.restore();
             }
