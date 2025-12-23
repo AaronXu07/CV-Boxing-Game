@@ -28,11 +28,9 @@ export const usePunchTracking = (playPunchSound) => {
     // Check if hands have returned to non-punching state
     if(!punchData.leftArm && !leftHandCanHitRef.current){
       leftHandCanHitRef.current = true;
-      console.log('Left hand returned to non-punching state - can hit again');
     }
     if(!punchData.rightArm && !rightHandCanHitRef.current){
       rightHandCanHitRef.current = true;
-      console.log('Right hand returned to non-punching state - can hit again');
     }
     
     // Determine punch states

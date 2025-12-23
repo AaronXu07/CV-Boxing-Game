@@ -34,12 +34,9 @@ export const checkShould = (landmarks) => {
         if(landmarks[lArm[0]] && landmarks[rArm[0]]) {
             if(lWithin(lArm[0], landmarks, bounds_game) && lWithin(rArm[0], landmarks, bounds_game)) {
                 within = true; 
-            } 
+            }
         }
-
-        
     } catch(err) {
-        console.log(err); 
     }
 
     return within; 
@@ -59,7 +56,6 @@ export const checkBox = (ctx, landmarks) => {
                 within = true; 
             } else {
                 within = false; 
-                //console.log("not within:", lm); 
                 break; 
             }
         }
@@ -75,7 +71,6 @@ export const checkBox = (ctx, landmarks) => {
                     within = true; 
                 } else {
                     within = false; 
-                    //console.log("not within:", lm);
                     break; 
                 }
             }
@@ -83,7 +78,6 @@ export const checkBox = (ctx, landmarks) => {
 
         
     } catch(err) {
-        console.log(err); 
     }
 
     if(within) {

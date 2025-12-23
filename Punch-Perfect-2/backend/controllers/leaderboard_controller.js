@@ -18,14 +18,12 @@ export const getLeaderboard = async (req, res) => {
             .order('score', { ascending: isAscending}); 
         
         if(err){
-            console.log("supabase error"); 
             return res.status(500).json({error: err.message});
         }
 
         const {data:{users}, error} = await supabase.auth.admin.listUsers(); 
 
         if(error) {
-            console.log("error getting usernames"); 
             return res.status(500).json({error: error}); 
         }
 
@@ -36,7 +34,6 @@ export const getLeaderboard = async (req, res) => {
 
         const leaderboard = []; 
         const seen = new Set(); 
-        console.log("reached loop"); 
         
         for(const score of data) {
             if(!seen.has(score.user_id)) {
@@ -76,20 +73,17 @@ export const getRank = async (req, res) => {
             .order('score', { ascending: isAscending}); 
         
         if(err){
-            console.log("supabase error"); 
             return res.status(500).json({error: err.message});
         }
 
         const {data:user, error} = await supabase.auth.admin.getUserById(req.user.id)
 
         if(error) {
-            console.log("error getting username"); 
             return res.status(500).json({error: error}); 
         }
 
         let info = {}; 
         const seen = new Set(); 
-        console.log("reached loop"); 
 
         let rank = 0; 
         

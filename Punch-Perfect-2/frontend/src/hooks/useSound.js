@@ -343,7 +343,6 @@ export const useSound = () => {
         const playPromise = bombFuseSoundRef.current.play();
         if (playPromise !== undefined) {
           playPromise
-            .then(() => console.log('bomb fuse sound played'))
             .catch((error) => console.warn('Bomb fuse sound play prevented:', error));
         }
       } catch (error) {
@@ -356,7 +355,6 @@ export const useSound = () => {
     if (bombFuseSoundRef.current) {
       bombFuseSoundRef.current.pause();
       bombFuseSoundRef.current.currentTime = 0;
-      console.log('bomb fuse sound stopped');
     }
   };
 
@@ -435,7 +433,6 @@ export const useSound = () => {
         const playPromise = countdownSoundRef.current.play();
         if (playPromise !== undefined) {
           playPromise
-            .then(() => console.log('countdown sound played'))
             .catch((error) => console.warn('Countdown sound play prevented:', error));
         }
       } catch (error) {
@@ -448,7 +445,6 @@ export const useSound = () => {
     if (countdownSoundRef.current) {
       countdownSoundRef.current.pause();
       countdownSoundRef.current.currentTime = 0;
-      console.log('countdown sound stopped');
     }
   };
 

@@ -50,20 +50,14 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode, gameStarted, s
         if (videoRef.current) {
           videoRef.current.srcObject = stream
 
-          //console.log('webcam stream attached to video element', stream)
-          //console.log('video element readyState', videoRef.current.readyState)
-          //console.log('initial canvas size', canvasRef.current?.width, canvasRef.current?.height)
-
           // try to start playback (some browsers require an explicit play call)
           try {
             await videoRef.current.play()
-            //console.log('video.play() succeeded')
           } catch (playErr) {
             console.warn('video.play() failed or is deferred:', playErr)
           }
 
           poseLandmarkRef.current = await initPoseLandmarker()
-          //console.log('PoseLandmarker loaded')
 
           const canvas = canvasRef.current
           if (!canvas) return
@@ -76,7 +70,6 @@ function CamCalibration({isCalibrated, setIsCalibrated, gameMode, gameStarted, s
           if (canvas.width !== vw || canvas.height !== vh) {
             canvas.width = vw
             canvas.height = vh
-            //console.log('canvas resized to', vw, vh)
           }
 
           // Draw a test background so we know the canvas is being updated

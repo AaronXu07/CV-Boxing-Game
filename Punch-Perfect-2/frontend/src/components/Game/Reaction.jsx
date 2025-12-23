@@ -56,6 +56,7 @@ function Reaction(){
   const startTimeRef = useRef(null);
   const hasPunchedRef = useRef(false);
   const hasStartedRef = useRef(false);
+  const initialCountdownStartedRef = useRef(false);
 
   //===== Custom Hooks =====
   const { isMiniviewEnabled, toggleMiniview, 
@@ -379,7 +380,7 @@ function Reaction(){
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
-    if(landmarks && !checkShould(landmarks)) {
+    if(!checkShould(landmarks)) {
       pause(); 
       ctxRef.current = null; 
       drawingUtilsRef.current = null; 
@@ -402,7 +403,23 @@ function Reaction(){
   };
 
   //===== Game Loop =====
-  useGameLoop(isCalibrated && !isGameOver, gameKey, processFrame);
+  useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
+
+  // Reset countdown flag when going back to calibration
+  useEffect(() => {
+    if (!isCalibrated) {
+      initialCountdownStartedRef.current = false;
+    }
+  }, [isCalibrated]);
+
+  // Initial countdown before first target spawns after calibration
+  useEffect(() => {
+    if (isCalibrated && !isGameOver && !initialCountdownStartedRef.current) {
+      initialCountdownStartedRef.current = true;
+      pauseHook(canvasRef, ctxRef);
+      resumeHook(canvasRef, ctxRef);
+    }
+  }, [isCalibrated, isGameOver, pauseHook, resumeHook]);
 
   //===== Cleanup =====
   useEffect(() => {
@@ -449,7 +466,7 @@ function Reaction(){
             {isResuming ? (
               <>
                 <h1>GET READY</h1>
-                <h2>Resuming In</h2>
+                <h2>{initialCountdownStartedRef.current ? 'Starting In' : 'Resuming In'}</h2>
                 <h1>{resumeCountdown}</h1>
                 <div className="pause-buttons">
                   <button onClick={() => { playButtonSound(); pause(); }}>Cancel</button>
@@ -460,6 +477,7 @@ function Reaction(){
                 <h1>PAUSED</h1>
                 <h2>Reaction Mode</h2>
                 {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
+                {outOfBounds && <h2 className="out-of-bounds-message"> Make sure area is well lit. </h2>}
                 <div className="pause-buttons">
                   <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
                   <button onClick={back}>Back to Menu</button>

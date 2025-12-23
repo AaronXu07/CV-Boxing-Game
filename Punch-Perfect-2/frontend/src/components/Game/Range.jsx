@@ -231,6 +231,7 @@ function Range(){
                 <h1>PAUSED</h1>
                 <h2>The Range</h2>
                 {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
+                {outOfBounds && <h2 className="out-of-bounds-message"> Make sure area is well lit. </h2>}
                 <div className="pause-buttons">
                   <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
                   <button onClick={back}>Back to Menu</button>

@@ -58,7 +58,6 @@ export const useTargetManager = (
       }
       
       targetsRef.current = [...targetsRef.current, ...newTargets];
-      console.log(`Spawned ${numTargets} fruits/bombs`);
     } 
     else if(targetType === 'target'){
       const newTarget = new StaticTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
@@ -116,7 +115,6 @@ export const useTargetManager = (
         if(hitByLeft){
           hitSomething = true;
           scoreRef.current += 1; 
-          console.log('Left hand target hit!', { target, leftHand });
           target.hit();
 
           // Play appropriate sound based on target type
@@ -156,7 +154,6 @@ export const useTargetManager = (
                 if (playComboSound) {
                   playComboSound(comboCountRef.current);
                 }
-                console.log(`Combo: ${comboCountRef.current}, Bonus: +${comboBonus}`);
               }
             }
             playFruitSound(target.fruitType.name);
@@ -173,7 +170,6 @@ export const useTargetManager = (
       // If punch didn't hit anything, reset combo
       if (!hitSomething && targetType === 'fruit') {
         if (consecutiveHitsRef.current > 0) {
-          console.log('Missed punch - combo reset');
         }
         consecutiveHitsRef.current = 0;
         comboCountRef.current = 0;
@@ -194,7 +190,6 @@ export const useTargetManager = (
         if(hitByRight){
           hitSomething = true;
           scoreRef.current += 1; 
-          console.log('Right hand target hit!', { target, rightHand });
           target.hit();
           
           // Play appropriate sound based on target type
@@ -234,7 +229,6 @@ export const useTargetManager = (
                 if (playComboSound) {
                   playComboSound(comboCountRef.current);
                 }
-                console.log(`Combo: ${comboCountRef.current}, Bonus: +${comboBonus}`);
               }
             }
             playFruitSound(target.fruitType.name);
@@ -251,7 +245,6 @@ export const useTargetManager = (
       // If punch didn't hit anything, reset combo
       if (!hitSomething && targetType === 'fruit') {
         if (consecutiveHitsRef.current > 0) {
-          console.log('Missed punch - combo reset');
         }
         consecutiveHitsRef.current = 0;
         comboCountRef.current = 0;
@@ -277,7 +270,6 @@ export const useTargetManager = (
             
             // Reset combo when fruit is dropped
             if (consecutiveHitsRef.current > 0) {
-              console.log('Fruit dropped - combo reset');
             }
             consecutiveHitsRef.current = 0;
             comboCountRef.current = 0;
@@ -366,7 +358,6 @@ export const useTargetManager = (
   }, [isActive, gameKey, targetType, pendingGameOverRef]);
 
   useEffect(() => {
-    console.log("Effect re-ran");
   }, [isActive, gameKey, targetType, pendingGameOverRef]);
 
   const clearSpawnInterval = useCallback(() => {

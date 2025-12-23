@@ -59,7 +59,6 @@ function Leaderboard() {
           headers: {
           }
         })
-        console.log(res); 
 
         if (!res.ok) {
           throw new Error('Failed to fetch leaderboard');
@@ -77,9 +76,7 @@ function Leaderboard() {
     const update = async () => {
       setIsLoading(true); 
       const gamemodeId = gamemodeMap[activeTab]; 
-      console.log(gamemodeId); 
       await fetchData(gamemodeId); 
-      console.log("user rank:", userRank); 
       setIsLoading(false); 
     }
 

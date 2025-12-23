@@ -42,12 +42,10 @@ const angleBetweenSegments = (point1, joint, point2) => {
 
 const horizontalDistance = (landmark1, landmark2) => {
     let xDiff = Math.abs(landmark1.x-landmark2.x);
-    //console.log(`xDiff: ${xDiff}`);
     return xDiff;
 }
 const verticalDistance = (landmark1, landmark2) => {
     let yDiff = Math.abs(landmark1.y-landmark2.y);
-    //console.log(`yDiff: ${yDiff}`);
     return yDiff;
 }
 
@@ -104,22 +102,6 @@ export const detectPunches = (landmarks) => {
     let leftPunch = ((lCond1 || lCond2) && inOrderX(l) && inOrderY(l)) || lCond3 || (lCond4 && inOrderY(l));  
     let rightPunch = ((rCond1 || rCond2) && inOrderX(r) && inOrderY(r)) || rCond3 || (rCond4 && inOrderY(r));  
 
-    console.log({
-        "lSlopeDiff": Math.abs(lSlope1 - lSlope2), 
-        "rSlopeDiff": Math.abs(rSlope1 - rSlope2), 
-        "lShouldWristDistX": Math.abs(l[0].x - l[2].x), 
-        "rShouldWristDistX": Math.abs(r[0].x - r[2].x), 
-        "lShouldElbCloseX": Math.abs(l[0].x - l[1].x), 
-        "rShouldElbCloseX": Math.abs(r[0].x - r[1].x),
-        "lShouldElbCloseY": Math.abs(l[0].y - l[1].y), 
-        "rShouldElbCloseY": Math.abs(r[0].y - r[1].y),
-        "lShouldWristCloseY": Math.abs(l[0].y - l[2].y), 
-        "lAngle": lAngle, 
-        "rAngle": rAngle,
-        "z-left": l[0].z, 
-        "z-right": r[0].z,
-        "lCond4": lCond4, 
-    })
     //leftPunch = leftPunch || (landmarks[lArm[2]].y-landmarks[lArm[0]].y > 0.15 && lElbWristCloseX && lShouldElbCloseX);
     //rightPunch = rightPunch || (landmarks[rArm[2]].y-landmarks[rArm[0]].y > 0.15 && rElbWristCloseX && rShouldElbCloseX); 
 
@@ -153,9 +135,7 @@ export const detectPunches = (landmarks) => {
 //             landmarks[rArm[2]]  
 //         );
 
-//         //console.log(`Left arm angle: ${lAngle.toFixed(1)}°, Right arm angle: ${rAngle.toFixed(1)}°`);
 //     } catch (err) {
-//         //console.log(`Error: ${err}`); 
 //         return { detected: false, leftArm: false, rightArm: false }; 
 //     }
     

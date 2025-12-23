@@ -44,7 +44,6 @@ function Score(
       const session = await getCurrentSession(); 
 
       if(!session) {
-        console.log("user not logged in, not saving score"); 
         setIsLoading(false);
         return null; 
       }
@@ -78,7 +77,6 @@ function Score(
         }
 
         // Save the new score using backend endpoint
-        console.log("sending post request"); 
         const saveResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/scores/`, {
           method: 'POST',
           headers: {
@@ -143,7 +141,6 @@ function Score(
   const restart = () => {
     playButtonSound();
     // Use the centralized reset function
-    console.log('Resetting game...');
     // Reset all game states first
     resetTracking();
 
@@ -164,7 +161,6 @@ function Score(
 
     // Force remount by updating key
     setGameKey(prev => {
-      console.log('Updating game key from', prev, 'to', prev + 1);
       return prev + 1;
     });
 
@@ -172,7 +168,6 @@ function Score(
 
     // Reset game state last
     setIsGameOver(false);
-    console.log('Game reset complete');
   };
 
   const navHome = () => {

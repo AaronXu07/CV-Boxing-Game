@@ -42,7 +42,7 @@ const Background = ({ enableTargets = false }) => {
     // Clone node allows overlapping sounds if multiple targets are clicked quickly
     const sound = audioRef.current.cloneNode(); 
     sound.volume = 0.4; 
-    sound.play().catch(e => console.log("Audio play failed", e));
+    sound.play().catch(e => {});
 
     // Set breaking state
     setTargets(prev => prev.map(t => 

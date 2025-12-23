@@ -97,13 +97,6 @@ function FruitNinja(){
   const poseInFlightRef = useRef(false);
   const frameCountRef = useRef(0);
   const lastTsRef = useRef(0);
-  const DEBUG_THROTTLE = 60; // log every 60 frames
-  const debugLog = (...msg) => {
-    if (frameCountRef.current % DEBUG_THROTTLE === 0) {
-      console.log('[FruitNinja]', ...msg);
-    }
-  };
-
   // Local isPaused state replaced by hook
 
 
@@ -215,7 +208,6 @@ function FruitNinja(){
     frameCountRef.current++;
     const delta = timestamp - lastTsRef.current;
     lastTsRef.current = timestamp;
-    if (delta > 120) debugLog('Long frame delta', delta);
 
     // If paused, redraw stored frame only
     if (isPausedRef.current) {
@@ -228,7 +220,6 @@ function FruitNinja(){
 
     // Ensure video is producing frames
     if (videoRef.current.readyState < 2) {
-      debugLog('Video not ready', videoRef.current.readyState);
       return;
     }
 
@@ -237,7 +228,6 @@ function FruitNinja(){
     if (!ctxRef.current || ctxRef.current.canvas !== canvas) {
       ctxRef.current = setupCanvas(videoRef.current, canvas);
       drawingUtilsRef.current = new DrawingUtils(ctxRef.current);
-      debugLog('Context (re)initialized');
     }
 
     const ctx = ctxRef.current;
@@ -288,9 +278,8 @@ function FruitNinja(){
       const lostLifePositions = drawLivesUI(ctx, fps, scoreRef.current, livesRef.current, lostLivesRef.current, canvas);
       ctx.restore();
     } else {
-      debugLog('No landmarks');
     }
-  }; 
+  };  
 
   // Capture a static frame ONLY when entering pause (avoid per-frame getImageData cost)
   useEffect(() => {
@@ -298,22 +287,12 @@ function FruitNinja(){
       try {
         lastFrameRef.current = ctxRef.current.getImageData(0, 0, canvasRef.current.width, canvasRef.current.height);
       } catch (e) {
-        debugLog('Pause capture failed', e.message);
       }
     }
   }, [isPaused]);
 
   //===== Game Loop =====
-  useEffect(() => {
-    console.log('Game status:', {
-      isCalibrated,
-      isGameOver,
-      gameKey,
-      hasVideo: !!videoRef.current,
-      hasCanvas: !!canvasRef.current
-    });
-  }, [isCalibrated, isGameOver, gameKey]);
-
+  
   // Move game loop after all hooks and state declarations
   // Keep the loop running during animations (pendingGameOver doesn't stop it anymore)
   useGameLoop(isCalibrated && !isGameOver && !isResuming && !isPausedRef.current, gameKey, processFrame);
@@ -391,6 +370,7 @@ function FruitNinja(){
                   <h1>PAUSED</h1>
                   <h2>Fruit Ninja</h2>
                   {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
+                  {outOfBounds && <h2 className="out-of-bounds-message"> Make sure area is well lit. </h2>}
                   <div className="pause-buttons">
 
                     <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>

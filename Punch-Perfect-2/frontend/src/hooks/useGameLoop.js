@@ -40,10 +40,8 @@ export const useGameLoop = (isActive, gameKey, processFrame) => {
    * Start/stop game loop based on isActive and gameKey
    */
   useEffect(() => {
-    console.log('Game loop initializing...', { isActive, gameKey });
     
     if (!isActive) {
-      console.log('Game loop inactive, cleaning up');
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
@@ -56,14 +54,11 @@ export const useGameLoop = (isActive, gameKey, processFrame) => {
     fpsUpdateTimeRef.current = performance.now();
     frameCountRef.current = 0;
     actualFPSRef.current = 0;
-    console.log('Game loop timing reset');
 
     // Start render loop
     rafIdRef.current = requestAnimationFrame(render);
-    console.log('Game loop started');
 
     return () => {
-      console.log('Cleaning up game loop...');
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;

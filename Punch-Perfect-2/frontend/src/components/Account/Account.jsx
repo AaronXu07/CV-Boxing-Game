@@ -274,7 +274,7 @@ function Account() {
                           <div className="score-card-value">
                             {!item[0] ? '-' : item[0] + suffix(Number(item[0]))}
                           </div>
-                          {item[1] && <div className="percentile-card-value">
+                          {Number.isFinite(item[1]) && item[1] > 0 && <div className="percentile-card-value">
                             {`${item[1] + suffix(item[1])} Percentile`} 
                           </div>}
                         </div>
