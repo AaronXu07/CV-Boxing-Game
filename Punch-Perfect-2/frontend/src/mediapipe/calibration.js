@@ -5,21 +5,22 @@ const winHeight = 1080;
 
 const calibration_box = {
     width: 600, 
-    height: 800, 
+    height: 400, 
+    from_top: 280, 
 }
 
 const bounds = {
     left:(winWidth/2 - calibration_box.width/2)/winWidth,
     right:(winWidth/2 + calibration_box.width/2)/winWidth, 
-    top:(winHeight - calibration_box.height)/winHeight, 
-    bottom: winHeight/winHeight
+    top: calibration_box.from_top/winHeight, 
+    bottom: (calibration_box.from_top + calibration_box.height)/winHeight
 }
 
 const bounds_game = {
-    left:bounds.left-0.075,
-    right:bounds.right+0.075,
-    top:bounds.top-0.075, 
-    bottom:bounds.bottom
+    left:bounds.left-0.1,
+    right:bounds.right+0.1,
+    top:bounds.top-0.1, 
+    bottom:bounds.bottom+0.1, 
 }
 
 const lWithin = (lm, landmarks, bounds) => {
@@ -99,7 +100,7 @@ export const drawBox = (ctx, colour) => {
     ctx.lineWidth = 7;        // optional: outline thickness
     ctx.strokeRect(
     winWidth / 2 - calibration_box.width / 2,
-    winHeight - calibration_box.height,
+    calibration_box.from_top,
     calibration_box.width,
     calibration_box.height
     );

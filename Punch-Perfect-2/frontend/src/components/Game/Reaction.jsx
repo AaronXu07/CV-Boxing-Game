@@ -9,6 +9,7 @@ import { useWebcam } from '../../hooks/useWebcam.js'
 import { usePoseDetection } from '../../hooks/usePoseDetection.js'
 import { usePunchTracking } from '../../hooks/usePunchTracking.js'
 import { useGameLoop } from '../../hooks/useGameLoop.js'
+import { usePause } from '../../hooks/usePause.js'
 import { CANVAS_SIZE, MINIVIEW_POSITION, MINIVIEW_SIZE } from '../../utils/constants.js'
 import { useGameContext } from '../../context/GameContext.jsx'
 import {
@@ -44,10 +45,9 @@ function Reaction(){
   const [testCount, setTestCount] = useState(0); // Track number of completed tests
   const [isGameOver, setIsGameOver] = useState(false);
   const [gameStarted, setGameStarted] = useState(false); 
-  const [isPaused, setIsPaused] = useState(false); 
   const [outOfBounds, setOutOfBounds] = useState(false);
   
-  const { playPunchSound, playButtonSound, playHitSound, toggleMute, isMuted } = useSound();
+  const { playPunchSound, playButtonSound, playHitSound, playCountdownSound, stopCountdownSound, toggleMute, isMuted } = useSound();
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
@@ -56,12 +56,26 @@ function Reaction(){
   const startTimeRef = useRef(null);
   const hasPunchedRef = useRef(false);
   const hasStartedRef = useRef(false);
-  const lastFrameRef = useRef(null); 
-  const isPausedRef = useRef(false); 
 
   //===== Custom Hooks =====
   const { isMiniviewEnabled, toggleMiniview, 
           gameKey, setGameKey} = useGameContext();
+  const {
+    isPaused,
+    isResuming,
+    resumeCountdown,
+    pause: pauseHook,
+    resume: resumeHook,
+    isPausedRef,
+    lastFrameRef
+  } = usePause({
+    countdownSeconds: 3,
+    enableCountdown: true,
+    onToggle: () => playButtonSound(),
+    onCountdownStart: () => playCountdownSound(),
+    onCountdownStop: () => stopCountdownSound(),
+    allowPause: () => gameState !== GAME_STATE.READY && gameState !== GAME_STATE.WAITING
+  });
   const {videoRef} = useWebcam(isCalibrated, gameKey);
   const {detectPose} = usePoseDetection(isCalibrated, gameKey);
   const {processPunches, resetTracking} = usePunchTracking(playPunchSound);
@@ -114,19 +128,8 @@ function Reaction(){
     }
   }, [isCalibrated]);
 
-  
-
-  const resume = () => {
-    playButtonSound(); 
-    isPausedRef.current = false; 
-    setIsPaused(false); 
-  }
-
-  const pause = () => {
-    isPausedRef.current = !isPausedRef.current;
-    setIsPaused(isPausedRef.current);
-    playButtonSound();
-  }
+  const pause = () => pauseHook(canvasRef, ctxRef);
+  const resume = () => resumeHook(canvasRef, ctxRef);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -343,6 +346,14 @@ function Reaction(){
       return;
     }
 
+    if (isResuming) {
+      if (lastFrameRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.putImageData(lastFrameRef.current, 0, 0);
+      }
+      return;
+    }
+
     const canvas = canvasRef.current;
     
     if(!ctxRef.current){
@@ -365,11 +376,10 @@ function Reaction(){
         MINIVIEW_SIZE.height
       );
     }
-    
 
     const landmarks = await detectPose(videoRef.current, timestamp);
 
-    if(!checkShould(landmarks)) {
+    if(landmarks && !checkShould(landmarks)) {
       pause(); 
       ctxRef.current = null; 
       drawingUtilsRef.current = null; 
@@ -434,27 +444,40 @@ function Reaction(){
         <button className="menu-button" onClick={pause}>
           <img src="/icons/menu.png" width="25" height="25" alt="Menu" />
         </button>
-        {isPaused && 
+        {(isPaused || isResuming) && 
         <div className="center-button-container">
-            <h1>PAUSED</h1>
-            <h2>Reaction Mode</h2>
-            {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
-            <div className="pause-buttons">
-              <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
-              <button onClick={back}>Back to Menu</button>
-              <button
-                onClick={() => { playButtonSound(); toggleMiniview(); }}
-                style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
-              >
-                Toggle Camera
-              </button>
-              <button
-                onClick={() => { playButtonSound(); toggleMute(); }}
-                style={isMuted ? { borderColor: "#e63946" } : { borderColor: "green" }}
-              >
-                {isMuted ? 'Unmute' : 'Mute'}
-              </button>
-            </div>
+            {isResuming ? (
+              <>
+                <h1>GET READY</h1>
+                <h2>Resuming In</h2>
+                <h1>{resumeCountdown}</h1>
+                <div className="pause-buttons">
+                  <button onClick={() => { playButtonSound(); pause(); }}>Cancel</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h1>PAUSED</h1>
+                <h2>Reaction Mode</h2>
+                {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
+                <div className="pause-buttons">
+                  <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
+                  <button onClick={back}>Back to Menu</button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMiniview(); }}
+                    style={isMiniviewEnabled ? { borderColor: "green" } : { borderColor: "#e63946" }}
+                  >
+                    Toggle Camera
+                  </button>
+                  <button
+                    onClick={() => { playButtonSound(); toggleMute(); }}
+                    style={isMuted ? { borderColor: "#e63946" } : { borderColor: "green" }}
+                  >
+                    {isMuted ? 'Unmute' : 'Mute'}
+                  </button>
+                </div>
+              </>
+            )}
         </div>}
 
         <video 
@@ -468,7 +491,7 @@ function Reaction(){
         <canvas 
           id="output" 
           ref={canvasRef} 
-          className={isPaused ? 'blurred' : ''}
+          className={(isPaused || isResuming) ? 'blurred' : ''}
           width={CANVAS_SIZE.width} 
           height={CANVAS_SIZE.height} 
         />
