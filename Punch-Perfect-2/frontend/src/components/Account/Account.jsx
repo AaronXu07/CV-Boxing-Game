@@ -55,6 +55,10 @@ function Account() {
         }
       });
 
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setHighScores(data);
     } catch (err) {
@@ -70,6 +74,10 @@ function Account() {
         }
       }); 
 
+      if (!res_fruit.ok) {
+        throw new Error(`HTTP error! status: ${res_fruit.status}`);
+      }
+
       const fruit_score = await res_fruit.json();
 
       const res_target = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017/me`, {
@@ -77,6 +85,10 @@ function Account() {
           Authorization: `Bearer ${session.access_token}`
         }
       });
+
+      if (!res_target.ok) {
+        throw new Error(`HTTP error! status: ${res_target.status}`);
+      }
 
       const target_score = await res_target.json();
 
@@ -86,29 +98,33 @@ function Account() {
         }
       });
 
+      if (!res_reaction.ok) {
+        throw new Error(`HTTP error! status: ${res_reaction.status}`);
+      }
+
       const reaction_score = await res_reaction.json();
 
-      const res_fruit_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      }); 
+      const res_fruit_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430`);
+
+      if (!res_fruit_scores.ok) {
+        throw new Error(`HTTP error! status: ${res_fruit_scores.status}`);
+      }
 
       const fruit_scores = await res_fruit_scores.json();
 
-      const res_target_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const res_target_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017`);
+
+      if (!res_target_scores.ok) {
+        throw new Error(`HTTP error! status: ${res_target_scores.status}`);
+      }
 
       const target_scores = await res_target_scores.json();
 
-      const res_reaction_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const res_reaction_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482`);
+
+      if (!res_reaction_scores.ok) {
+        throw new Error(`HTTP error! status: ${res_reaction_scores.status}`);
+      }
 
       const reaction_scores = await res_reaction_scores.json();
 
@@ -139,6 +155,10 @@ function Account() {
           Authorization: `Bearer ${session.access_token}`
         }
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       const data = await res.json();
       setUserScores(data); 
@@ -243,11 +263,11 @@ function Account() {
                             {index === 0 ? 'Targets' : index === 1 ? 'Reaction' : 'Fruit Ninja'}
                           </div>
                           <div className="score-card-value">
-                            {!item ? '-' : item[0] + suffix(Number(item[0]))}
+                            {!item[0] ? '-' : item[0] + suffix(Number(item[0]))}
                           </div>
-                          <div className="percentile-card-value">
-                            {!item ? '-' : `${item[1] + suffix(item[1])} Percentile`} 
-                          </div>
+                          {item[1] && <div className="percentile-card-value">
+                            {`${item[1] + suffix(item[1])} Percentile`} 
+                          </div>}
                         </div>
                       ))}
                     </div>
