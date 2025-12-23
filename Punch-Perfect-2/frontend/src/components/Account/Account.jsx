@@ -67,7 +67,7 @@ function Account() {
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
-      });
+      }); 
 
       const fruit_score = await res_fruit.json();
 
@@ -87,7 +87,45 @@ function Account() {
 
       const reaction_score = await res_reaction.json();
 
-      setGameRanks([target_score.rank, reaction_score.rank, fruit_score.rank])
+      const res_fruit_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      }); 
+
+      const fruit_scores = await res_fruit_scores.json();
+
+      const res_target_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const target_scores = await res_target_scores.json();
+
+      const res_reaction_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      const reaction_scores = await res_reaction_scores.json();
+
+
+      let ranks = [target_score.rank, reaction_score.rank, fruit_score.rank]; 
+
+      let percentRanks = [
+        (target_scores.length - ranks[0] + 1) / target_scores.length,
+        (reaction_scores.length - ranks[1] + 1) / reaction_scores.length,
+        (fruit_scores.length - ranks[2] + 1) / fruit_scores.length
+      ]; 
+
+      const result = percentRanks.map((rank, index) => {
+        let percentile = Math.min(99.99, Math.floor(rank * 100));
+        return [ranks[index], percentile];
+      })
+
+      setGameRanks(result); 
     } catch (err) {
       console.error("Error occured: ", err); 
     } 
@@ -202,7 +240,10 @@ function Account() {
                             {index === 0 ? 'Targets' : index === 1 ? 'Reaction' : 'Fruit Ninja'}
                           </div>
                           <div className="score-card-value">
-                            {!item ? '-' : item + suffix(Number(item))}
+                            {!item ? '-' : item[0] + suffix(Number(item[0]))}
+                          </div>
+                          <div className="percentile-card-value">
+                            {!item ? '-' : `${item[1] + suffix(item[1])} Percentile`} 
                           </div>
                         </div>
                       ))}
