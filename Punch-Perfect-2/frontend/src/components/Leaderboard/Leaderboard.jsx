@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './leaderboard.css'
+import Background from '../Background/Background'
 import { useSound } from '../../hooks/useSound.js'
 import { BarLoader } from 'react-spinners'
 import { getCurrentSession } from '../../lib/authFunctions.js'
@@ -110,6 +111,8 @@ function Leaderboard() {
 
   return (
     <div className="leaderboard-container">
+      <Background />
+
       <button className="back-button" onClick={back}> ← Back</button>
       
       <div className="leaderboard-header">

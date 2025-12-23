@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './about.css';
+import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
 
 function About() {
@@ -137,6 +138,8 @@ function About() {
 
   return (
     <div className="about-container">
+      <Background />
+
       <h1>Tutorial</h1>
 
       <button className="back-button" onClick={back}> ← Back</button>

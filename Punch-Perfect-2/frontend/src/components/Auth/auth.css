@@ -2,7 +2,7 @@
 .auth-container {
   min-height: 100vh;
   width: 100%;
-  background-color: #000000;
+  background-color: transparent; /* Changed from #000000 to show Background */
   color: #ffffff;
   padding: 2rem;
   display: flex;
@@ -46,6 +46,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; /* Added to stack above background */
+  z-index: 10; /* Added to stack above background */
 }
 
 /* Auth Card */
@@ -114,7 +116,7 @@
   padding: 1rem;
   background-color: rgba(230, 57, 70, 0.1);
   border: 2px solid #e63946;
-  border-radius: 4px;
+  border-radius: 2px;
   color: #e63946;
   text-align: center;
   font-size: 0.95rem;
@@ -129,7 +131,7 @@
   color: #ffffff;
   background-color: #e63946;
   border: 2px solid #e63946;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;

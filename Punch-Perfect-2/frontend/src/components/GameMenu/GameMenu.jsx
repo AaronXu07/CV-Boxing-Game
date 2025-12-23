@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useRef } from 'react';
 import './gamemenu.css';
+import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
 
 function GameMenu() {
@@ -89,6 +90,8 @@ function GameMenu() {
 
   return (
     <div className="game-menu-container">
+      <Background />
+
       <h1>Select Gamemode</h1>
 
       <div className="outside-buttons">

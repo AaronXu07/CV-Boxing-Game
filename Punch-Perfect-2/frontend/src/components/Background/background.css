@@ -1,0 +1,160 @@
+/* Global Background Container */
+.global-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0; /* Behind everything */
+    pointer-events: none;
+    overflow: hidden;
+    background-color: #050505; /* Deep black base */
+}
+
+.bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- Layer 1: Perspective Grid --- */
+.grid-layer {
+    opacity: 0.25; /* Increased visibility */
+    perspective: 1000px;
+}
+
+.perspective-grid {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size: 100px 100px;
+    transform: rotateX(53deg);
+}
+
+/* --- Layer 2: Ring Geometry (Corners) --- */
+.geometry-layer {
+    opacity: 0.4;
+}
+
+.ring-corner {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    transition: transform 0.5s ease-out;
+}
+
+.corner-tl {
+    top: 160px;
+    left: 40px;
+    border-right: none;
+    border-bottom: none;
+    animation: cornerFloatTL 8s ease-in-out infinite alternate;
+}
+
+.corner-tr {
+    top: 160px;
+    right: 40px;
+    border-left: none;
+    border-bottom: none;
+    animation: cornerFloatTR 9s ease-in-out infinite alternate;
+}
+
+.corner-bl {
+    bottom: 40px;
+    left: 40px;
+    border-right: none;
+    border-top: none;
+    animation: cornerFloatBL 10s ease-in-out infinite alternate;
+}
+
+.corner-br {
+    bottom: 40px;
+    right: 40px;
+    border-left: none;
+    border-top: none;
+    animation: cornerFloatBR 11s ease-in-out infinite alternate;
+}
+
+@keyframes cornerFloatTL { 0% { transform: translate(0,0); } 100% { transform: translate(10px, 10px); } }
+@keyframes cornerFloatTR { 0% { transform: translate(0,0); } 100% { transform: translate(-10px, 10px); } }
+@keyframes cornerFloatBL { 0% { transform: translate(0,0); } 100% { transform: translate(10px, -10px); } }
+@keyframes cornerFloatBR { 0% { transform: translate(0,0); } 100% { transform: translate(-10px, -10px); } }
+
+/* --- Layer 4: Tracking Targets --- */
+.target-layer {
+    opacity: 0.55;
+}
+
+.floating-target {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    animation: floatTarget 3s ease-in-out infinite alternate;
+}
+
+.floating-target:hover {
+    transform: scale(1.1);
+}
+
+.floating-target.breaking {
+    animation: breakTarget 0.5s ease-out forwards;
+}
+
+.target-ring {
+    width: 60px;
+    height: 60px;
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    animation: spinTarget 10s linear infinite;
+}
+
+.target-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(230, 57, 70, 0.9); /* Red dot */
+    border-radius: 50%;
+}
+
+@keyframes spinTarget {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes floatTarget {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+@keyframes breakTarget {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .perspective-grid, .ring-corner, .punch-arc, .floating-target, .target-ring {
+        animation: none;
+    }
+}
