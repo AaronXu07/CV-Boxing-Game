@@ -1,166 +1,231 @@
-/* Menu Container */
+/* Reset & Base */
 .menu-container {
     min-height: 100vh;
     width: 100%;
-    background-color: #000000;
-    color: #ffffff;
-    padding: 2rem;
+    background-color: var(--bg-primary, #050505); /* Slightly lighter than pure black for depth */
+    color: var(--text-primary, #ffffff);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     position: relative;
+    font-family: 'Rajdhani', sans-serif; /* Ensure font is set */
 }
 
-/* Profile Icon Button */
-.profile-icon-button {
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    min-width: 65px;
-    height: 65px;
-    padding: 1rem;
-    background-color: #0a0a0a;
-    border: 3px solid #e63946;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.profile-icon-button:has(svg) {
-    border-radius: 50%;
-}
-
-.profile-icon-button:not(:has(svg)) {
-    border-radius: 35px;
-    padding: 1rem 1.5rem;
-    background: black; 
-    border: 3px solid #ff4d5a;
-}
-
-.profile-icon-button svg {
+/* Background Animation Layer - CV Theme */
+.menu-background {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    stroke-width: 2.5;
-}
-
-.profile-icon-button:hover {
-    border-color: #ff4d5a;
-    background-color: #1a1a1a;
-    transform: scale(1.05);
-}
-
-.profile-icon-button:active {
-    transform: scale(1.05);
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background-color: #050505;
 }
 
 /* Header */
-.menu-container h1 {
-    text-align: center;
-    font-size: 3.5rem;
-    margin-bottom: 4rem;
-    color: #ffffff;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+.menu-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 2.5rem 3rem;
+    width: 100%;
+    z-index: 10;
+    position: relative;
+    pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
-/* Menu Buttons Container */
-.menu-buttons {
+.menu-logo {
+    justify-self: start;
+    pointer-events: auto; /* Re-enable clicks */
+}
+
+.menu-logo img {
+    height: 100px; 
+    width: auto;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.menu-logo:hover img {
+    opacity: 1;
+}
+
+.menu-page-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #ffffff;
+    margin: 0;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-align: center;
+}
+
+/* Profile Button */
+.profile-button {
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    color: var(--text-secondary, #cccccc);
+    transition: all 0.2s ease-out;
+    border-radius: 2px; /* Sharper corners */
+    pointer-events: auto; /* Re-enable clicks */
+}
+
+.profile-button:hover,
+.profile-button:focus-visible {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary, #ffffff);
+    border-color: var(--accent-primary, #e63946);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.profile-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.profile-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+}
+
+/* Main Content */
+.menu-cluster {
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    max-width: 400px;
+    z-index: 10;
+    position: relative;
+    padding-bottom: 5vh; /* Visual balance */
+    pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
-/* Start Button - Featured */
-.menu-buttons .start-button {
-    padding: 1.5rem 2rem;
-    font-size: 1.5rem;
-    font-weight: 700;
+.menu-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 420px; /* Wider for presence */
+    gap: 1rem; /* More spacing */
+}
+
+/* Menu Items */
+.menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Spread content */
+    width: 100%;
+    padding: 1.5rem 2rem; /* Taller buttons */
+    background-color: rgba(20, 20, 20, 0.8); /* Semi-transparent panel */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 4px solid rgba(255, 255, 255, 0.1); /* Anchor border */
+    color: var(--text-secondary, #aaaaaa);
     cursor: pointer;
-    border-radius: 4px;
-    background-color: #e63946;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    text-align: left;
+    font-family: 'Orbitron', sans-serif;
+    backdrop-filter: blur(4px); /* Subtle blur for readability */
+    pointer-events: auto; /* Re-enable clicks */
+}
+
+.menu-item.primary {
+    background: linear-gradient(90deg, rgba(230, 57, 70, 0.1), transparent);
+    border-color: rgba(255, 255, 255, 0.2);
+    border-left-color: var(--accent-primary, #e63946);
     color: #ffffff;
-    border: 2px solid #e63946;
-    transition: all 0.2s;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+    transform: scale(1.005);
+    background-color: rgba(40, 40, 40, 0.95);
+    color: #ffffff;
+    border-color: var(--accent-primary, #e63946);
+    border-left-color: var(--accent-primary, #e63946);
+    box-shadow: 0 0 20px rgba(230, 57, 70, 0.1);
+    outline: none;
+}
+
+.menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 1.5rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.menu-item:hover .menu-icon {
+    opacity: 1;
+}
+
+.menu-label {
+    flex-grow: 1;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 2px;
     text-transform: uppercase;
+}
+
+.menu-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+/* Footer */
+.menu-footer {
+    padding: 1.5rem;
+    text-align: center;
+    z-index: 10;
+    position: relative;
+}
+
+.version {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.253);
     letter-spacing: 2px;
 }
 
-.menu-buttons .start-button:hover {
-    background-color: #ff4d5a;
-    border-color: #ff4d5a;
-    transform: translateY(-2px);
-}
-
-.menu-buttons .start-button:active {
-    transform: translateY(0);
-}
-
-/* Regular Menu Buttons */
-.menu-buttons button {
-    padding: 1rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #ffffff;
-    cursor: pointer;
-    border-radius: 4px;
-    background-color: #0a0a0a;
-    border: 2px solid #222222;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.menu-buttons button:hover {
-    border-color: #e63946;
-    background-color: #000000;
-}
-
-.menu-buttons button:active {
-    transform: translateY(1px);
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-    .profile-icon-button {
-        top: 1rem;
-        right: 1rem;
-        min-width: 55px;
-        height: 55px;
-        padding: 0.85rem;
-        font-size: 0.8rem;
+    .menu-header {
+        padding: 1.5rem;
     }
-
-    .profile-icon-button:not(:has(svg)) {
-        padding: 0.85rem 1.2rem;
+    
+    .menu-logo img {
+        height: 48px;
     }
-
-    .menu-container h1 {
-        font-size: 2.5rem;
-        margin-bottom: 3rem;
-    }
-
-    .menu-buttons {
+    
+    .menu-group {
         max-width: 90%;
     }
-
-    .menu-buttons .start-button {
-        font-size: 1.3rem;
-        padding: 1.2rem 1.5rem;
-    }
-
-    .menu-buttons button {
-        font-size: 1rem;
-        padding: 0.9rem 1.2rem;
+    
+    .menu-item {
+        padding: 1.25rem 1.5rem;
     }
 }

@@ -4,13 +4,14 @@
 .score-container {
   min-height: 100vh;
   width: 100%;
-  background-color: #000000;
+  background-color: transparent;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   font-family: 'Rajdhani', 'Bebas Neue', 'Orbitron', 'Space Grotesk', -apple-system, system-ui, sans-serif;
+  position: relative;
 }
 
 /* Score Content */
@@ -21,6 +22,8 @@
   gap: 2rem;
   max-width: 800px;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 /* New Record Banner */

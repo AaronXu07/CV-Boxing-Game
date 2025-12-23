@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSound } from '../../hooks/useSound.js';
 import { CANVAS_SIZE } from '../../utils/constants.js';
 import './score.css';
+import Background from '../Background/Background';
 import { useEffect, useRef, useState } from 'react';
 import { getCurrentSession } from '../../lib/authFunctions.js';
 
@@ -181,6 +182,7 @@ function Score(
 
   return (
     <div className="score-container">
+      <Background />
       <div className="score-content">
         {!isLoading && isNewRecord && (
           <div className="new-record-banner">

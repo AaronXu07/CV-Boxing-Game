@@ -390,7 +390,7 @@ function FruitNinja(){
                 <>
                   <h1>PAUSED</h1>
                   <h2>Fruit Ninja</h2>
-                  {outOfBounds && <h2> Out of bounds!. Face the camera at roughly 1 m away and press Resume. </h2>}
+                  {outOfBounds && <h2 className="out-of-bounds-message"> Out of bounds! Face the camera at roughly 1 m away and press Resume. </h2>}
                   <div className="pause-buttons">
 
                     <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>

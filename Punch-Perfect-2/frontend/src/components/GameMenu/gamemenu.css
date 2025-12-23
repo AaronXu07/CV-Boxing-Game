@@ -2,13 +2,85 @@
 .game-menu-container {
     min-height: 100vh;
     width: 100%;
-    background-color: #000000;
-    color: #ffffff;
+    background-color: var(--bg-primary, #050505);
+    color: var(--text-primary, #ffffff);
     padding: 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Background Animation Layer (Shared) */
+.menu-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bg-grid {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size: 80px 80px;
+    transform: perspective(1000px) rotateX(60deg);
+    opacity: 1;
+    animation: gridDrift 40s linear infinite;
+}
+
+.bg-shape {
+    position: absolute;
+    border: 1px solid rgba(230, 57, 70, 0.25);
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(230, 57, 70, 0.05);
+    opacity: 0.6;
+}
+
+.shape-1 {
+    width: 700px;
+    height: 700px;
+    top: -150px;
+    right: -150px;
+    animation: shapeFloat 35s ease-in-out infinite alternate;
+}
+
+.shape-2 {
+    width: 500px;
+    height: 500px;
+    bottom: -100px;
+    left: -100px;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    animation: shapeFloat 45s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes gridDrift {
+    0% { transform: perspective(1000px) rotateX(60deg) translateY(0); }
+    100% { transform: perspective(1000px) rotateX(60deg) translateY(80px); }
+}
+
+@keyframes shapeFloat {
+    0% { 
+        transform: translate(0, 0) rotate(0deg); 
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% { 
+        transform: translate(40px, 40px) rotate(10deg); 
+        opacity: 0.6;
+    }
 }
 
 /* Header */
@@ -21,6 +93,10 @@
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
+    position: relative;
+    z-index: 10;
+    font-family: 'Orbitron', sans-serif;
+    pointer-events: none; /* Allow clicks to pass through */
 }
 
 /* Game Cards Grid */
@@ -32,13 +108,16 @@
     max-width: 750px;
     margin: 0 auto;
     padding: 1rem;
+    position: relative;
+    z-index: 10;
+    pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
 /* Game Card */
 .game-card {
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-    border: 2px solid #222222;
-    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
     padding: 2.5rem 2rem;
     cursor: pointer;
     transition: all 0.1s ease-out;
@@ -51,6 +130,8 @@
     position: relative;
     overflow: hidden;
     aspect-ratio: 1 / 1;
+    backdrop-filter: blur(4px);
+    pointer-events: auto; /* Re-enable clicks */
 }
 
 .game-card::before {
@@ -60,7 +141,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at center, rgba(230, 57, 70, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle at center, rgba(230, 57, 70, 0.15) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.3s;
     pointer-events: none;
@@ -71,7 +152,9 @@
 }
 
 .game-card:hover {
-    border-color: #e63946;
+    border-color: var(--accent-primary, #e63946);
+    background-color: rgba(30, 30, 30, 0.9);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .game-card:active {
@@ -84,6 +167,12 @@
     margin-bottom: 0.5rem;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
     transform: translateZ(20px);
+    color: #cccccc;
+    transition: color 0.2s;
+}
+
+.game-card:hover .game-card-icon {
+    color: #ffffff;
 }
 
 /* Card Title */
@@ -96,6 +185,39 @@
     letter-spacing: 1.5px;
     text-align: center;
     transform: translateZ(15px);
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* Back Button (Shared Style) */
+.back-button {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 100;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+    font-family: 'Rajdhani', sans-serif;
+    pointer-events: auto; /* Ensure clickable */
+}
+
+.back-button:hover {
+    border-color: var(--accent-primary, #e63946);
+    background-color: rgba(40, 40, 40, 0.95);
+    transform: translateY(-1px);
+}
+
+.back-button:active {
+    transform: translateY(1px);
 }
 
 /* Card Description */

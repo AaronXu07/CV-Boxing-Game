@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './auth.css';
+import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
 import { supabase } from '../../lib/supabase.js';
 
@@ -111,6 +112,7 @@ function Auth() {
 
   return (
     <div className="auth-container">
+      <Background />
       <button className="back-button" onClick={handleBack}> ← Back</button>
 
       <div className="auth-content">

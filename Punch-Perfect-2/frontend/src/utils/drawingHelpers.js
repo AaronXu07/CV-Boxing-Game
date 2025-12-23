@@ -182,36 +182,28 @@ export const drawLivesUI = (ctx, fps, score, lives, lostLives, canvas) => {
     if (lostLives.includes(i)) {
       lostLifePositions.push({ x, y, size: heartSize });
       
-      // Draw red X for lost life with shadow effect
+      // Draw stylized X for lost life
       ctx.save();
+      ctx.translate(x, y);
+      const xSize = heartSize * 0.4; // Reduced from 0.6 to 0.4
       
-      // Shadow
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+      // Shadow/Glow for the X
+      ctx.shadowColor = 'rgba(255, 0, 0, 0.5)';
+      ctx.shadowBlur = 15;
+      
+      ctx.strokeStyle = '#ff3333'; // Bright red
       ctx.lineWidth = 12;
       ctx.lineCap = 'round';
       
+      // Draw X
       ctx.beginPath();
-      ctx.moveTo(x - heartSize/2 + 3, y - heartSize/2 + 3);
-      ctx.lineTo(x + heartSize/2 + 3, y + heartSize/2 + 3);
+      ctx.moveTo(-xSize, -xSize);
+      ctx.lineTo(xSize, xSize);
       ctx.stroke();
       
       ctx.beginPath();
-      ctx.moveTo(x + heartSize/2 + 3, y - heartSize/2 + 3);
-      ctx.lineTo(x - heartSize/2 + 3, y + heartSize/2 + 3);
-      ctx.stroke();
-      
-      // Main X
-      ctx.strokeStyle = '#e63946';
-      ctx.lineWidth = 10;
-      
-      ctx.beginPath();
-      ctx.moveTo(x - heartSize/2, y - heartSize/2);
-      ctx.lineTo(x + heartSize/2, y + heartSize/2);
-      ctx.stroke();
-      
-      ctx.beginPath();
-      ctx.moveTo(x + heartSize/2, y - heartSize/2);
-      ctx.lineTo(x - heartSize/2, y + heartSize/2);
+      ctx.moveTo(xSize, -xSize);
+      ctx.lineTo(-xSize, xSize);
       ctx.stroke();
       
       ctx.restore();
@@ -220,15 +212,18 @@ export const drawLivesUI = (ctx, fps, score, lives, lostLives, canvas) => {
       ctx.save();
       
       // Glow effect
-      ctx.shadowColor = '#e63946';
-      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#ff4d5a';
+      ctx.shadowBlur = 20;
       ctx.fillStyle = '#ff4d5a';
       drawHeart(ctx, x, y, heartSize);
       
-      // Inner highlight
+      // Inner highlight (glossy look)
       ctx.shadowBlur = 0;
-      ctx.fillStyle = '#ff6b75';
-      drawHeart(ctx, x, y, heartSize * 0.6);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.beginPath();
+      // Small oval highlight on top left
+      ctx.ellipse(x - heartSize * 0.2, y - heartSize * 0.2, heartSize * 0.1, heartSize * 0.05, -Math.PI / 4, 0, Math.PI * 2);
+      ctx.fill();
       
       ctx.restore();
     }
@@ -238,42 +233,28 @@ export const drawLivesUI = (ctx, fps, score, lives, lostLives, canvas) => {
 };
 
 /**
- * Draw a heart shape
+ * Draw a heart shape centered at (x, y)
  */
 const drawHeart = (ctx, x, y, size) => {
-  const width = size;
-  const height = size;
-  
   ctx.save();
   ctx.translate(x, y);
+  
+  // Scale to fit size (assuming base path fits in ~100x100 box)
+  const scale = size / 100;
+  ctx.scale(scale * 1.2, scale * 0.9); // Wider (1.2x) and slightly shorter (0.9x)
+  
   ctx.beginPath();
-  const topCurveHeight = height * 0.3;
-  ctx.moveTo(0, topCurveHeight);
-  // Top left curve
-  ctx.bezierCurveTo(
-    0, 0,
-    -width / 2, 0,
-    -width / 2, topCurveHeight
-  );
-  // Bottom left curve
-  ctx.bezierCurveTo(
-    -width / 2, (height + topCurveHeight) / 2,
-    0, (height + topCurveHeight) / 1.3,
-    0, height
-  );
-  // Bottom right curve
-  ctx.bezierCurveTo(
-    0, (height + topCurveHeight) / 1.3,
-    width / 2, (height + topCurveHeight) / 2,
-    width / 2, topCurveHeight
-  );
-  // Top right curve
-  ctx.bezierCurveTo(
-    width / 2, 0,
-    0, 0,
-    0, topCurveHeight
-  );
-  ctx.closePath();
+  // Improved heart shape centered at 0,0
+  // Starting from top center dip
+  ctx.moveTo(0, -20);
+  
+  // Right lobe
+  // cp1, cp2, end
+  ctx.bezierCurveTo(30, -55, 70, -15, 0, 55);
+  
+  // Left lobe
+  ctx.bezierCurveTo(-70, -15, -30, -55, 0, -20);
+  
   ctx.fill();
   ctx.restore();
 };

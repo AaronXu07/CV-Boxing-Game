@@ -2,11 +2,83 @@
 .leaderboard-container {
   min-height: 100vh;
   width: 100%;
-  background-color: #000000;
-  color: #ffffff;
+  background-color: var(--bg-primary, #050505);
+  color: var(--text-primary, #ffffff);
   padding: 2rem;
   padding-bottom: 3rem;
   position: relative;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Background Animation Layer (Shared) */
+.menu-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-grid {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+  background-size: 80px 80px;
+  transform: perspective(1000px) rotateX(60deg);
+  opacity: 1;
+  animation: gridDrift 40s linear infinite;
+}
+
+.bg-shape {
+  position: absolute;
+  border: 1px solid rgba(230, 57, 70, 0.25);
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(230, 57, 70, 0.05);
+  opacity: 0.6;
+}
+
+.shape-1 {
+  width: 700px;
+  height: 700px;
+  top: -150px;
+  right: -150px;
+  animation: shapeFloat 35s ease-in-out infinite alternate;
+}
+
+.shape-2 {
+  width: 500px;
+  height: 500px;
+  bottom: -100px;
+  left: -100px;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation: shapeFloat 45s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes gridDrift {
+  0% { transform: perspective(1000px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(1000px) rotateX(60deg) translateY(80px); }
+}
+
+@keyframes shapeFloat {
+  0% { 
+      transform: translate(0, 0) rotate(0deg); 
+      opacity: 0.6;
+  }
+  50% {
+      opacity: 0.4;
+  }
+  100% { 
+      transform: translate(40px, 40px) rotate(10deg); 
+      opacity: 0.6;
+  }
 }
 
 /* Header */
@@ -17,6 +89,9 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+  position: relative;
+  z-index: 10;
+  pointer-events: none; /* Allow clicks to pass through */
 }
 
 .leaderboard-header h1 {
@@ -26,6 +101,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
+  font-family: 'Orbitron', sans-serif;
 }
 
 .back-button {
@@ -33,22 +109,25 @@
   top: 2rem;
   left: 2rem;
   padding: 0.75rem 1.5rem;
-  background-color: #0a0a0a;
-  border: 2px solid #222222;
+  background-color: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #ffffff;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
   z-index: 100;
   text-transform: uppercase;
   letter-spacing: 1px;
+  backdrop-filter: blur(4px);
+  pointer-events: auto; /* Ensure clickable */
 }
 
 .back-button:hover {
-  border-color: #e63946;
-  background-color: #000000;
+  border-color: var(--accent-primary, #e63946);
+  background-color: rgba(40, 40, 40, 0.95);
+  transform: translateY(-1px);
 }
 
 .back-button:active {
@@ -62,25 +141,31 @@
   margin-bottom: 2rem;
   flex-wrap: wrap;
   justify-content: center;
+  position: relative;
+  z-index: 10;
+  pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
 .tab-button {
   padding: 1rem 2rem;
-  background-color: #0a0a0a;
-  border: 2px solid #222222;
-  color: #ffffff;
+  background-color: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #aaaaaa;
   font-size: 1.1rem;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: 'Rajdhani', sans-serif;
+  pointer-events: auto; /* Re-enable clicks */
 }
 
 .tab-button:hover {
-  border-color: #e63946;
-  background-color: #000000;
+  border-color: var(--accent-primary, #e63946);
+  color: #ffffff;
+  background-color: rgba(40, 40, 40, 0.95);
 }
 
 .tab-button:active {
@@ -88,9 +173,10 @@
 }
 
 .tab-button.active {
-  background-color: #e63946;
-  border-color: #e63946;
+  background-color: var(--accent-primary, #e63946);
+  border-color: var(--accent-primary, #e63946);
   color: #ffffff;
+  box-shadow: 0 0 15px rgba(230, 57, 70, 0.3);
 }
 
 /* Leaderboard Content */
@@ -98,6 +184,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 2rem;
+  position: relative;
+  z-index: 10;
+  pointer-events: none; /* Allow clicks to pass through empty space */
 }
 
 .leaderboard-content h2 {

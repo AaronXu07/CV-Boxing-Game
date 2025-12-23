@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './account.css'
+import Background from '../Background/Background'
 import { useSound } from '../../hooks/useSound.js'
 import { supabase } from '../../lib/supabase.js'
 import { getCurrentSession } from '../../lib/authFunctions.js'
@@ -194,6 +195,8 @@ function Account() {
 
   return (
     <div className="account-container">
+      <Background />
+
       <button className="back-button" onClick={handleBack}> ← Back</button>
 
       {isLoading ? <div className="spinner"><BarLoader color="#ed0c2e" width={200} height={8}/></div>
