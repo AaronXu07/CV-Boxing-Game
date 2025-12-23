@@ -43,6 +43,10 @@ function Leaderboard() {
             }
           });
     
+          if (!res1.ok) {
+            throw new Error(`HTTP error! status: ${res1.status}`);
+          }
+
           const data1 = await res1.json();
           if(data1) {
             setUserRank(data1);
