@@ -28,6 +28,15 @@ function Account() {
   const indexOfFirstScore = indexOfLastScore - scoresPerPage;
   const currentScores = userScores.slice(indexOfFirstScore, indexOfLastScore);
 
+  // Calculate visible page numbers
+  const maxPageButtons = 10;
+  const startPage = Math.floor((currentPage - 1) / maxPageButtons) * maxPageButtons + 1;
+  const endPage = Math.min(startPage + maxPageButtons - 1, totalPages);
+  const pageNumbers = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pageNumbers.push(i);
+  }
+
   const goToPage = (pageNumber) => {
     playButtonSound();
     setCurrentPage(pageNumber);
@@ -290,13 +299,13 @@ function Account() {
                           ← Previous
                         </button>
                         <div className="pagination-numbers">
-                          {[...Array(totalPages)].map((_, index) => (
+                          {pageNumbers.map((number) => (
                             <button
-                              key={index + 1}
-                              className={`pagination-number ${currentPage === index + 1 ? 'active' : ''}`}
-                              onClick={() => goToPage(index + 1)}
+                              key={number}
+                              className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                              onClick={() => goToPage(number)}
                             >
-                              {index + 1}
+                              {number}
                             </button>
                           ))}
                         </div>
