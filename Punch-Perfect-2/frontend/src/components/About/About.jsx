@@ -30,7 +30,9 @@ function About() {
         'Position yourself 1-2 meters from the camera so your full upper body is visible.',
         'Make sure the room is well lit and the background is uncluttered.',
         'Allow webcam access when prompted by the browser.',
-        'Use the on-screen buttons (back, start, toggle camera) to control the game.'
+        'Use the on-screen buttons (back, start, toggle camera) to control the game.',
+        'Press Esc or the Settings button in the top right corner to open the pause menu.', 
+        'Use the Pause Menu to toggle camera and volume settings, or exit to the main menu.'
       ]
     },
     {
@@ -65,7 +67,8 @@ function About() {
       steps: [
         'Fruits fly across the screen, punch through them to slice.',
         'Missing fruits reduces lives.',
-        'Bombs will end the game.'
+        'Bombs will end the game.',
+        'Hit fruits without missing to start a combo.'
       ],
       route: '/fruitninja'
     },

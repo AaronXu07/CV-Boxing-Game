@@ -14,6 +14,7 @@ import Targets from './components/Game/Targets.jsx'
 import Account from './components/Account/Account.jsx'
 import Auth from './components/Auth/Auth.jsx'
 import { GameProvider } from './context/GameContext.jsx'
+import { Analytics } from "@vercel/analytics/react"
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -33,5 +34,6 @@ createRoot(document.getElementById('root')).render(
         </Routes>
       </GameProvider>
     </BrowserRouter>
+    <Analytics />
   </StrictMode>,
 )

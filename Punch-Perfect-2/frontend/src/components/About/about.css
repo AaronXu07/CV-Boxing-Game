@@ -158,6 +158,11 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+
+    .start-button {
+        display:none; 
+    }
+
     .about-container h1 {
         font-size: 2.5rem;
         padding-top: 2rem;
