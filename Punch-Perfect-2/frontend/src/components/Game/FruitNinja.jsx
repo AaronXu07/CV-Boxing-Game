@@ -71,6 +71,7 @@ function FruitNinja(){
   // Pause handled via reusable hook
   const {
     isPaused,
+    setIsPaused,
     isResuming,
     resumeCountdown,
     pause: pauseHook,
@@ -149,6 +150,41 @@ function FruitNinja(){
   const back = () => {
     playButtonSound();
     setTimeout(() => navigate('/gamemenu'), 200);
+  };
+
+  const restart = () => {
+    playButtonSound();
+    // Use the centralized reset function
+    // Reset all game states first
+    resetTracking();
+
+    // Clear refs
+    if(ctxRef.current){
+      ctxRef.current.clearRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
+    }
+    ctxRef.current = null;
+    drawingUtilsRef.current = null;
+
+    // Force remount by updating key
+    setGameKey(prev => {
+      return prev + 1;
+    });
+
+    livesRef.current = 3;
+    lostLivesRef.current = [];
+    lossAnimationRef.current = null;
+    pendingGameOverRef.current = false;
+    animationFrameRef.current = 0;
+    scoreRef.current = 0;
+    targetsRef.current = [];
+
+    // Stop bomb fuse sound if it's playing
+    stopBombFuseSound();
+    setIsCalibrated(false); 
+    setGameStarted(false);
+    setIsPaused(false);
+    setIsGameOver(false);
+    setOutOfBounds(false);
   };
 
   //===== Loss Animation =====
@@ -374,6 +410,7 @@ function FruitNinja(){
                   <div className="pause-buttons">
 
                     <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
+                    <button onClick={restart}>Restart</button>
                     <button onClick={back}>Back to Menu</button>
                     <button
                       onClick={() => { playButtonSound(); toggleMiniview(); }}

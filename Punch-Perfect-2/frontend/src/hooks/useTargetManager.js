@@ -114,7 +114,6 @@ export const useTargetManager = (
         const hitByLeft = target.checkCollisionLeft(leftHand.x, leftHand.y);
         if(hitByLeft){
           hitSomething = true;
-          scoreRef.current += 1; 
           target.hit();
 
           // Play appropriate sound based on target type
@@ -132,6 +131,7 @@ export const useTargetManager = (
               consecutiveHitsRef.current = 0;
               comboCountRef.current = 0;
             } else {
+              scoreRef.current += 1; 
               // Only increment combo for actual fruits (not bombs)
               consecutiveHitsRef.current++;
               if (consecutiveHitsRef.current >= 3) {
@@ -158,6 +158,7 @@ export const useTargetManager = (
             }
             playFruitSound(target.fruitType.name);
           } else {
+            scoreRef.current += 1; 
             playHitSound();
           }
           
@@ -189,7 +190,6 @@ export const useTargetManager = (
         const hitByRight = target.checkCollisionRight(rightHand.x, rightHand.y);
         if(hitByRight){
           hitSomething = true;
-          scoreRef.current += 1; 
           target.hit();
           
           // Play appropriate sound based on target type
@@ -207,6 +207,7 @@ export const useTargetManager = (
               consecutiveHitsRef.current = 0;
               comboCountRef.current = 0;
             } else {
+              scoreRef.current += 1; 
               // Only increment combo for actual fruits (not bombs)
               consecutiveHitsRef.current++;
               if (consecutiveHitsRef.current >= 3) {
@@ -233,6 +234,7 @@ export const useTargetManager = (
             }
             playFruitSound(target.fruitType.name);
           } else {
+            scoreRef.current += 1; 
             playHitSound();
           }
           
@@ -317,10 +319,15 @@ export const useTargetManager = (
       };
 
       // Initial spawn only if not paused/resuming
-      if (!(isPausedRef?.current || isResumingRef?.current)) {
-        spawnTarget();
-      }
-      scheduleNext();
+      // Add a 2-second delay before the first spawn
+      const initialDelay = 2000;
+      spawnIntervalRef.current = setTimeout(() => {
+        if (cancelled) return;
+        if (!(isPausedRef?.current || isResumingRef?.current)) {
+          spawnTarget();
+        }
+        scheduleNext();
+      }, initialDelay);
 
       return () => {
         cancelled = true;

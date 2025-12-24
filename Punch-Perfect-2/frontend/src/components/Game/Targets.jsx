@@ -45,6 +45,7 @@ function Targets(){
   const lastFlashTimeRef = useRef(null);
   const {
     isPaused,
+    setIsPaused,
     isResuming,
     resumeCountdown,
     pause: pauseHook,
@@ -107,6 +108,34 @@ function Targets(){
   const back = () => {
     playButtonSound();
     setTimeout(() => navigate('/gamemenu'), 200);
+  };
+
+  const restart = () => {
+    playButtonSound();
+    // Use the centralized reset function
+    // Reset all game states first
+    resetTracking();
+
+    // Clear refs
+    if(ctxRef.current){
+      ctxRef.current.clearRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
+    }
+    ctxRef.current = null;
+    drawingUtilsRef.current = null;
+
+    // Reset timer if applicable
+    setTimeRemaining(30);
+
+    // Force remount by updating key
+    setGameKey(prev => {
+      return prev + 1;
+    });
+
+    setIsCalibrated(false); 
+    setGameStarted(false);
+    setIsPaused(false);
+    setIsGameOver(false);
+    setOutOfBounds(false);
   };
 
   //===== Frame Processing =====
@@ -261,6 +290,7 @@ function Targets(){
                 {outOfBounds && <h2 className="out-of-bounds-message"> Make sure area is well lit. </h2>}
                 <div className="pause-buttons">
                   <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
+                  <button onClick={restart}>Restart</button>
                   <button onClick={back}>Back to Menu</button>
                   <button
                     onClick={() => { playButtonSound(); toggleMiniview(); }}

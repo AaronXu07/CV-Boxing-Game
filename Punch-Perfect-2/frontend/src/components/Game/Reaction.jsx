@@ -63,6 +63,7 @@ function Reaction(){
           gameKey, setGameKey} = useGameContext();
   const {
     isPaused,
+    setIsPaused,
     isResuming,
     resumeCountdown,
     pause: pauseHook,
@@ -244,6 +245,34 @@ function Reaction(){
       clearTimeout(waitTimerRef.current);
     }
     setTimeout(() => navigate('/gamemenu'), 200);
+  };
+
+  const restart = () => {
+    playButtonSound();
+    // Use the centralized reset function
+    // Reset all game states first
+    resetTracking();
+
+    // Clear refs
+    if(ctxRef.current){
+      ctxRef.current.clearRect(0, 0, CANVAS_SIZE.width, CANVAS_SIZE.height);
+    }
+    ctxRef.current = null;
+    drawingUtilsRef.current = null;
+
+    // Reset timer if applicable
+    resetGame();
+
+    // Force remount by updating key
+    setGameKey(prev => {
+      return prev + 1;
+    });
+
+    setIsCalibrated(false); 
+    setGameStarted(false);
+    setIsPaused(false);
+    setIsGameOver(false);
+    setOutOfBounds(false);
   };
 
   //===== Drawing Functions =====
@@ -480,6 +509,7 @@ function Reaction(){
                 {outOfBounds && <h2 className="out-of-bounds-message"> Make sure area is well lit. </h2>}
                 <div className="pause-buttons">
                   <button onClick={() => { setOutOfBounds(false); playButtonSound(); resume(); }}>Resume</button>
+                  <button onClick={restart}>Restart</button>
                   <button onClick={back}>Back to Menu</button>
                   <button
                     onClick={() => { playButtonSound(); toggleMiniview(); }}
