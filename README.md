@@ -2,7 +2,7 @@
 
 **Real-time computer vision boxing game powered by browser-based pose detection**
 
-[Play Live Demo](https://punchperfect.vercel.app/) | [Watch Demo Video](https://youtu.be/mA44cL6frXc)
+<a href="https://punchperfect.vercel.app/" target="_blank">Play Live Demo</a> | <a href="https://youtu.be/mA44cL6frXc" target="_blank">Watch Demo Video</a>
 
 A full-stack web application that transforms your webcam into a boxing training interface. Built with MediaPipe pose estimation and React, the system processes 30+ FPS video streams to detect punches with sub-100ms latency, enabling real-time interactive gameplay without any hardware beyond a standard webcam.
 
