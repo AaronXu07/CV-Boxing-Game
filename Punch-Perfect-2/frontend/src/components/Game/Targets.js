@@ -115,11 +115,22 @@ export class StaticTarget extends BaseTarget{
 }
 
 export class FruitTarget extends BaseTarget {
-    constructor(canvasWidth, canvasHeight){
+    constructor(canvasWidth, canvasHeight, spawnCount = 0){
         super(canvasWidth, canvasHeight); 
         
-        // Select a random fruit type
-        this.fruitType = FRUIT_TYPES[Math.floor(Math.random() * FRUIT_TYPES.length)];
+        // Scale bomb probability with difficulty (10% base, up to 35% at high spawn counts)
+        const bombProbability = Math.min(0.35, 0.10 + spawnCount * 0.003);
+        const isBomb = Math.random() < bombProbability;
+        
+        // Select fruit type based on bomb probability
+        if (isBomb) {
+            // Find bomb in FRUIT_TYPES
+            this.fruitType = FRUIT_TYPES.find(f => f.name === 'bomb') || FRUIT_TYPES[0];
+        } else {
+            // Select random non-bomb fruit
+            const nonBombFruits = FRUIT_TYPES.filter(f => f.name !== 'bomb');
+            this.fruitType = nonBombFruits[Math.floor(Math.random() * nonBombFruits.length)];
+        }
         
         // Physics properties
         this.gravity = 0.6;

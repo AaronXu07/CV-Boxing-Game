@@ -29,7 +29,8 @@ export const useTargetManager = (
   const bombFuseSoundPlayedRef = useRef(false);
   const comboCountRef = useRef(0);
   const consecutiveHitsRef = useRef(0);
-  const comboPopupsRef = useRef([]); // Track combo popups: [{combo, bonus, x, y, opacity, createdAt}] 
+  const comboPopupsRef = useRef([]); // Track combo popups: [{combo, bonus, x, y, opacity, createdAt}]
+  const totalSpawnedRef = useRef(0); // Track total number of fruits spawned for difficulty scaling 
 
   /**
    * Spawn a new target (for fruit mode, randomly spawns 1-3 targets)
@@ -39,13 +40,15 @@ export const useTargetManager = (
     if (pendingGameOverRef?.current) return;
 
     if(targetType === 'fruit'){
-      // Randomly spawn 1-3 fruits/bombs at once
-      const numTargets = Math.floor(Math.random() * 3) + 1; // 1-3 targets
+      // Scale number of targets based on how many have spawned (1-3 initially, up to 1-6 at high difficulty)
+      const maxTargets = Math.min(6, 3 + Math.floor(totalSpawnedRef.current / 20)); // +1 max every 15 spawns, cap at 6
+      const numTargets = Math.floor(Math.random() * maxTargets) + 1;
       const newTargets = [];
       
       for (let i = 0; i < numTargets; i++) {
-        const newTarget = new FruitTarget(CANVAS_SIZE.width, CANVAS_SIZE.height);
+        const newTarget = new FruitTarget(CANVAS_SIZE.width, CANVAS_SIZE.height, totalSpawnedRef.current);
         newTargets.push(newTarget);
+        totalSpawnedRef.current++; // Increment spawn counter
         
         // Play appropriate launch sound only if game is not over
         if (!pendingGameOverRef?.current) {
@@ -299,9 +302,10 @@ export const useTargetManager = (
       // Dynamic spawn scheduling for fruit mode
       let cancelled = false;
       spawnIntervalRef.current = null;
-      const MIN_DELAY = 3000; // 3 second delay for fruit waves
+      // Minimum delay decreases with spawns: starts at 3s, reduces to 1.2s minimum
+      const MIN_DELAY = Math.max(1000, 3000 - totalSpawnedRef.current * 15);
 
-      const computeDelay = () => Math.max(MIN_DELAY, FRUIT_TARGET_SPAWN_INTERVAL - scoreRef.current * 20);
+      const computeDelay = () => Math.max(MIN_DELAY, FRUIT_TARGET_SPAWN_INTERVAL - totalSpawnedRef.current * 25);
 
       const scheduleNext = () => {
         if (cancelled) return;
@@ -338,6 +342,7 @@ export const useTargetManager = (
         if(!isPausedRef.current) {
            scoreRef.current = 0; 
            targetsRef.current = [];
+           totalSpawnedRef.current = 0; // Reset spawn counter
         }
       };
     } else {
@@ -360,6 +365,7 @@ export const useTargetManager = (
         }
         scoreRef.current = 0; 
         targetsRef.current = [];
+        totalSpawnedRef.current = 0; // Reset spawn counter
       };
     }
   }, [isActive, gameKey, targetType, pendingGameOverRef]);
