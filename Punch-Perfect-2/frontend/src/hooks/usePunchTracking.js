@@ -29,11 +29,11 @@ export const usePunchTracking = (playPunchSound) => {
     // This resets the ability to hit targets after a hit
     if(punchData.leftInGuard && !leftHandCanHitRef.current){
       leftHandCanHitRef.current = true;
-      console.log('Left hand reset - can hit again');
+      //console.log('Left hand reset - can hit again');
     }
     if(punchData.rightInGuard && !rightHandCanHitRef.current){
       rightHandCanHitRef.current = true;
-      console.log('Right hand reset - can hit again');
+      //console.log('Right hand reset - can hit again');
     }
     
     // Determine punch states (detect punches normally)
