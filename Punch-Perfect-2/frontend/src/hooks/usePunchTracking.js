@@ -18,7 +18,6 @@ export const usePunchTracking = (playPunchSound) => {
   // Hand hit cooldown tracking
   const leftHandCanHitRef = useRef(true);
   const rightHandCanHitRef = useRef(true);
-
   /**
    * Process punch detection for current frame
    */
@@ -33,7 +32,6 @@ export const usePunchTracking = (playPunchSound) => {
       rightHandCanHitRef.current = true;
     }
     
-    // Determine punch states
     const lPunchState = punchData.leftArm && lPrevPunchRef.current;
     const rPunchState = punchData.rightArm && rPrevPunchRef.current;
     

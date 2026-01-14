@@ -177,26 +177,47 @@ function Account() {
     } 
   }
 
-  // Check if user is logged in
-  useEffect(() => {
-    const setPage = async () => {
-      const session = await getCurrentSession(); 
-      
-      if(session){
-        const data = await getUsername(session); 
-        setIsLoggedIn(true);
-        setUsername(data.username);
-        await fetchHighScores(session);
-        await fetchUserScores(session); 
-        await fetchGamemodeRanks(session); 
-        setIsLoading(false); 
-      } else {
-        setIsLoading(false); 
-      }
-    };
+  const loadUserData = async (session) => {
+    try {
+      const data = await getUsername(session);
+      setIsLoggedIn(true);
+      setUsername(data.username);
+      await fetchHighScores(session);
+      await fetchUserScores(session);
+      await fetchGamemodeRanks(session);
+    } catch (err) {
+      console.error("Error loading profile:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setPage(); 
-    
+  useEffect(() => {
+
+    getCurrentSession().then(session => {
+      if (session) {
+        loadUserData(session);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        await loadUserData(session);
+      } else if (event === 'SIGNED_OUT') {
+        setIsLoggedIn(false);
+        setUsername('');
+        setHighScores([]);
+        setGameRanks([]);
+        setUserScores([]);
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleBack = () => {

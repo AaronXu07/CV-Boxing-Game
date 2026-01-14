@@ -1,7 +1,7 @@
 import supabase from '../config/supabase.js';
-import Filter from 'bad-words'; 
+import { Filter } from 'bad-words'; 
 
-const filter = newFilter(); 
+const filter = new Filter(); 
 
 export const submitUsername = async (req, res) => {
   try {
