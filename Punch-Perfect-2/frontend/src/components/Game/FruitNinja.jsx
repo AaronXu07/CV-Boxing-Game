@@ -289,10 +289,10 @@ function FruitNinja(){
     if (landmarks) {
       const { punchData, punchStates, handStates } = processPunches(landmarks);
       if (isMiniviewEnabled) {
-        drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+        drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates, handStates);
       }
       ctx.save();
-      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
+      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates, handStates);
       handleCollisions(landmarks, punchStates, handStates, setIsGameOver);
       handleMissedFruit(livesRef, lostLivesRef);
       drawTargets(ctx, targetsRef.current, canvas.width);

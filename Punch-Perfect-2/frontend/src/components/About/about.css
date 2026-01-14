@@ -86,9 +86,9 @@
 /* Header */
 .about-container h1 {
     text-align: center;
-    padding-top: 3rem;
-    font-size: 3rem;
-    margin-bottom: 3rem;
+    padding-top: 5rem;
+    font-size: 4rem;
+    margin-bottom: 4rem;
     color: #ffffff;
     font-weight: 700;
     letter-spacing: 2px;
@@ -133,12 +133,12 @@
 .about-text {
     display: flex;
     flex-direction: column;
-    max-width: 800px;
-    width: 80%;
-    margin-top: 2rem;
-    padding: 2.5rem;
-    font-size: 1.1rem;
-    line-height: 1.8;
+    max-width: 1400px;
+    width: 90%;
+    margin: 3rem auto;
+    padding: 4rem;
+    font-size: 1.6rem;
+    line-height: 1.9;
     color: #cccccc;
     background-color: rgba(20, 20, 20, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -189,16 +189,16 @@
 }
 
 .tutorial-overview .lead {
-    font-size: 1.15rem;
+    font-size: 1.6rem;
     color: #e6e6e6;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     text-align: center;
 }
 
 .tutorial-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
     width: 100%;
     justify-items: center;
 }
@@ -206,17 +206,17 @@
 .tutorial-card {
     background-color: #000000;
     border: 2px solid #222222;
-    padding: 1rem;
+    padding: 2rem;
     border-radius: 2px;
     text-align: center;
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
     align-items: center;
     width: 100%;
-    max-width: 320px;
+    max-width: 420px;
     aspect-ratio: 1 / 1; /* make square */
     justify-content: center;
     transform-origin: center center;
@@ -238,11 +238,12 @@
     color: #ffffff;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-size: 1.8rem;
 }
 
 .tutorial-summary {
     color: #cccccc;
-    font-size: 0.95rem;
+    font-size: 1.35rem;
 }
 
 .tutorial-detail {
@@ -259,7 +260,7 @@
 }
 
 .detail-title {
-    font-size: 2rem;
+    font-size: 3.5rem;
     margin-top: 0.25rem;
     text-align: center;
 }
@@ -267,14 +268,22 @@
 .detail-summary {
     color: #cccccc;
     text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
 }
 
 .step-list {
-    margin: 1rem auto 0 auto;
+    margin: 2rem auto 0 auto;
     color: #e6e6e6;
     text-align: left;
-    max-width: 600px;
+    max-width: 1000px;
     display: inline-block;
+    font-size: 1.5rem;
+    line-height: 2;
+}
+
+.step-list li {
+    margin-bottom: 1rem;
 }
 
 .detail-actions {
@@ -283,7 +292,7 @@
 }
 
 .start-button {
-    padding: 0.9rem 1.5rem;
+    padding: 1.2rem 2.5rem;
     background-color: #e63946;
     border: 2px solid #e63946;
     color: #ffffff;
@@ -292,6 +301,7 @@
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-size: 1.3rem;
 }
 
 .start-button:hover {

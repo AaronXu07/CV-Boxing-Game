@@ -419,10 +419,10 @@ function Reaction(){
     if(landmarks){
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
   
-      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates, handStates);
 
       ctx.save();
-      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
+      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates, handStates);
       ctx.restore();
 
       handlePunchDetected(punchStates, handStates);
