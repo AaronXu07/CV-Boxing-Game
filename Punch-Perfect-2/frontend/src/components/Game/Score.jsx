@@ -4,7 +4,7 @@ import { CANVAS_SIZE } from '../../utils/constants.js';
 import './score.css';
 import Background from '../Background/Background';
 import { useEffect, useRef, useState } from 'react';
-import { getCurrentSession } from '../../lib/authFunctions.js';
+import { getCurrentSession } from '../../api/authFunctions.js';
 
 function Score(
   { 

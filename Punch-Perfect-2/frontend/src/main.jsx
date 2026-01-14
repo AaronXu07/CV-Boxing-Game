@@ -13,6 +13,9 @@ import Reaction from './components/Game/Reaction.jsx'
 import Targets from './components/Game/Targets.jsx'
 import Account from './components/Account/Account.jsx'
 import Auth from './components/Auth/Auth.jsx'
+//import ResetPassword from './components/Auth/ResetPassword.jsx'
+import SetUsername from './components/Auth/SetUsername.jsx'
+import OnboardingGuard from './components/Auth/OnboardingGuard.jsx'
 import { GameProvider } from './context/GameContext.jsx'
 import { Analytics } from "@vercel/analytics/react"
 
@@ -20,6 +23,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <GameProvider>
+        <OnboardingGuard />
         <Routes>
           <Route path="/" element={<Menu />} />
           <Route path="/gamemenu" element={<GameMenu />} />
@@ -31,6 +35,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/account" element={<Account />} />
           <Route path="/auth" element={<Auth />} />
+          {/*<Route path="/reset-password" element={<ResetPassword />} />*/}
+          <Route path="/set-username" element={<SetUsername />} />
         </Routes>
       </GameProvider>
     </BrowserRouter>

@@ -1,5 +1,25 @@
 import supabase from '../config/supabase.js'
 
+const getUsernameById = async (user_id) => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('user_id', user_id)
+    .single();
+
+  if (!error && data?.username) {
+    return data.username;
+  }
+
+  const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(user_id);
+  
+  if (!authError && user?.user_metadata?.display_name) {
+    return user.user_metadata.display_name;
+  }
+
+  return "Anonymous";
+};
+
 export const getLeaderboard = async (req, res) => {
      try {
         
@@ -21,24 +41,13 @@ export const getLeaderboard = async (req, res) => {
             return res.status(500).json({error: err.message});
         }
 
-        const {data:{users}, error} = await supabase.auth.admin.listUsers(); 
-
-        if(error) {
-            return res.status(500).json({error: error}); 
-        }
-
-        const userMap = {}; 
-        users.forEach(user => {
-            userMap[user.id] = user.user_metadata?.display_name; 
-        })
-
         const leaderboard = []; 
         const seen = new Set(); 
         
         for(const score of data) {
             if(!seen.has(score.user_id)) {
                 leaderboard.push({
-                    user: { display_name: userMap[score.user_id]},
+                    user: { display_name: await getUsernameById(score.user_id)},
                     score: score.score,
                     created_at: score.created_at
                 }); 
@@ -49,7 +58,7 @@ export const getLeaderboard = async (req, res) => {
             }
         }
 
-        res.json(leaderboard);
+        res.status(200).json(leaderboard);
 
     } catch (error) {
         res.status(500).json({error: 'Failed to fetch leaderboard'}); 
@@ -76,12 +85,6 @@ export const getRank = async (req, res) => {
             return res.status(500).json({error: err.message});
         }
 
-        const {data:user, error} = await supabase.auth.admin.getUserById(req.user.id)
-
-        if(error) {
-            return res.status(500).json({error: error}); 
-        }
-
         let info = {}; 
         const seen = new Set(); 
 
@@ -94,7 +97,7 @@ export const getRank = async (req, res) => {
                 if(score.user_id == req.user.id) {
                     info = {
                         rank: rank, 
-                        display_name: user.user.user_metadata?.display_name,
+                        display_name: await getUsernameById(score.user_id),
                         score: score.score,
                         created_at: score.created_at
                     }
@@ -103,7 +106,7 @@ export const getRank = async (req, res) => {
             }
         }
 
-        res.json(info || null);
+        res.status(200).json(info || null);
         
     } catch (error) {
         res.status(500).json({error: 'Failed to fetch user best score'}); 

@@ -4,7 +4,7 @@ import './leaderboard.css'
 import Background from '../Background/Background'
 import { useSound } from '../../hooks/useSound.js'
 import { BarLoader } from 'react-spinners'
-import { getCurrentSession } from '../../lib/authFunctions.js'
+import { getCurrentSession } from '../../api/authFunctions.js'
 
 function Leaderboard() {
   const navigate = useNavigate();

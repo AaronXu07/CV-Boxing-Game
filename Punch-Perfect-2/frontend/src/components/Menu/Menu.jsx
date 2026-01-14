@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import './menu.css';
 import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
-import { getCurrentSession } from '../../lib/authFunctions.js';
+import { getCurrentSession } from '../../api/authFunctions.js';
 
 function Menu() {
   const navigate = useNavigate();
