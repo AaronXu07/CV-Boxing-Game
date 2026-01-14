@@ -53,9 +53,24 @@ function SetUsername() {
     }
 
     try{
-      const data = await submitUsername(session, name); 
+
+      const currentSession = await getCurrentSession();
+
+      if (!currentSession) {
+        navigate('/auth');
+        return;
+      }
+
+      const data = await submitUsername(currentSession, name); 
 
       if (data.error) {
+
+        if (data.error === 'Invalid token' || data.error === 'Authentication failed' || data.error === 'No token provided') {
+          console.log("Auth error detected, redirecting to login");
+          navigate('/auth');
+          return;
+        }
+
         setError(data.error);
         return;
       }
