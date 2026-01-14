@@ -160,14 +160,20 @@ function Account() {
   };
 
   useEffect(() => {
-
-    getCurrentSession().then(session => {
+    // Initial session check
+    const initSession = async () => {
+      // Give Supabase a moment to process OAuth redirect
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const session = await getCurrentSession();
       if (session) {
         loadUserData(session);
       } else {
         setIsLoading(false);
       }
-    });
+    };
+
+    initSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {

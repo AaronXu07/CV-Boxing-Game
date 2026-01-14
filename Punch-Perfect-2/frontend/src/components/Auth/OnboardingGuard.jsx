@@ -11,18 +11,25 @@ export default function OnboardingGuard() {
 
   useEffect(() => {
     const checkUsername = async () => {
-      const session = await getCurrentSession();
-      if (!session) return;
+      try {
+        const session = await getCurrentSession();
+        if (!session) return;
 
-      const data = await getUsername(session); 
+        const data = await getUsername(session); 
 
-      const isWhitelisted = WHITELIST.includes(location.pathname);
+        const isWhitelisted = WHITELIST.includes(location.pathname);
 
-      if (!isWhitelisted && !data.username) {
-        console.log("navigating to set-username", data); 
-        navigate('/set-username');
-      } else if (isWhitelisted && data.username) {
-        navigate('/account'); 
+        if (!isWhitelisted && !data.username) {
+          console.log("navigating to set-username", data); 
+          navigate('/set-username');
+        } else if (isWhitelisted && data.username) {
+          navigate('/account'); 
+        }
+      } catch (err) {
+        console.error("Error checking username:", err);
+        if (err.message?.includes('401') || err.message?.includes('Invalid token')) {
+          navigate('/auth');
+        }
       }
     };
     checkUsername(); 
