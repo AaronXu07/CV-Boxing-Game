@@ -101,7 +101,6 @@ function Account() {
           .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`)))
       ]);
 
-
       let ranks = [target_score.rank, reaction_score.rank, fruit_score.rank]; 
 
       let percentRanks = [
