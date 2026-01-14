@@ -24,25 +24,33 @@ export const usePunchTracking = (playPunchSound) => {
   const processPunches = useCallback((landmarks) => {
     const punchData = detectPunches(landmarks);
     
-    // Check if hands have returned to non-punching state
-    if(!punchData.leftArm && !leftHandCanHitRef.current){
+    // Check if hands have returned to guard position (bent arm, close to body)
+    // This resets the ability to hit targets after a hit
+    if(punchData.leftInGuard && !leftHandCanHitRef.current){
       leftHandCanHitRef.current = true;
+      //console.log('Left hand reset - can hit again');
     }
-    if(!punchData.rightArm && !rightHandCanHitRef.current){
+    if(punchData.rightInGuard && !rightHandCanHitRef.current){
       rightHandCanHitRef.current = true;
+      //console.log('Right hand reset - can hit again');
     }
     
+    // Determine punch states (detect punches normally)
     const lPunchState = punchData.leftArm && lPrevPunchRef.current;
     const rPunchState = punchData.rightArm && rPrevPunchRef.current;
     
-    // Update punch counters
+    // Update punch counters - only play sound if hand can hit targets
     if(lPunchState && !lPrevPunchStateRef.current){
       lPunchCounterRef.current++;
-      playPunchSound();
+      if(leftHandCanHitRef.current){
+        playPunchSound();
+      }
     }
     if(rPunchState && !rPrevPunchStateRef.current){
       rPunchCounterRef.current++;
-      playPunchSound();
+      if(rightHandCanHitRef.current){
+        playPunchSound();
+      }
     }
 
     // Update previous states

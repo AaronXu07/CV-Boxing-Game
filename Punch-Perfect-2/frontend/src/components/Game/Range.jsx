@@ -156,10 +156,10 @@ function Range(){
       const { punchData, punchStates, handStates, counters } = processPunches(landmarks);
       
       
-      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates);
+      isMiniviewEnabled && drawLandmarksInMiniview(ctx, drawingUtils, landmarks, punchStates, handStates);
 
       ctx.save();
-      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates);
+      drawFullSizeHandLandmarks(ctx, drawingUtils, landmarks, punchStates, handStates);
 
       handleCollisions(landmarks, punchStates, handStates);
 

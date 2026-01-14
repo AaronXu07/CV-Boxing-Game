@@ -44,12 +44,13 @@ export const drawMiniview = (ctx, video) => {
 /**
  * Draw landmarks in the miniview
  */
-export const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchStates) => {
+export const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchStates, handStates) => {
   ctx.save();
   ctx.translate(MINIVIEW_POSITION.x, MINIVIEW_POSITION.y);
   ctx.scale(1/3, 1/3);
 
   const { lPunchState, rPunchState } = punchStates;
+  const { leftHandCanHit, rightHandCanHit } = handStates || { leftHandCanHit: true, rightHandCanHit: true };
 
   selectedLandmarks.forEach((lm) => {
     const isLeftHand = lm === 19;
@@ -62,10 +63,10 @@ export const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchState
     //if (!visible) return;
 
     let options = DRAWING_OPTIONS.landmark;
-    if(lPunchState && isLeftHand){
+    if(lPunchState && isLeftHand && leftHandCanHit){
       options = DRAWING_OPTIONS.LpunchLandmark;
     }
-    if(rPunchState && isRightHand){
+    if(rPunchState && isRightHand && rightHandCanHit){
       options = DRAWING_OPTIONS.RpunchLandmark;
     }
 
@@ -79,15 +80,16 @@ export const drawLandmarksInMiniview = (ctx, drawingUtils, landmarks, punchState
 /**
  * Draw full-size hand landmarks
  */
-export const drawFullSizeHandLandmarks = (ctx, drawingUtils, landmarks, punchStates) => {
+export const drawFullSizeHandLandmarks = (ctx, drawingUtils, landmarks, punchStates, handStates) => {
   const {lPunchState, rPunchState} = punchStates;
+  const { leftHandCanHit, rightHandCanHit } = handStates || { leftHandCanHit: true, rightHandCanHit: true };
 
-  // Left hand
-  const leftOptions = lPunchState ? DRAWING_OPTIONS.LpunchLandmark : DRAWING_OPTIONS.leftHand;
+  // Left hand - only enlarge if can hit
+  const leftOptions = (lPunchState && leftHandCanHit) ? DRAWING_OPTIONS.LpunchLandmark : DRAWING_OPTIONS.leftHand;
   drawingUtils.drawLandmarks([landmarks[lIndex]], leftOptions);
 
-  // Right hand
-  const rightOptions = rPunchState ? DRAWING_OPTIONS.RpunchLandmark : DRAWING_OPTIONS.rightHand;
+  // Right hand - only enlarge if can hit
+  const rightOptions = (rPunchState && rightHandCanHit) ? DRAWING_OPTIONS.RpunchLandmark : DRAWING_OPTIONS.rightHand;
   drawingUtils.drawLandmarks([landmarks[rIndex]], rightOptions);
 };
 

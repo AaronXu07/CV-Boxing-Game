@@ -92,7 +92,8 @@ function About() {
         'Use both hands to train symmetry and speed.',
         'Review your high scores and focus practice on weak modes.',
         'Keep the camera steady and avoid sudden lighting changes.',
-        'Wear clothes that will not restrict visibility of your arms.'
+        'Wear clothes that will not restrict visibility of your arms.',
+        'Make sure to return your hands fully to guard position before punching again.'
       ]
     }
   ];
