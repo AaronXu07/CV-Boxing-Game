@@ -35,37 +35,34 @@ function Leaderboard() {
       const session = await getCurrentSession();
 
       try {
+        // Fetch leaderboard and user rank in parallel
+        const leaderboardPromise = fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to fetch leaderboard');
+            return res.json();
+          });
+
         if(session) {
-          setLoggedIn(true); 
-          const res1 = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}/me`, {
+          setLoggedIn(true);
+          const userRankPromise = fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}/me`, {
             headers: {
               Authorization: `Bearer ${session.access_token}`
             }
+          }).then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
           });
-    
-          if (!res1.ok) {
-            throw new Error(`HTTP error! status: ${res1.status}`);
-          }
 
-          const data1 = await res1.json();
-          if(data1) {
-            setUserRank(data1);
+          const [leaderboardData, userRankData] = await Promise.all([leaderboardPromise, userRankPromise]);
+          setLeaderboard(leaderboardData);
+          if(userRankData) {
+            setUserRank(userRankData);
           }
         } else {
-          setLoggedIn(false); 
-        }
-
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}`, {
-          headers: {
-          }
-        })
-
-        if (!res.ok) {
-          throw new Error('Failed to fetch leaderboard');
-        }
-
-        const data = await res.json(); 
-        setLeaderboard(data); 
+          setLoggedIn(false);
+          const leaderboardData = await leaderboardPromise;
+          setLeaderboard(leaderboardData);
+        } 
         
       } catch (err) {
         console.error("Error occured: ", err); 
