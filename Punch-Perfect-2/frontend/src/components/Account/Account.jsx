@@ -78,65 +78,28 @@ function Account() {
 
   const fetchGamemodeRanks = async (session) => {
     try {
-      const res_fruit = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430/me`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      }); 
-
-      if (!res_fruit.ok) {
-        throw new Error(`HTTP error! status: ${res_fruit.status}`);
-      }
-
-      const fruit_score = await res_fruit.json();
-
-      const res_target = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017/me`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (!res_target.ok) {
-        throw new Error(`HTTP error! status: ${res_target.status}`);
-      }
-
-      const target_score = await res_target.json();
-
-      const res_reaction = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482/me`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (!res_reaction.ok) {
-        throw new Error(`HTTP error! status: ${res_reaction.status}`);
-      }
-
-      const reaction_score = await res_reaction.json();
-
-      const res_fruit_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430`);
-
-      if (!res_fruit_scores.ok) {
-        throw new Error(`HTTP error! status: ${res_fruit_scores.status}`);
-      }
-
-      const fruit_scores = await res_fruit_scores.json();
-
-      const res_target_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017`);
-
-      if (!res_target_scores.ok) {
-        throw new Error(`HTTP error! status: ${res_target_scores.status}`);
-      }
-
-      const target_scores = await res_target_scores.json();
-
-      const res_reaction_scores = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482`);
-
-      if (!res_reaction_scores.ok) {
-        throw new Error(`HTTP error! status: ${res_reaction_scores.status}`);
-      }
-
-      const reaction_scores = await res_reaction_scores.json();
+      const [fruit_score, target_score, reaction_score, fruit_scores, target_scores, reaction_scores] = await Promise.all([
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430/me`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))),
+        
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017/me`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))),
+        
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482/me`, {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        }).then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))),
+        
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/19587430`)
+          .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))),
+        
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/48392017`)
+          .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))),
+        
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/76015482`)
+          .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`)))
+      ]);
 
 
       let ranks = [target_score.rank, reaction_score.rank, fruit_score.rank]; 
@@ -179,12 +142,15 @@ function Account() {
 
   const loadUserData = async (session) => {
     try {
-      const data = await getUsername(session);
       setIsLoggedIn(true);
-      setUsername(data.username);
-      await fetchHighScores(session);
-      await fetchUserScores(session);
-      await fetchGamemodeRanks(session);
+
+      const [usernameData] = await Promise.all([
+        getUsername(session),
+        fetchHighScores(session),
+        fetchUserScores(session),
+        fetchGamemodeRanks(session)
+      ]);
+      setUsername(usernameData.username);
     } catch (err) {
       console.error("Error loading profile:", err);
     } finally {
