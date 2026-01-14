@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import './auth.css';
 import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
-import { supabase } from '../../lib/supabase.js';
+import { supabase } from '../../api/supabase.js';
+import { submitUsername, getUsername } from '../../api/profile.js'
+import { getCurrentSession } from '../../api/authFunctions.js'
 
 function Auth() {
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ function Auth() {
     playButtonSound();
 
     setError('');
+    let name = formData.username.trim(); 
 
     if (!formData.email || !formData.password) {
       setError('Please fill in all required fields');
@@ -62,6 +65,21 @@ function Auth() {
         setError('Password must be at least 6 characters');
         return;
       }
+
+      if(formData.password.includes(" ")) {
+        setError("Password cannot have spaces"); 
+        return; 
+      }
+
+      if(name < 3) {
+        setError('username must be at least 3 characters');
+        return;
+      }
+
+      if(name > 30) {
+        setError('username must  be less than 3 characters');
+        return;
+      }
     }
 
     try{
@@ -75,7 +93,7 @@ function Auth() {
       }
       else{
 
-        const displayName = formData.username || formData.email.split('@')[0];
+        const displayName = formData.username;
 
         result = await supabase.auth.signUp({
           email: formData.email,
@@ -87,27 +105,47 @@ function Auth() {
             }
           }
         });
+
+        const session = await getCurrentSession(); 
+
+        if(session) {
+            await submitUsername(session, formData.username); 
+        }
       }
-    
 
       if(result.error){
         setError(result.error.message);
         return;
       }
-
-      // Store user data (both login and signup)
-      if (result.data?.user) {
-        const displayName = result.data.user.user_metadata?.display_name || formData.username || result.data.user.email.split('@')[0];
-        localStorage.setItem('username', displayName);
-        localStorage.setItem('user_email', result.data.user.email);
-      }
-
+      
       navigate('/account');
     }
     catch(err){
       setError('Something went wrong. Please try again.');
       console.error(err);
     }
+  };
+
+  const handleGoogleSubmit = async (e) => {
+    e.preventDefault();
+    playButtonSound();
+
+    setError('');
+
+    try {
+      const redirectTo = `${window.location.origin}/account`;
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo }
+      });
+      if (error) setError(error.message);
+
+    } catch (err) {
+      console.error(err);
+      setError('Something went wrong. Please try again.');
+    }
+
   };
 
   return (
@@ -187,6 +225,10 @@ function Auth() {
             {/* Submit Button */}
             <button type="submit" className="submit-button">
               {isLogin ? 'Login' : 'Sign Up'}
+            </button>
+
+            <button type="button" className="submit-button" onClick={handleGoogleSubmit}>
+              Continue with Google
             </button>
           </form>
 

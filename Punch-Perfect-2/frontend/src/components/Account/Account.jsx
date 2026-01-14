@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import './account.css'
 import Background from '../Background/Background'
 import { useSound } from '../../hooks/useSound.js'
-import { supabase } from '../../lib/supabase.js'
-import { getCurrentSession } from '../../lib/authFunctions.js'
+import { supabase } from '../../api/supabase.js'
+import { getCurrentSession } from '../../api/authFunctions.js'
+import { getUsername } from '../../api/profile.js'
 import { BarLoader } from 'react-spinners'; 
 
 function Account() {
@@ -180,9 +181,11 @@ function Account() {
   useEffect(() => {
     const setPage = async () => {
       const session = await getCurrentSession(); 
+      
       if(session){
+        const data = await getUsername(session); 
         setIsLoggedIn(true);
-        setUsername(session.user.user_metadata?.display_name);
+        setUsername(data.username);
         await fetchHighScores(session);
         await fetchUserScores(session); 
         await fetchGamemodeRanks(session); 

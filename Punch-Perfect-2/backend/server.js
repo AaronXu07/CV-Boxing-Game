@@ -7,7 +7,8 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 
 import scoreRoutes from "./routes/scores_routes.js"; 
-import leaderboardRoutes from "./routes/leaderboard_routes.js"; 
+import leaderboardRoutes from "./routes/leaderboard_routes.js";
+import profileRoutes from "./routes/profiles_routes.js"; 
 
 const app = express(); 
 
@@ -30,6 +31,7 @@ const PORT = process.env.PORT;
 
 app.use('/api/scores', scoreRoutes); 
 app.use('/api/leaderboard', leaderboardRoutes); 
+app.use('/api/profiles', profileRoutes); 
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
