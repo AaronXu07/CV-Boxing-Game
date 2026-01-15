@@ -89,11 +89,19 @@ export const getRank = async (req, res) => {
         const seen = new Set(); 
 
         let rank = 0; 
+        let prevScore = null;
+        let position = 0;
         
         for(const score of data) {
             if(!seen.has(score.user_id)) {
                 seen.add(score.user_id); 
-                rank++; 
+                position++;
+                
+                if (prevScore === null || score.score !== prevScore) {
+                    rank = position;
+                    prevScore = score.score;
+                }
+                
                 if(score.user_id == req.user.id) {
                     info = {
                         rank: rank, 
