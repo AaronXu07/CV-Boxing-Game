@@ -47,7 +47,10 @@ function Menu() {
           <img src="/punch-perfect-logo.png" alt="Punch Perfect" />
         </div>
 
-        <h1 className="menu-page-title">MENU</h1>
+        <div className="menu-title-container">
+          <h1 className="menu-page-title">PUNCH PERFECT</h1>
+          <p className="menu-page-subtitle">Test your reflexes, accuracy, and speed through fast-paced boxing games.</p>
+        </div>
 
         <button 
           className="profile-button" 

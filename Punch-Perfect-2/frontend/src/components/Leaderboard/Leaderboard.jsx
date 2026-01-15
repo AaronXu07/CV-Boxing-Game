@@ -6,6 +6,7 @@ import Avatar from '../Avatar/Avatar'
 import { useSound } from '../../hooks/useSound.js'
 import { BarLoader } from 'react-spinners'
 import { getCurrentSession } from '../../api/authFunctions.js'
+import { FaUsers } from 'react-icons/fa';
 
 function Leaderboard() {
   const navigate = useNavigate();
@@ -84,19 +85,6 @@ function Leaderboard() {
     
   }, [activeTab])
 
-  const getTabTitle = () => {
-    switch (activeTab) {
-      case 'reactionTime':
-        return 'Reaction Time Test';
-      case 'targetTest':
-        return 'Target Test';
-      case 'fruitNinja':
-        return 'Fruit Ninja Test';
-      default:
-        return 'Leaderboard';
-    }
-  };
-
   const getScoreLabel = () => {
     switch (activeTab) {
       case 'reactionTime':
@@ -163,7 +151,12 @@ function Leaderboard() {
 
       {isLoading ? <div className="spinner"><BarLoader color="#ed0c2e" width={200} height={8}/></div> :
       <div className="leaderboard-content">
-        <h2>{getTabTitle()}</h2>
+        <div className="leaderboard-title-section">
+          <div className="player-count-badge">
+            <FaUsers />
+            <span>{leaderboard.length} Players</span>
+          </div>
+        </div>
         
         <div className="leaderboard-table-container">
           <table className="leaderboard-table">

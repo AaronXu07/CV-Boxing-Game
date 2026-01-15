@@ -63,6 +63,25 @@
     text-align: center;
 }
 
+.menu-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.menu-page-subtitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: 4px;
+    color: var(--text-secondary, #cccccc);
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
 /* Profile Button */
 .profile-button {
     justify-self: end;
