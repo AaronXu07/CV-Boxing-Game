@@ -111,14 +111,13 @@ function Account() {
       let ranks = [target_score.rank, reaction_score.rank, fruit_score.rank]; 
 
       let percentRanks = [
-        (target_scores.length - ranks[0] + 1) / target_scores.length,
-        (reaction_scores.length - ranks[1] + 1) / reaction_scores.length,
-        (fruit_scores.length - ranks[2] + 1) / fruit_scores.length
+        (ranks[0] / target_scores.length) * 100,
+        (ranks[1] / reaction_scores.length) * 100,
+        (ranks[2] / fruit_scores.length) * 100
       ]; 
 
-      const result = percentRanks.map((rank, index) => {
-        let percentile = Math.min(99.99, Math.floor(rank * 100));
-        return [ranks[index], percentile];
+      const result = percentRanks.map((percentage, index) => {
+        return [ranks[index], percentage];
       })
 
       setGameRanks(result); 
@@ -291,7 +290,7 @@ function Account() {
                                   <span className="perf-rank-value">{!rankItem[0] ? '-' : rankItem[0]}</span>
                                   {Number.isFinite(rankItem[1]) && rankItem[1] > 0 && (
                                     <span className="perf-percentile">
-                                      Top {Number((100 - rankItem[1]).toFixed(2))}%
+                                      Top {Number(rankItem[1]).toFixed(2)}%
                                     </span>
                                   )}
                                 </div>
