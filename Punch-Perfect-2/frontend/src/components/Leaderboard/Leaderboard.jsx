@@ -142,19 +142,19 @@ function Leaderboard() {
       {/* Tab Navigation */}
       <div className="tab-navigation">
         <button
-          className={`tab-button ${activeTab === 'reactionTime' ? 'active' : ''}`}
+          className={`tab-button tab-button-reaction ${activeTab === 'reactionTime' ? 'active' : ''}`}
           onClick={() => handleTabChange('reactionTime')}
         >
           Reaction Time
         </button>
         <button
-          className={`tab-button ${activeTab === 'targetTest' ? 'active' : ''}`}
+          className={`tab-button tab-button-target ${activeTab === 'targetTest' ? 'active' : ''}`}
           onClick={() => handleTabChange('targetTest')}
         >
           Target Test
         </button>
         <button
-          className={`tab-button ${activeTab === 'fruitNinja' ? 'active' : ''}`}
+          className={`tab-button tab-button-fruit ${activeTab === 'fruitNinja' ? 'active' : ''}`}
           onClick={() => handleTabChange('fruitNinja')}
         >
           Fruit Ninja

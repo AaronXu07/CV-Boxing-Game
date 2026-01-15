@@ -8,6 +8,7 @@
   padding-bottom: 3rem;
   position: relative;
   font-family: 'Rajdhani', sans-serif;
+  overflow-y: scroll;
 }
 
 /* Background Animation Layer (Shared) */
@@ -168,15 +169,45 @@
   background-color: rgba(40, 40, 40, 0.95);
 }
 
-.tab-button:active {
-  transform: translateY(1px);
-}
-
 .tab-button.active {
   background-color: var(--accent-primary, #e63946);
   border-color: var(--accent-primary, #e63946);
   color: #ffffff;
   box-shadow: 0 0 15px rgba(230, 57, 70, 0.3);
+}
+
+/* Game Mode Specific Button Colors */
+.tab-button-reaction:hover {
+  border-color: #ffd60a;
+}
+
+.tab-button-reaction.active {
+  background-color: #ffd60a;
+  border-color: #ffd60a;
+  color: #000000;
+  box-shadow: 0 0 15px rgba(255, 214, 10, 0.4);
+}
+
+.tab-button-target:hover {
+  border-color: #e63946;
+}
+
+.tab-button-target.active {
+  background-color: #e63946;
+  border-color: #e63946;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
+}
+
+.tab-button-fruit:hover {
+  border-color: #5CE65C;
+}
+
+.tab-button-fruit.active {
+  background-color: #5CE65C;
+  border-color: #5CE65C;
+  color: #000000;
+  box-shadow: 0 0 15px rgba(92, 230, 92, 0.4);
 }
 
 /* Leaderboard Content */

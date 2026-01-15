@@ -137,13 +137,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  margin-bottom: 3rem;
-  padding: 2.5rem;
-  background-color: rgba(20, 20, 20, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
+  margin-bottom: 2rem;
+  padding: 2rem 3rem;
+  background-color: #0d0d0d;
+  border-radius: 12px;
+  border: 1px solid #1a1a1a;
 }
 
 .username-section {
@@ -152,148 +150,256 @@
   gap: 1rem;
 }
 
+.username-body {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.username-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .user-info h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: #ffffff;
   margin: 0;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
   font-weight: 700;
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: -0.5px;
 }
 
 .logout-button {
-  padding: 0.75rem 2rem;
-  background-color: rgba(230, 57, 70, 0.1);
-  border: 1px solid var(--accent-primary, #e63946);
-  color: var(--accent-primary, #e63946);
-  font-size: 1rem;
+  padding: 0.5rem 1.25rem;
+  background-color: transparent;
+  border: 1px solid #333;
+  color: #888;
+  font-size: 0.85rem;
   font-weight: 600;
-  border-radius: 2px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  transition: all 0.2s ease;
   font-family: 'Rajdhani', sans-serif;
+  align-self: flex-start;
+  text-transform: uppercase;
 }
 
 .logout-button:hover {
-  background-color: var(--accent-primary, #e63946);
-  color: #ffffff;
-}
-
-.logout-button:active {
-  transform: translateY(1px);
+  border-color: #e63946;
+  color: #e63946;
+  background-color: rgba(230, 57, 70, 0.05);
 }
 
 .stats-card {
-  background-color: #0a0a0a;
-  border: 2px solid #e63946;
-  border-radius: 2px;
-  padding: 1.5rem 2.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 180px;
+  align-items: flex-end;
 }
 
 .stat-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #999999;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+  font-family: 'Rajdhani', sans-serif;
 }
 
 .stat-value {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #e63946;
-  font-family: 'Orbitron', monospace;
-  letter-spacing: 0.05em;
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  line-height: 1;
+}
+
+/* Dashboard Grid Layout (One Column now) */
+.dashboard-grid {
+  display: block;
+  margin-bottom: 2rem;
 }
 
 .stats-section {
   padding: 2.5rem;
-  background-color: #0a0a0a;
-  border: 2px solid #333333;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  background-color: #0d0d0d;
+  border-radius: 12px;
+  border: 1px solid #1a1a1a;
+  height: auto;
 }
 
-.stats-section:last-child {
-  margin-bottom: 2;
-  padding-bottom: 2rem;
+.stats-section.full-width {
+  width: 100%;
 }
 
 .stats-section h2 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 2rem;
+  font-size: 1.5rem;
   color: #ffffff;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #222;
+  padding-bottom: 1rem;
+  font-family: 'Orbitron', sans-serif;
+  text-align: left;
 }
 
-.high-scores-grid {
+/* Performance List & Cards */
+.performance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.performance-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 2fr 1.5fr 1.5fr;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  background-color: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid #333;
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+.performance-card:hover {
+  transform: translateX(6px);
+  background-color: rgba(30, 30, 30, 0.95);
+  border-left-color: #e63946;
+  border-color: rgba(230, 57, 70, 0.3);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Left: Mode Info */
+.perf-left {
+  display: flex;
+  align-items: center;
   gap: 1.5rem;
 }
 
-.score-card {
-  background-color: #0a0a0a;
-  border: 3px solid #e63946;
-  border-radius: 8px;
-  padding: 2rem;
+.perf-icon {
+  color: #e63946;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+}
+
+.performance-card:hover .perf-icon {
+  opacity: 1;
+  color: #ffffff;
+}
+
+.perf-mode {
+  font-size: 1.4rem;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* Stat Columns Shared */
+.perf-center,
+.perf-right {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
+  justify-content: center;
 }
 
-.score-card:hover {
-  border-color: #ff4d5a;
-  transform: translateY(-4px);
+.perf-center {
+  align-items: flex-start; /* Or center if preferred */
+  padding-left: 2rem;
+  border-left: 1px solid rgba(255,255,255,0.05);
 }
 
-.rank-card {
-  border-color: #4a90e2;
+.perf-right {
+  align-items: flex-end;
+  padding-left: 2rem;
 }
 
-.rank-card:hover {
-  border-color: #5da3ff;
-}
-
-.rank-card .score-card-value {
-  color: #4a90e2;
-}
-
-.score-card-mode {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #cccccc;
+.perf-label {
+  font-size: 0.85rem;
+  color: #888;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  font-family: 'Rajdhani', sans-serif;
 }
 
-.score-card-value {
-  font-size: 2.5rem;
+.perf-value {
+  font-size: 2rem;
+  color: #ffffff;
   font-weight: 700;
-  color: #e63946;
-  font-family: 'Orbitron', monospace;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
+  font-family: 'Orbitron', sans-serif;
+  line-height: 1;
 }
 
-.percentile-card-value {
-  color: #4a90e2;
-  font-size:1.5rem; 
+/* Rank Group Specifics */
+.perf-rank-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  position: relative;
 }
+
+.perf-rank-hash {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 300;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.perf-rank-value {
+  font-size: 2.2rem;
+  color: #ffffff;
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+  line-height: 1;
+}
+
+.perf-percentile {
+  font-size: 0.8rem;
+  color: #e63946;
+  background-color: rgba(230, 57, 70, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: 'Rajdhani', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .performance-card {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .perf-left, 
+  .perf-center, 
+  .perf-right {
+    align-items: center;
+    padding-left: 0;
+    border-left: none;
+  }
+  
+  .perf-center {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 1rem 0;
+  }
+}
+
 
 /* Scores Table */
 .scores-table-container {
@@ -346,6 +452,21 @@
   color: #ffffff;
   font-weight: 600;
   text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.history-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 1.1rem;
+}
+
+tr:hover .history-icon {
+  color: #e63946;
 }
 
 .score-cell {

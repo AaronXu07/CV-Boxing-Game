@@ -8,6 +8,9 @@ import { supabase } from '../../api/supabase.js'
 import { getCurrentSession } from '../../api/authFunctions.js'
 import { getUsername } from '../../api/profile.js'
 import { BarLoader } from 'react-spinners'; 
+import { MdGpsFixed } from 'react-icons/md';
+import { IoFlashSharp } from 'react-icons/io5';
+import { GiAppleSeeds } from 'react-icons/gi';
 
 function Account() {
   const navigate = useNavigate();
@@ -251,37 +254,52 @@ function Account() {
                     </div>
                   </div>
 
-                  <div className="stats-section">
-                    <h2>Your High Scores</h2>
-                    <div className="high-scores-grid">
-                      {highScores.map((item, index) => (
-                        <div key={index} className="score-card">
-                          <div className="score-card-mode">{item.mode}</div>
-                          <div className="score-card-value">
-                            {!item.highscore ? '-' : item.highscore }
-                            {item.mode === 'Reaction' && item.highscore ? ' ms' : ''}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <div className="dashboard-grid">
+                    <div className="stats-section full-width">
+                      <h2>Performance Overview</h2>
+                      <div className="performance-list">
+                        {[
+                          { id: 48392017, name: 'Targets', icon: MdGpsFixed, rankIndex: 0 },
+                          { id: 76015482, name: 'Reaction', icon: IoFlashSharp, rankIndex: 1 },
+                          { id: 19587430, name: 'Fruit Ninja', icon: GiAppleSeeds, rankIndex: 2 }
+                        ].map((mode) => {
+                          const highScoreItem = highScores.find(h => h.gamemode_id === mode.id) || {};
+                          const rankItem = gameRanks[mode.rankIndex] || [];
+                          const Icon = mode.icon;
 
-                  <div className="stats-section">
-                    <h2>Leaderboard Ranks</h2>
-                    <div className="high-scores-grid">
-                      {gameRanks.map((item, index) => (
-                        <div key={index} className="score-card rank-card">
-                          <div className="score-card-mode">
-                            {index === 0 ? 'Targets' : index === 1 ? 'Reaction' : 'Fruit Ninja'}
-                          </div>
-                          <div className="score-card-value">
-                            {!item[0] ? '-' : item[0] + suffix(Number(item[0]))}
-                          </div>
-                          {Number.isFinite(item[1]) && item[1] > 0 && <div className="percentile-card-value">
-                            {`${item[1] + suffix(item[1])} Percentile`} 
-                          </div>}
-                        </div>
-                      ))}
+                          return (
+                            <div key={mode.id} className="performance-card">
+                              <div className="perf-left">
+                                <div className="perf-icon">
+                                  <Icon size={28} />
+                                </div>
+                                <span className="perf-mode">{mode.name}</span>
+                              </div>
+                              
+                              <div className="perf-center">
+                                <span className="perf-label">Personal Best</span>
+                                <span className="perf-value">
+                                  {!highScoreItem.highscore ? '-' : highScoreItem.highscore}
+                                  {mode.name === 'Reaction' && highScoreItem.highscore ? ' ms' : ''}
+                                </span>
+                              </div>
+
+                              <div className="perf-right">
+                                <span className="perf-label">Global Rank</span>
+                                <div className="perf-rank-group">
+                                  <span className="perf-rank-hash">#</span>
+                                  <span className="perf-rank-value">{!rankItem[0] ? '-' : rankItem[0]}</span>
+                                  {Number.isFinite(rankItem[1]) && rankItem[1] > 0 && (
+                                    <span className="perf-percentile">
+                                      Top {Number((100 - rankItem[1]).toFixed(2))}%
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                   <div className="stats-section">
@@ -297,13 +315,23 @@ function Account() {
                         </thead>
                         <tbody>
                           {userScores.length > 0 ? (
-                            currentScores.map((item, index) => (
-                              <tr key={index}>
-                                <td className="gamemode-cell">{item.gamemode.gamemode_name}</td>
-                                <td className="score-cell">{item.score}</td>
-                                <td className="date-cell">{new Date(item.created_at).toLocaleDateString()}</td>
-                              </tr>
-                            ))
+                            currentScores.map((item, index) => {
+                              const name = item.gamemode.gamemode_name;
+                              const Icon = name.includes('Target') ? MdGpsFixed : 
+                                           name.includes('Reaction') ? IoFlashSharp :
+                                           name.includes('Fruit') ? GiAppleSeeds : null;
+                              
+                              return (
+                                <tr key={index}>
+                                  <td className="gamemode-cell">
+                                    {Icon && <span className="history-icon"><Icon /></span>}
+                                    {name}
+                                  </td>
+                                  <td className="score-cell">{item.score}</td>
+                                  <td className="date-cell">{new Date(item.created_at).toLocaleDateString()}</td>
+                                </tr>
+                              );
+                            })
                           ) : (
                             <tr>
                               <td colSpan="3" className="no-scores">No scores yet. Start playing to see your history!</td>
