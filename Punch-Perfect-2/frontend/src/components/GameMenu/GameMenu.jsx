@@ -3,6 +3,9 @@ import { useState, useRef, useEffect } from 'react';
 import './gamemenu.css';
 import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
+import { GiBoxingGlove, GiAppleSeeds, GiPunch } from 'react-icons/gi';
+import { IoFlashSharp } from 'react-icons/io5';
+import { MdGpsFixed } from 'react-icons/md';
 
 function GameMenu() {
   const navigate = useNavigate();
@@ -74,24 +77,28 @@ function GameMenu() {
       id: 'range',
       title: 'Range',
       description: 'Practice your punches freely',
+      icon: GiBoxingGlove,
       onClick: startRangeMode
     },
     {
       id: 'targets',
       title: 'Target Test',
       description: 'Hit as many targets as possible',
+      icon: MdGpsFixed,
       onClick: startTargetsMode
     },
     {
       id: 'reaction',
       title: 'Reaction Time',
       description: 'Test your reflexes and speed',
+      icon: IoFlashSharp,
       onClick: startReactionMode
     },
     {
       id: 'fruitninja',
       title: 'Fruit Ninja',
       description: 'Punch flying fruits with precision',
+      icon: GiAppleSeeds,
       onClick: startFruitNinja
     }
   ];
@@ -121,21 +128,28 @@ function GameMenu() {
       </div>
 
       <div className="game-cards-grid">
-        {gameModes.map((mode) => (
-          <button
-            key={mode.id}
-            type="button"
-            className="game-card"
-            style={tiltStyle[mode.id] || {}}
-            onMouseMove={(e) => handleMouseMove(e, mode.id)}
-            onMouseLeave={() => handleMouseLeave(mode.id)}
-            onClick={mode.onClick}
-            aria-label={mode.title}
-          >
-            <h2 className="game-card-title">{mode.title}</h2>
-            <p className="game-card-description">{mode.description}</p>
-          </button>
-        ))}
+        {gameModes.map((mode) => {
+          const IconComponent = mode.icon;
+          return (
+            <button
+              key={mode.id}
+              type="button"
+              className="game-card"
+              data-mode={mode.id}
+              style={tiltStyle[mode.id] || {}}
+              onMouseMove={(e) => handleMouseMove(e, mode.id)}
+              onMouseLeave={() => handleMouseLeave(mode.id)}
+              onClick={mode.onClick}
+              aria-label={mode.title}
+            >
+              <div className="game-card-icon">
+                <IconComponent />
+              </div>
+              <h2 className="game-card-title">{mode.title}</h2>
+              <p className="game-card-description">{mode.description}</p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
