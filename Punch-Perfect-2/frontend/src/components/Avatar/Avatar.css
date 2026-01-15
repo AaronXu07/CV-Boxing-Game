@@ -1,0 +1,10 @@
+.user-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f0f0f0;
+  display: inline-block;
+}
+
+.user-avatar.loaded {
+  background-color: transparent;
+}

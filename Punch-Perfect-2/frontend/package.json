@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/geist-sans": "^5.2.5",
     "@mediapipe/camera_utils": "^0.3.1675466862",
     "@mediapipe/hands": "^0.4.1675469240",
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
     "@supabase/supabase-js": "^2.89.0",
     "@vercel/analytics": "^1.6.1",
     "dotenv": "^17.2.3",
+    "geist": "^1.5.1",
     "package.json": "^0.0.0",
     "pkg.json": "^2.0.9",
     "react": "^19.1.1",

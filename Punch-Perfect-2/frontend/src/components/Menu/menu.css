@@ -70,12 +70,13 @@
     align-items: center;
     gap: 1rem;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.75rem 1.25rem;
+    outline: 2px solid var(--accent-primary);
+    outline-offset: -2px;
+    border-radius: 25px;
+    padding: 0.75, 1.25rem;
     cursor: pointer;
     color: var(--text-secondary, #cccccc);
     transition: all 0.2s ease-out;
-    border-radius: 2px; /* Sharper corners */
     pointer-events: auto; /* Re-enable clicks */
 }
 
@@ -83,9 +84,8 @@
 .profile-button:focus-visible {
     background-color: rgba(255, 255, 255, 0.08);
     color: var(--text-primary, #ffffff);
-    border-color: var(--accent-primary, #e63946);
+    outline: 2px solid #ff4d5a;
     transform: translateY(-1px);
-    outline: none;
 }
 
 .profile-name {

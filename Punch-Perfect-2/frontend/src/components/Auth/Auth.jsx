@@ -76,8 +76,8 @@ function Auth() {
         return;
       }
 
-      if(name > 30) {
-        setError('username must  be less than 3 characters');
+      if(name > 20) {
+        setError('username must be less than 20 characters');
         return;
       }
     }
