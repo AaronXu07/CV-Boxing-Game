@@ -107,6 +107,25 @@ function Leaderboard() {
     }
   };
 
+  // Calculate ranks with proper tie handling (1, 1, 3, 4, 4, 6...)
+  const calculateRanks = (leaderboardData) => {
+    const rankedData = [];
+    let currentRank = 1;
+
+    for (let i = 0; i < leaderboardData.length; i++) {
+      if (i > 0 && leaderboardData[i].score !== leaderboardData[i - 1].score) {
+        currentRank = i + 1;
+      }
+      rankedData.push({
+        ...leaderboardData[i],
+        rank: currentRank
+      });
+    }
+    return rankedData;
+  };
+
+  const rankedLeaderboard = calculateRanks(leaderboard);
+
   return (
     <div className="leaderboard-container">
       <Background />
@@ -154,13 +173,13 @@ function Leaderboard() {
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((entry, index) => (
+              {rankedLeaderboard.map((entry, index) => (
                 <tr 
-                  key={index+1} 
-                  className={`leaderboard-row ${index+1 <= 3 ? `rank-${index+1}` : ''}`}
+                  key={index} 
+                  className={`leaderboard-row ${entry.rank <= 3 ? `rank-${entry.rank}` : ''}`}
                 >
                   <td className="rank-column">
-                    {index+1}
+                    {entry.rank}
                   </td>
                   <td className="username-column">{entry.user.display_name}</td>
                   <td className="score-column">{entry.score}{activeTab === 'reactionTime' ? ' ms' : ''}</td>
