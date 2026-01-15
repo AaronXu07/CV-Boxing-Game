@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './leaderboard.css'
 import Background from '../Background/Background'
+import Avatar from '../Avatar/Avatar'
 import { useSound } from '../../hooks/useSound.js'
 import { BarLoader } from 'react-spinners'
 import { getCurrentSession } from '../../api/authFunctions.js'
@@ -14,6 +15,7 @@ function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]); 
   const [userRank, setUserRank] = useState(null); 
   const [loggedIn, setLoggedIn ] = useState(false); 
+  const [currentUserAvatar, setCurrentUserAvatar] = useState(null); 
 
   const back = () => {
     playButtonSound();
@@ -44,6 +46,7 @@ function Leaderboard() {
 
         if(session) {
           setLoggedIn(true);
+          setCurrentUserAvatar(session.user.user_metadata?.avatar_url);
           const userRankPromise = fetch(`${import.meta.env.VITE_BACKEND_URL}/api/leaderboard/${gamemodeId}/me`, {
             headers: {
               Authorization: `Bearer ${session.access_token}`
@@ -181,7 +184,12 @@ function Leaderboard() {
                   <td className="rank-column">
                     {entry.rank}
                   </td>
-                  <td className="username-column">{entry.user.display_name}</td>
+                  <td className="username-column">
+                    <div className="username-body">
+                      <Avatar src={entry.user.avatar_url} size={30} alt={entry.user.display_name} />
+                      {entry.user.display_name}
+                    </div>
+                  </td>
                   <td className="score-column">{entry.score}{activeTab === 'reactionTime' ? ' ms' : ''}</td>
                   <td className="date-column">{new Date(entry.created_at).toLocaleDateString()}</td>
                 </tr>
@@ -197,7 +205,12 @@ function Leaderboard() {
                 <tbody>
                   {!userRank || !userRank.display_name ? <tr className='leaderboard-row'>
                                   <td className="rank-column"> - </td>
-                                  <td className="username-column"> You </td>
+                                  <td className="username-column">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                      <Avatar src={currentUserAvatar} size={30} alt="Me" />
+                                      You
+                                    </div>
+                                  </td>
                                   <td className="score-column"> - </td>
                                   <td className="date-column"> - </td>
                                 </tr> : 
@@ -207,7 +220,12 @@ function Leaderboard() {
                     <td className="rank-column">
                       {userRank.rank}
                     </td>
-                    <td className="username-column">{userRank.display_name} (You)</td>
+                    <td className="username-column">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Avatar src={userRank.avatar_url} size={30} alt={userRank.display_name} />
+                        {userRank.display_name} (You)
+                      </div>
+                    </td>
                     <td className="score-column">{userRank.score}{activeTab === 'reactionTime' ? ' ms' : ''}</td>
                     <td className="date-column">{new Date(userRank.created_at).toLocaleDateString()}</td>
                   </tr>

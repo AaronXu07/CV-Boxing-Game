@@ -43,17 +43,16 @@ function SetUsername() {
     const name = username.trim(); 
 
     if (name.length < 3) {
-      setError('username is too short');
+      setError('username must be at least 3 characters');
       return;
     }
 
-    if (name.length > 30) {
-      setError('username is too long');
+    if (name.length > 20) {
+      setError('username must be less than 20 characters');
       return;
     }
 
     try{
-
       const currentSession = await getCurrentSession();
 
       if (!currentSession) {

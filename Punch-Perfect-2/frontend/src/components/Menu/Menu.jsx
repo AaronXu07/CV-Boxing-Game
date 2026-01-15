@@ -2,13 +2,16 @@ import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react'; 
 import './menu.css';
 import Background from '../Background/Background';
+import Avatar from '../Avatar/Avatar';
 import { useSound } from '../../hooks/useSound.js';
 import { getCurrentSession } from '../../api/authFunctions.js';
+import { supabase } from '../../api/supabase.js';
 
 function Menu() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
   const [ username, setUsername ] = useState(null); 
+  const [ avatarUrl, setAvatarUrl ] = useState(null);
 
   const handleNavigation = (path) => {
     playButtonSound();
@@ -16,21 +19,29 @@ function Menu() {
   };
 
   useEffect(() => {
-    const setPage = async () => {
-      const session = await getCurrentSession(); 
-      if(session){
+    const updateProfile = (session) => {
+      if(session?.user){
         setUsername(session.user.user_metadata?.display_name);
-      } 
+        setAvatarUrl(session.user.user_metadata?.avatar_url);
+      } else {
+        setUsername(null);
+        setAvatarUrl(null);
+      }
     };
 
-    setPage(); 
+    getCurrentSession().then(updateProfile);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      updateProfile(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
     <div className="menu-container">
       <Background enableTargets={true} />
 
-      {/* Header: Logo & Profile */}
       <header className="menu-header">
         <div className="menu-logo">
           <img src="/punch-perfect-logo.png" alt="Punch Perfect" />
@@ -44,12 +55,7 @@ function Menu() {
           aria-label="Account"
         >
           <span className="profile-name">{username || 'Guest'}</span>
-          <div className="profile-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M5 20C5 16.6863 7.68629 14 11 14H13C16.3137 14 19 16.6863 19 20" strokeLinecap="round"/>
-            </svg>
-          </div>
+          <Avatar src={avatarUrl} size={32} alt={username || 'Guest'} />
         </button>
       </header>
 

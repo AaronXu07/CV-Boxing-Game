@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './account.css'
-import Background from '../Background/Background'
+import Avatar from '../Avatar/Avatar'
+import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js'
 import { supabase } from '../../api/supabase.js'
 import { getCurrentSession } from '../../api/authFunctions.js'
@@ -13,6 +14,7 @@ function Account() {
   const { playButtonSound } = useSound();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(true); 
 
   const [highScores, setHighScores] = useState([]);
@@ -144,7 +146,7 @@ function Account() {
   const loadUserData = async (session) => {
     try {
       setIsLoggedIn(true);
-      // Fetch everything in parallel
+      setAvatarUrl(session.user.user_metadata?.avatar_url);
       const [usernameData] = await Promise.all([
         getUsername(session),
         fetchHighScores(session),
@@ -160,9 +162,7 @@ function Account() {
   };
 
   useEffect(() => {
-    // Initial session check
     const initSession = async () => {
-      // Give Supabase a moment to process OAuth redirect
       await new Promise(resolve => setTimeout(resolve, 100));
       
       const session = await getCurrentSession();
@@ -234,10 +234,16 @@ function Account() {
                 <>
                   <div className="user-info">
                     <div className="username-section">
-                      <h2>{username}</h2>
-                      <button className="logout-button" onClick={handleLogout}>
-                        Logout
-                      </button>
+                      <div className="username-body">
+                        <Avatar src={avatarUrl} size={100} alt={username} />
+                        <div className="username-profile">
+                          <h2>{username}</h2>
+                          <button className="logout-button" onClick={handleLogout}>
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                      
                     </div>
                     <div className="stats-card">
                       <div className="stat-label">Total Tests</div>
