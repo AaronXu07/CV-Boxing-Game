@@ -364,15 +364,24 @@
 }
 
 @media (max-width: 768px) {
+  .leaderboard-container {
+    display: flex;
+    flex-direction: column;
+  }
+
   .leaderboard-header h1 {
     font-size: 2.5rem;
   }
 
   .back-button {
-    top: 1rem;
-    left: 1rem;
-    padding: 0.6rem 1.2rem;
+    position: relative;
+    top: auto;
+    left: auto;
     font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+    order: -1;
+    align-self: flex-start;
+    margin-bottom: 1rem;
   }
 
   .tab-navigation {

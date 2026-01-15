@@ -36,6 +36,11 @@ function Auth() {
     });
   };
 
+  const handleForgotPassword = () => {
+    playButtonSound();
+    setTimeout(() => navigate('/forgot-password'), 200);
+  };
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -64,11 +69,6 @@ function Auth() {
       if (formData.password.length < 6) {
         setError('Password must be at least 6 characters');
         return;
-      }
-
-      if(formData.password.includes(" ")) {
-        setError("Password cannot have spaces"); 
-        return; 
       }
 
       if(name < 3) {
@@ -191,7 +191,14 @@ function Auth() {
 
             {/* Password */}
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <div className="password-top">
+                <label htmlFor="password">Password</label>
+                {isLogin && (
+                  <span className="forgot-password" onClick={handleForgotPassword}>
+                    Forgot Password?
+                  </span>
+                )}
+              </div>
               <input
                 type="password"
                 id="password"

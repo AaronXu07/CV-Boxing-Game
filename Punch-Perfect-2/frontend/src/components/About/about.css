@@ -177,11 +177,15 @@
         font-size: 1rem;
     }
 
-    .about-buttons .back-button {
+    .back-button {
+        position: relative;
+        top: auto;
+        left: auto;
         font-size: 0.9rem;
         padding: 0.6rem 1.2rem;
-        top: 1rem;
-        left: 1rem;
+        order: -1;
+        align-self: flex-start;
+        margin-bottom: 1rem;
     }
 }
 

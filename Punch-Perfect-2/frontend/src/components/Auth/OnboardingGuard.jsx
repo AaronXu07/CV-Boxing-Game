@@ -18,7 +18,6 @@ export default function OnboardingGuard() {
 
         const data = await getUsername(session); 
 
-        // Handle bad token (401 from backend)
         if (data && (data.error === 'Invalid token' || data.error === 'Authentication failed')) {
             console.log("Invalid token detected in guard, signing out");
             await supabase.auth.signOut();
@@ -36,7 +35,6 @@ export default function OnboardingGuard() {
         }
       } catch (err) {
         console.error("Error checking username:", err);
-        // If token is invalid, clear session and redirect to auth
         if (err.message?.includes('401') || err.message?.includes('Invalid token')) {
           await supabase.auth.signOut();
           navigate('/auth');
