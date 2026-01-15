@@ -5,10 +5,19 @@
 [![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=for-the-badge)](https://punchperfect.vercel.app/) [![Video](https://img.shields.io/badge/Watch-Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/mA44cL6frXc)
 
 A production-ready web application that transforms your browser into an interactive boxing training platform. Using MediaPipe's pose estimation and custom punch detection algorithms, the system achieves 30 FPS pose tracking with under 150ms response latency, all processed client-side without external hardware or GPU acceleration.
+---
+## Game Modes
+
+| Mode | Objective | Key Metric |
+|------|-----------|------------|
+| **Targets** | Punch left/right color-coded targets before they expire | Targets Hit | 
+| **Reaction** | Punch as fast as possible when indicators appear | Reaction time (ms) |
+| **Fruit Ninja** | Punch flying fruits while avoiding bombs | Accuracy / Combo |
+| **The Range** | Punch targets infinitely for practice | None |
 
 ---
 
-## What Makes This Impressive
+## Key Highlights
 
 **Technical Achievement:**
 - Processes 33 body landmarks per frame in real-time while maintaining 30 FPS UI rendering
@@ -31,43 +40,7 @@ A production-ready web application that transforms your browser into an interact
 
 ## System Architecture
 
-```
-┌───────────────────────────────────────────────────────────────┐
-│                      REACT FRONTEND (Vite)                    │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
-│  │  Webcam API  │──▶│   MediaPipe  │──▶│    Punch     │       │
-│  │  (640×480)   │   │ 33 Landmarks │   │  Detection   |       |
-│  │   30 FPS     │   │   30 FPS     │   │    Engine    │       │
-│  └──────────────┘   └──────────────┘   └──────────────┘       │
-│         │                   │                   │             │
-│         └───────────────────┴───────────────────┘             │
-│                             ↓                                 │
-│                   ┌──────────────────┐                        |
-│                   │  Game Modes      │                        │
-│                   │  • Targets       │ ◀─ Reusable Hooks      │
-│                   │  • Reaction      │    Architecture        │
-│                   │  • Fruit Ninja   │                        │
-│                   └──────────────────┘                        │
-└─────────────────────────────┬─────────────────────────────────┘
-                              │ REST API
-                              │ (Authenticated)
-                              ↓
-                ┌─────────────────────────────┐
-                │    EXPRESS.JS BACKEND       │
-                │  • JWT Authentication       │
-                │  • Score Validation         │
-                │  • Rate Limiting Middleware │
-                │  • Leaderboard Aggregation  │
-                └──────────────┬──────────────┘
-                               │
-                               ↓
-                     ┌─────────────────┐
-                     │    SUPABASE     │
-                     │  • PostgreSQL   │
-                     │  • Auth Service │
-                     │  • Row Security │
-                     └─────────────────┘
-```
+![My Image](Punch-Perfect-2/frontend/public/diagram.png)
 
 ### Tech Stack
 
@@ -85,57 +58,20 @@ A production-ready web application that transforms your browser into an interact
 
 ### Punch Detection Algorithm
 
-**Challenge:** Distinguish intentional punch gestures from arbitrary hand movements in real-time.
+**Goal:** Distinguish intentional punches from arbitrary hand movements in real-time.
 
-**Solution:** Custom biomechanical algorithm analyzing 3D joint positions (shoulder, elbow, wrist) with multiple validation conditions:
-
-```javascript
-// Core geometric calculations
-const angle = angleBetweenSegments(shoulder, elbow, wrist);
-const shoulderElbowDistanceX = Math.abs(shoulder.x - elbow.x);
-const shoulderElbowDistanceY = Math.abs(shoulder.y - elbow.y);
-const shoulderWristDistanceX = Math.abs(shoulder.x - wrist.x);
-const slope1 = (elbow.y - shoulder.y) / Math.abs(elbow.x - shoulder.x);
-const slope2 = (wrist.y - elbow.y) / Math.abs(wrist.x - elbow.x);
-
-// Punch detection conditions
-const condition1 = Math.abs(slope1 - slope2) < 1 && shoulderWristDistanceX >= 0.12; // Linear arm path with extension
-const condition2 = shoulderElbowDistanceX < 0.07 && shoulderElbowDistanceY < 0.20 && angle > 80; // Aligned and extended
-const condition3 = angle > 160; // Fully straightened arm
-const condition4 = shoulderElbowDistanceX < 0.07 && shoulderElbowDistanceY < 0.20 && shoulderWristDistanceX < 0.12; // Compact punch
-
-const isPunch = ((condition1 || condition2) && jointsInOrder) || condition3 || (condition4 && jointsInOrder);
-```
-
-**Key Features:**
-
-1. **Multi-Condition Validation:** Uses four different geometric checks to detect various punch styles
-   - Condition 1: Detects extended punches with linear arm trajectory (slope consistency < 1.0)
-   - Condition 2: Detects aligned punches where shoulder and elbow are vertically close with extension
-   - Condition 3: Detects fully straightened arm punches (angle > 160°)
-   - Condition 4: Detects compact, close-range punches
-
-2. **Geometric Constraints:**
-   - Shoulder-elbow horizontal alignment: < 0.07 (prevents diagonal punches)
-   - Shoulder-elbow vertical alignment: < 0.20 (ensures proper height)
-   - Shoulder-wrist distance: < 0.12 for retracted, > 0.12 for extended
-   - Slope consistency: Validates shoulder-elbow-wrist forms a line
-
-3. **Joint Ordering Validation:**
-   - Ensures shoulder, elbow, wrist are in correct spatial order
-   - Verifies both horizontal (x-axis) and vertical (y-axis) alignment
-   - Allows vertical tolerance of 0.12 for natural arm variation
-
-4. **Guard Position Detection:**
-   - Identifies when arm is bent (angle < 85°) and close to body
-   - Distinguishes defensive stance from punch preparation
-   - Uses shoulder-elbow distance > 0.20 to ensure proper guard form
+**Approach:**
+- Analyzes 3D joint positions (shoulder, elbow, wrist) with multiple geometric validations.
+- Detects extended, aligned, straightened, and compact punches.
+- Validates joint order and slope consistency to reduce false positives.
+- Identifies guard position to differentiate defensive stance from punching.
 
 **Performance:**
-- Accuracy: 80-85% under optimal conditions
-- Latency: 80-150ms from physical punch to visual feedback
-- Multiple validation paths reduce false negatives while maintaining low false positive rate
-- Performance degrades with poor lighting, baggy clothing, or non-frontal camera angles
+- **Accuracy:** 80–85% under optimal conditions  
+- **Latency:** 80–150ms  
+- Works best with good lighting, fitted clothing, and frontal camera angle.
+
+> *Full implementation is available in `/frontend/mediapipe/detectPunches.js`.*
 
 ### Real-Time Pose Processing Pipeline
 The processing pipeline:
@@ -160,75 +96,22 @@ Canvas Rendering (60 FPS)
 - RequestAnimationFrame decouples game loop from pose detection for consistent 60 FPS rendering
 - Object pooling for targets prevents garbage collection pauses
 
-### Collision Detection System
+### React Architecture & State Management
 
-Radius-based Euclidean distance calculation:
-```javascript
-const distance = Math.sqrt((x₁ - x₂)² + (y₁ - y₂)²);
-const hit = distance < (targetRadius + 30px);
-```
-
-Optimized for typical gameplay with 10-15 simultaneous targets, processing under 2ms per frame.
-
-###
-### 4. React Architecture & State Management
-
-**Custom Hooks Pattern:** Modular game logic enables 80% code reuse across modes
-```javascript
-// Core game logic hooks (reusable across all modes)
-Modular game logic enables 80% code reuse across modes:
-```javascript
-// Core game logic hooks (reusable across all modes)
-usePoseDetection()    → Streams landmark data from MediaPipe
-usePunchTracking()    → Converts landmarks to punch events
-useTargetManager()    → Collision detection & scoring logic
-useGameLoop()         → 30 FPS game state updates
-useWebcam()           → Camera initialization & fallback
-usePause()            → ESC key handler + blur detection
-useSound()            → Audio playback with volume control
-```
-
-```
-State flow:
-     ├─ User Session ──────▶ Supabase Auth (JWT tokens)
-     ├─ UI State ──────────▶ Fullscreen, miniview, settings
-     └─ Active Game State
-           │
-           ├─ usePoseDetection ──▶ 33 landmarks @ 30 FPS
-           │         ↓
-           ├─ usePunchTracking ──▶ Punch events (LEFT/RIGHT)
-           │         ↓
-           ├─ useTargetManager ──▶ Hit detection, score tracking
-           │         ↓
-           └─ useGameLoop ──────▶ Canvas rendering @ 60 FPS
-```
+**Custom Hooks:**
+- `usePoseDetection()` → Streams landmarks from MediaPipe  
+- `usePunchTracking()` → Converts landmarks to punch events  
+- `useTargetManager()` → Collision detection & scoring logic  
+- `useGameLoop()` → 30 FPS game updates  
+- `useWebcam()` → Camera initialization  
+- `usePause()` → ESC/blur handling  
+- `useSound()` → Audio playback  
 
 **Benefits:**
-- **Separation of concerns:** Computer vision, game logic, and rendering are independent
-- **Testability:** Each hook can be unit tested in isolation
-- **Mode flexibility:** Different game modes compose hooks in unique ways
-
+- Clear separation of concerns (CV, game logic, rendering)
+- Hooks are **testable in isolation**
+- Supports **mode flexibility**: game modes reuse shared logic
 ---
-
-## Game Modes
-
-| Mode | Objective | Key Metric |
-|------|-----------|------------|
-| **Targets** | Punch left/right color-coded targets before they expire | Targets Hit | 
-| **Reaction** | Punch as fast as possible when indicators appear | Reaction time (ms) |
-| **Fruit Ninja** | Punch flying fruits while avoiding bombs | Accuracy | 
-```javascript
-// Targets: Simple point per hit
-score += 1
-
-// Reaction: Inverse time score (faster = better)
-score = reactionTimeMs
-
-// Fruit Ninja: Exponential combo bonus
-score += basePoints + comboBonus // +1 → +2 → +3 → ...
-```
-
-Leaderboard queries use PostgreSQL aggregation with proper indexing for efficient data retrieval.
 
 ---
 
