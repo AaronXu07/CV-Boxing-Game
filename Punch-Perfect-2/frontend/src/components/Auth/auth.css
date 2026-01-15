@@ -125,9 +125,8 @@
 
 /* Submit Button */
 .submit-button {
-  padding: 1.25rem 2rem;
-  font-size: 1.3rem;
-  font-weight: 700;
+  padding: 1;
+  font-size: 1rem;
   color: #ffffff;
   background-color: #e63946;
   border: 2px solid #e63946;
@@ -179,6 +178,26 @@
 .toggle-link:hover {
   color: #ff4d5a;
 }
+
+.password-top {
+  display: flex; 
+  justify-content:space-between; 
+}
+
+.forgot-password {
+  text-decoration:underline; 
+  cursor:pointer; 
+}
+
+.success-message {
+  color: #4ade80;
+  text-align: center;
+  padding: 0.75rem;
+  background-color: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 4px;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
