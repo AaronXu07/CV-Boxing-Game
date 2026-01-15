@@ -1,23 +1,23 @@
 import supabase from '../config/supabase.js'
 
-const getUsernameById = async (user_id) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('user_id', user_id)
-    .single();
+const getUserProfile = async (user_id) => {
+  const [profileRes, authRes] = await Promise.all([
+    supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', user_id)
+        .single(),
+    supabase.auth.admin.getUserById(user_id)
+  ]);
 
-  if (!error && data?.username) {
-    return data.username;
-  }
+  const profileUsername = !profileRes.error && profileRes.data ? profileRes.data.username : null;
+  const authUser = !authRes.error ? authRes.data.user : null;
+  const authMeta = authUser?.user_metadata || {};
 
-  const { data: { user }, error: authError } = await supabase.auth.admin.getUserById(user_id);
-  
-  if (!authError && user?.user_metadata?.display_name) {
-    return user.user_metadata.display_name;
-  }
-
-  return "Anonymous";
+  return {
+    display_name: profileUsername || authMeta.display_name || "Anonymous",
+    avatar_url: authMeta.avatar_url || null
+  };
 };
 
 export const getLeaderboard = async (req, res) => {
@@ -43,20 +43,27 @@ export const getLeaderboard = async (req, res) => {
 
         const leaderboard = []; 
         const seen = new Set(); 
+        const scoresToProcess = [];
         
         for(const score of data) {
             if(!seen.has(score.user_id)) {
-                leaderboard.push({
-                    user: { display_name: await getUsernameById(score.user_id)},
-                    score: score.score,
-                    created_at: score.created_at
-                }); 
                 seen.add(score.user_id); 
-                if(leaderboard.length === 10) {
+                scoresToProcess.push(score);
+                if(scoresToProcess.length === 10) {
                     break; 
                 }
             }
         }
+
+        const profiles = await Promise.all(scoresToProcess.map(score => getUserProfile(score.user_id)));
+
+        profiles.forEach((profile, index) => {
+            leaderboard.push({
+                user: profile,
+                score: scoresToProcess[index].score,
+                created_at: scoresToProcess[index].created_at
+            });
+        });
 
         res.status(200).json(leaderboard);
 
@@ -103,9 +110,11 @@ export const getRank = async (req, res) => {
                 }
                 
                 if(score.user_id == req.user.id) {
+                    const userProfile = await getUserProfile(score.user_id);
                     info = {
                         rank: rank, 
-                        display_name: await getUsernameById(score.user_id),
+                        display_name: userProfile.display_name,
+                        avatar_url: userProfile.avatar_url,
                         score: score.score,
                         created_at: score.created_at
                     }
