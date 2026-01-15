@@ -44,7 +44,7 @@ function Menu() {
 
       <header className="menu-header">
         <div className="menu-logo">
-          <img src="/punch-perfect-logo.png" alt="Punch Perfect" />
+          <img src="/glove.png" alt="Punch Perfect" />
         </div>
 
         <div className="menu-title-container">
