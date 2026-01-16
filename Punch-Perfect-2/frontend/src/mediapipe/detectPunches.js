@@ -67,13 +67,13 @@ const inOrderY = (arm) => {
 // Detect if arm is in guard position (bent, close to body)
 const isInGuardPosition = (arm) => {
     const angle = angleBetweenSegments(arm[0], arm[1], arm[2]);
-    const shoulderWristClose = Math.abs(arm[0].x - arm[2].x) < 0.1; 
+    const shoulderWristClose = Math.abs(arm[0].x - arm[2].x) < 0.12; 
     const shoulderElbowDist = Math.sqrt(
         Math.pow(arm[0].x - arm[1].x, 2) + 
         Math.pow(arm[0].y - arm[1].y, 2)
     );
     const shoulderElbowFarEnough = shoulderElbowDist > 0.20; 
-    const armBent = angle < 85;
+    const armBent = angle < 87;
     
     return armBent && shoulderWristClose && shoulderElbowFarEnough;
 }
