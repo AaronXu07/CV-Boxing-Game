@@ -85,9 +85,9 @@ function Menu() {
           >
             <span className="menu-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 20V10" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M12 20V4" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M6 20V14" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M18 21V10" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 21V3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M6 21V14" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </span>
             <span className="menu-label">Leaderboard</span>

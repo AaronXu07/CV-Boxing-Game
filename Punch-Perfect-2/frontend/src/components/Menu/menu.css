@@ -88,20 +88,21 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-primary, #050505); /* Solid opaque background */
     outline: 2px solid var(--accent-primary);
     outline-offset: -2px;
     border-radius: 25px;
-    padding: 0.75, 1.25rem;
+    padding: 0.75rem 1.25rem;
     cursor: pointer;
     color: var(--text-secondary, #cccccc);
     transition: all 0.2s ease-out;
     pointer-events: auto; /* Re-enable clicks */
+    z-index: 20; /* Ensure it sits above targets if z-index is used there */
 }
 
 .profile-button:hover,
 .profile-button:focus-visible {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: #1a1a1a; /* Solid lighter background for hover */
     color: var(--text-primary, #ffffff);
     outline: 2px solid #ff4d5a;
     transform: translateY(-1px);
@@ -277,9 +278,10 @@
     
     .menu-group {
         max-width: 90%;
+        gap: 0.75rem;
     }
     
     .menu-item {
-        padding: 1rem 1.25rem;
+        padding: 0.85rem 1rem;
     }
 }

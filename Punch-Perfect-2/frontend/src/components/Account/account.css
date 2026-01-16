@@ -114,7 +114,7 @@
   text-align: center;
   font-size: 3rem;
   margin-bottom: 3rem;
-  padding-top: 2rem;
+  padding-top: 5rem;
   color: #ffffff;
   font-weight: 700;
   letter-spacing: 2px;
@@ -629,9 +629,26 @@ tr:hover .history-icon {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .account-container {
+      display: flex;
+      flex-direction: column;
+  }
+
+  .account-container .back-button {
+      position: relative;
+      top: auto;
+      left: auto;
+      font-size: 0.9rem;
+      padding: 0.6rem 1.2rem;
+      order: -1;
+      align-self: flex-start;
+      margin-bottom: 1rem;
+  }
+
   .account-container h1 {
     font-size: 2.5rem;
     margin-bottom: 2rem;
+    padding-top: 0; /* Reset padding since back button pushes content */
   }
 
   .user-info {
@@ -697,15 +714,10 @@ tr:hover .history-icon {
 
   .account-container h1 {
     font-size: 2rem;
-    padding-top: 1rem;
+    padding-top: 0;
   }
 
-  .account-container .back-button {
-    top: 1rem;
-    left: 1rem;
-    font-size: 0.9rem;
-    padding: 0.6rem 1.2rem;
-  }
+  /* Back button styles governed by 768px rule */
 
   .user-info,
   .stats-section,
