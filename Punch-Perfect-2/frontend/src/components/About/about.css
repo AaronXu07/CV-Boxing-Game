@@ -218,94 +218,165 @@
 
 .tutorial-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
+    max-width: 1100px;
+    margin: 1rem auto;
+    padding: 1rem;
 }
 
 .tutorial-card {
-    background-color: #000000;
-    border: 2px solid #222222;
-    padding: 1.5rem 1rem;
-    border-radius: 2px;
+    /* Glassmorphism attempt */
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    padding: 2rem 1.5rem;
+    border-radius: 16px; /* softer corners */
     text-align: center;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1.5rem;
     align-items: center;
-    aspect-ratio: 1;
+    min-height: 300px; 
     justify-content: center;
-    transform-origin: center center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .tutorial-card:hover {
-    /* visual lift handled by inline transform (tilt) - add subtle glow */
-    border-color: #e63946;
-    box-shadow: 0 18px 40px rgba(230,57,70,0.08), 0 6px 18px rgba(0,0,0,0.45);
+    border-color: rgba(230, 57, 70, 0.5);
+    background: rgba(30, 30, 30, 0.8);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 15px rgba(230, 57, 70, 0.2);
 }
 
 .tutorial-icon {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
+    color: #e63946;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.4));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tutorial-card:hover .tutorial-icon {
+    transform: scale(1.1) translateY(-5px);
 }
 
 .tutorial-title {
-    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
     color: #ffffff;
-    text-transform: uppercase;
+    font-size: 1.4rem;
     letter-spacing: 1px;
-    font-size: 1.1rem;
-    line-height: 1.3;
+    margin-bottom: 0.5rem;
 }
 
 .tutorial-summary {
-    color: #cccccc;
+    color: #a0a0a0;
     font-size: 0.95rem;
-    line-height: 1.4;
+    line-height: 1.5;
+    font-weight: 300;
 }
 
 .tutorial-detail {
+    max-width: 1000px;
+    background: rgba(10, 10, 10, 0.85); /* Darker for readability */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 3rem;
     text-align: center;
 }
 
-.tutorial-detail .back-button.small {
-    position: relative;
-    top: 0;
-    left: 0;
-    margin-bottom: 1rem;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+.detail-icon-wrapper {
+    font-size: 4rem;
+    color: #e63946;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    animation: fadeInDown 0.5s ease-out;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .detail-title {
-    font-size: 2.2rem;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.8rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     text-align: center;
 }
 
 .detail-summary {
-    color: #cccccc;
+    font-size: 1.2rem;
+    color: #bbbbbb;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
     text-align: center;
-    font-size: 1.15rem;
-    margin-bottom: 1.5rem;
+}
+
+.step-list-container {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .step-list {
+    list-style: none; /* remove default */
+    padding: 0;
+    margin: 0;
     margin: 1rem auto;
+    width: 100%;
     color: #e6e6e6;
-    text-align: left;
-    max-width: 800px;
-    font-size: 1.4rem;
-    line-height: 1.8;
 }
 
 .step-list li {
-    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255,255,255,0.03);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+    text-align: left;
+}
+
+.step-list li:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #e63946;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 50%;
+    flex-shrink: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    box-shadow: 0 0 10px rgba(230, 57, 70, 0.4);
+}
+
+.step-text {
+    flex: 1;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #eee;
 }
 
 .detail-actions {
@@ -318,17 +389,20 @@
     background-color: #e63946;
     border: 2px solid #e63946;
     color: #ffffff;
-    border-radius: 2px;
+    border-radius: 4px;
     font-weight: 700;
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-size: 1.05rem;
+    transition: all 0.2s;
 }
 
 .start-button:hover {
     background-color: #ff4d5a;
     border-color: #ff4d5a;
+    box-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
+    transform: translateY(-2px);
 }
 
 .tutorial-card:focus {
@@ -352,9 +426,23 @@
     
     .tutorial-card {
         padding: 1.25rem 1rem;
+        min-height: auto;
     }
     
     .about-text {
         padding: 2rem 1.5rem;
+    }
+
+    .detail-title {
+        font-size: 2rem;
+    }
+    
+    .step-list li {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .step-number {
+        align-self: flex-start;
     }
 }

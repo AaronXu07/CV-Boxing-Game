@@ -4,6 +4,13 @@ import './about.css';
 import Background from '../Background/Background';
 import { useSound } from '../../hooks/useSound.js';
 
+// Icons
+import { MdTune, MdTimer, MdFitnessCenter, MdLightbulb } from 'react-icons/md';
+import { BiTargetLock } from 'react-icons/bi';
+import { GiBoxingGlove, GiAppleSeeds, GiPunch } from 'react-icons/gi';
+import { IoFlashSharp } from 'react-icons/io5';
+import { FaCut } from 'react-icons/fa';
+
 function About() {
   const navigate = useNavigate();
   const { playButtonSound } = useSound();
@@ -25,6 +32,7 @@ function About() {
     {
       id: 'controls',
       title: 'Controls & Setup',
+      icon: <MdTune />,
       summary: 'How to position yourself, enable camera, and basic controls.',
       steps: [
         'Position yourself 1-2 meters from the camera so your full upper body is visible.',
@@ -38,6 +46,7 @@ function About() {
     {
       id: 'targets',
       title: 'Targets Mode',
+      icon: <BiTargetLock />,
       summary: 'Punch as many targets as you can in the time limit.',
       steps: [
         'Targets will appear at random locations across the screen.',
@@ -50,6 +59,7 @@ function About() {
     {
       id: 'reaction',
       title: 'Reaction Time Test',
+      icon: <FaCut />,
       summary: 'Measure how fast you react to a visual cue.',
       steps: [
         'Wait for the READY cue, then punch the indicated hand as fast as possible.',
@@ -63,6 +73,7 @@ function About() {
     {
       id: 'fruitninja',
       title: 'Fruit Ninja Mode',
+      icon: <GiAppleSeeds />,
       summary: 'Slice flying fruits while avoiding misses.',
       steps: [
         'Fruits fly across the screen, punch through them to slice.',
@@ -75,6 +86,7 @@ function About() {
     {
       id: 'range',
       title: 'Range Mode',
+      icon: <GiBoxingGlove />,
       summary: 'Free practice mode to warm up and test your punches.',
       steps: [
         'Use Range to practice punches without scoring pressure.',
@@ -86,6 +98,7 @@ function About() {
     {
       id: 'tips',
       title: 'Training Tips',
+      icon: <MdLightbulb />,
       summary: 'Short tips to improve performance and tracking.',
       steps: [
         'Warm up before playing to avoid strain.',
@@ -150,7 +163,7 @@ function About() {
 
       {!selected && (
         <div className="about-text tutorial-overview">
-          <p className="lead">Welcome to Punch Perfect. Click any card below to learn more about that mode or tip.</p>
+          <p className="lead">Select a training module to learn more.</p>
 
           <div className="tutorial-cards">
             {tutorialSections.map((s) => (
@@ -164,8 +177,11 @@ function About() {
                 type="button"
                 aria-label={s.title}
               >
-                <div className="tutorial-title">{s.title}</div>
-                <div className="tutorial-summary">{s.summary}</div>
+                <div className="tutorial-icon">{s.icon}</div>
+                <div className="tutorial-content">
+                    <div className="tutorial-title">{s.title}</div>
+                    <div className="tutorial-summary">{s.summary}</div>
+                </div>
               </button>
             ))}
           </div>
@@ -176,13 +192,19 @@ function About() {
         <div className="about-text tutorial-detail">
           {tutorialSections.filter(s => s.id === selected).map(s => (
             <div key={s.id}>
+              <div className="detail-icon-wrapper">{s.icon}</div>
               <h2 className="detail-title">{s.title}</h2>
               <p className="detail-summary">{s.summary}</p>
-              <ol className="step-list">
-                {s.steps.map((step, i) => (
-                  <li key={i}>{step}</li>
-                ))}
-              </ol>
+              <div className="step-list-container">
+                <ol className="step-list">
+                    {s.steps.map((step, i) => (
+                    <li key={i}>
+                        <span className="step-number">{i + 1}</span>
+                        <span className="step-text">{step}</span>
+                    </li>
+                    ))}
+                </ol>
+              </div>
               {s.route && (
                 <div className="detail-actions">
                   <button className="start-button" onClick={() => onStartMode(s.route)}>Start {s.title}</button>
