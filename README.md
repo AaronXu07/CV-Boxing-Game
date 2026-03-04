@@ -2,7 +2,7 @@
 
 **Real-time computer vision boxing game using only your webcam**
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=for-the-badge)](https://punchperfect.vercel.app/) [![Video](https://img.shields.io/badge/Watch-Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/mA44cL6frXc)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-success?style=for-the-badge)](https://punchperfect.vercel.app/) [![Video](https://img.shields.io/badge/Watch-Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtu.be/MTk0JX90J_M?si=zEYD1xGc1zptmHhJ)
 
 A production-ready web application that transforms your browser into an interactive boxing training platform. Using MediaPipe's pose estimation and custom punch detection algorithms, the system achieves 30 FPS pose tracking with under 150ms response latency, all processed client-side without external hardware or GPU acceleration.
 ---
