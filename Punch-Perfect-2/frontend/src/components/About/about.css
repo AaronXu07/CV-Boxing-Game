@@ -88,7 +88,7 @@
     text-align: center;
     padding-top: 2rem;
     font-size: 2.5rem;
-    margin-bottom: 5rem;
+    margin-bottom: 4rem;
     color: #ffffff;
     font-weight: 700;
     letter-spacing: 2px;
@@ -135,10 +135,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    max-width: 1200px;
-    width: 90%;
-    margin: 2rem auto;
-    padding: 3rem 2rem;
+    max-width: 900px;
+    width: 80%;
+    margin: 3rem auto;
+    padding: 0.85rem 1.2rem;
     font-size: 1.6rem;
     line-height: 1.9;
     color: #cccccc;
@@ -218,12 +218,12 @@
 
 .tutorial-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.55rem;
     width: 100%;
-    max-width: 1100px;
-    margin: 1rem auto;
-    padding: 1rem;
+    max-width: 900px;
+    margin: 0.4rem auto;
+    padding: 0.2rem;
 }
 
 .tutorial-card {
@@ -232,16 +232,16 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.08);
 
-    padding: 2rem 1.5rem;
-    border-radius: 16px; /* softer corners */
+    padding: 0.55rem 0.7rem;
+    border-radius: 4px; /* softer corners */
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.35rem;
     align-items: center;
-    min-height: 300px; 
+    aspect-ratio: 1 / 1;
     justify-content: center;
     
     transform-style: preserve-3d;
@@ -255,9 +255,9 @@
 }
 
 .tutorial-icon {
-    font-size: 3.5rem;
+    font-size: 1.9rem;
     color: #e63946;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.155rem;
     filter: drop-shadow(0 0 10px rgba(230, 57, 70, 0.4));
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -270,31 +270,31 @@
     font-family: 'Orbitron', sans-serif;
     font-weight: 600;
     color: #ffffff;
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     letter-spacing: 1px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .tutorial-summary {
     color: #a0a0a0;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.35;
     font-weight: 300;
 }
 
 .tutorial-detail {
-    max-width: 1000px;
+    max-width: 800px;
     background: rgba(10, 10, 10, 0.85); /* Darker for readability */
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
-    padding: 3rem;
+    padding: 2.4rem;
     text-align: center;
 }
 
 .detail-icon-wrapper {
-    font-size: 4rem;
+    font-size: 3.2rem;
     color: #e63946;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.1rem;
     text-align: center;
     animation: fadeInDown 0.5s ease-out;
 }
@@ -306,8 +306,8 @@
 
 .detail-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 2.8rem;
-    margin-bottom: 1rem;
+    font-size: 2.2rem;
+    margin-bottom: 0.8rem;
     background: linear-gradient(135deg, #fff 0%, #aaa 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -315,19 +315,19 @@
 }
 
 .detail-summary {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     color: #bbbbbb;
-    max-width: 700px;
+    max-width: 560px;
     margin-left: auto;
     margin-right: auto;
     border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 2rem;
-    margin-bottom: 2rem;
+    padding-bottom: 1.6rem;
+    margin-bottom: 1.6rem;
     text-align: center;
 }
 
 .step-list-container {
-    max-width: 800px;
+    max-width: 630px;
     margin: 0 auto;
 }
 
@@ -343,10 +343,10 @@
 .step-list li {
     display: flex;
     align-items: flex-start;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
     background: rgba(255,255,255,0.03);
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: 8px;
     transition: background 0.2s;
     text-align: left;
@@ -360,22 +360,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 25px;
+    height: 25px;
     background: #e63946;
     color: #fff;
     font-weight: bold;
     border-radius: 50%;
     flex-shrink: 0;
     font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.72rem;
     box-shadow: 0 0 10px rgba(230, 57, 70, 0.4);
 }
 
 .step-text {
     flex: 1;
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-size: 0.9rem;
+    line-height: 1.55;
     color: #eee;
 }
 
@@ -385,7 +385,7 @@
 }
 
 .start-button {
-    padding: 0.85rem 2.2rem;
+    padding: 0.68rem 1.75rem;
     background-color: #e63946;
     border: 2px solid #e63946;
     color: #ffffff;
@@ -394,7 +394,7 @@
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-size: 1.05rem;
+    font-size: 0.85rem;
     transition: all 0.2s;
 }
 
